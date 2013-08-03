@@ -10,6 +10,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.RuntimeInstance;
 
+
 /**
  * Template processor for HPPC templates.
  */
@@ -268,6 +269,19 @@ public final class TemplateProcessor
                         sb.append(
                             String.format("((%1$s) == (%2$s))",
                                 params.toArray()));
+                    }
+                }
+                else if ("equalsKTypeHashStrategy".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(
+                            String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
+                                params.toArray()));
+                    }
+                    else
+                    {
+                        throw new RuntimeException("Intrinsic.equalsKTypeHashStrategy() call is only applicable to Objects");
                     }
                 }
                 else if ("equalsVType".equals(method))

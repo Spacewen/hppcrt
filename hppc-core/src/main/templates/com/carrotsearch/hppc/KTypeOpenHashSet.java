@@ -122,6 +122,15 @@ public class KTypeOpenHashSet<KType>
      * @see "http://issues.carrot2.org/browse/HPPC-80"
      */
     protected int perturbation;
+    
+    /* #if ($TemplateOptions.KTypeGeneric) */
+    /**
+     * Custom hashing strategy : if != null,
+     * comparisons and hash codes of keys will be computed
+     * with the strategy methods instead of the native Object equals() and hashCode() methods.
+     */
+    private HashingStrategy<KType> hashStrategy = null;
+    /* #end */
 
     /**
      * Creates a hash set with the default capacity of {@value #DEFAULT_CAPACITY},
@@ -156,6 +165,28 @@ public class KTypeOpenHashSet<KType>
         this.loadFactor = loadFactor;
         allocateBuffers(roundCapacity(initialCapacity));
     }
+    
+    /* #if ($TemplateOptions.KTypeGeneric) */
+    /**
+     * Creates a hash set with the given capacity, load factor, and hash strategy.
+     */
+    public KTypeOpenHashSet(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    {
+        this(initialCapacity, loadFactor);
+        this.hashStrategy = strategy;
+    }
+    
+    /**
+     * Convenience method to return the {@link HashingStrategy<KType>}
+     * in use.
+     * @return null if no {@link HashingStrategy<KType>} was set at construction time.
+     */
+    public HashingStrategy<KType> getHashStrategy() {
+        
+        return this.hashStrategy;
+    }
+    
+    /* #end */
 
     /**
      * Creates a hash set from elements of another container. Default load factor is used.
@@ -175,10 +206,19 @@ public class KTypeOpenHashSet<KType>
         assert assigned < allocated.length;
 
         final int mask = allocated.length - 1;
+        
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        int slot = rehashSpecificHash(e, perturbation, this.hashStrategy) & mask;
+        /*! #else
         int slot = rehash(e, perturbation) & mask;
+        #end !*/
         while (allocated[slot])
         {
-            if (Intrinsics.equalsKType(e, keys[slot]))
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    Intrinsics.equalsKTypeHashStrategy(e, keys[slot], this.hashStrategy)
+                    /*! #else
+                    Intrinsics.equalsKType(e, keys[slot])
+                    #end !*/)
             {
                 return false;
             }
@@ -285,7 +325,11 @@ public class KTypeOpenHashSet<KType>
             {
                 final KType k = oldKeys[i];
 
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                int slot = rehashSpecificHash(k, perturbation, this.hashStrategy) & mask;
+                /*! #else
                 int slot = rehash(k, perturbation) & mask;
+                #end !*/
                 while (allocated[slot])
                 {
                     slot = (slot + 1) & mask;
@@ -350,11 +394,20 @@ public class KTypeOpenHashSet<KType>
     public boolean remove(KType key)
     {
         final int mask = allocated.length - 1;
-        int slot = rehash(key, perturbation) & mask; 
+        
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        int slot = rehashSpecificHash(key, perturbation, this.hashStrategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
 
         while (allocated[slot])
         {
-            if (Intrinsics.equalsKType(key, keys[slot]))
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], this.hashStrategy)
+                    /*! #else
+                    Intrinsics.equalsKType(key, keys[slot])
+                    #end !*/)
              {
                 assigned--;
                 shiftConflictingKeys(slot);
@@ -380,7 +433,12 @@ public class KTypeOpenHashSet<KType>
 
             while (allocated[slotCurr])
             {
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                slotOther = rehashSpecificHash(keys[slotCurr], perturbation, this.hashStrategy) & mask;
+                /*! #else
                 slotOther = rehash(keys[slotCurr], perturbation) & mask;
+                #end !*/
+                
                 if (slotPrev <= slotCurr)
                 {
                     // We are on the right of the original slot.
@@ -450,10 +508,19 @@ public class KTypeOpenHashSet<KType>
     public boolean contains(KType key)
     {
         final int mask = allocated.length - 1;
+        
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        int slot = rehashSpecificHash(key, perturbation, this.hashStrategy) & mask;
+        /*! #else 
         int slot = rehash(key, perturbation) & mask;
+        #end !*/
         while (allocated[slot])
         {
-            if (Intrinsics.equalsKType(key, keys[slot]))
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], this.hashStrategy)
+                    /*! #else
+                    Intrinsics.equalsKType(key, keys[slot])
+                    #end !*/)
             {
                 lastSlot = slot;
                 return true; 
@@ -510,6 +577,8 @@ public class KTypeOpenHashSet<KType>
         {
             if (states[i])
             {
+                //use the native Object.hashCode() the set is built with,
+                //for determinism needs, DO NOT USE the strategy here !
                 h += rehash(keys[i]);
             }
         }
@@ -640,6 +709,11 @@ public class KTypeOpenHashSet<KType>
             KTypeOpenHashSet<KType> cloned = (KTypeOpenHashSet<KType>) super.clone();
             cloned.keys = keys.clone();
             cloned.allocated = allocated.clone();
+            
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            cloned.hashStrategy = this.hashStrategy;
+            /*! #end !*/
+            
             return cloned;
         }
         catch (CloneNotSupportedException e)
@@ -747,4 +821,15 @@ public class KTypeOpenHashSet<KType>
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor);
     }
+    
+    /* #if ($TemplateOptions.KTypeGeneric) */
+    /**
+     * Returns a new object of this class with no need to declare generic type, using a specific hash strategy (shortcut
+     * instead of using a constructor).
+     */
+    public static <KType> KTypeOpenHashSet<KType> newInstanceWithCapacityAndStrategy(int initialCapacity, float loadFactor , HashingStrategy<KType> strategy)
+    {
+        return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy);
+    }
+    /* #end */
 }
