@@ -35,5 +35,17 @@ final class Internals
     static <T> T newArray(int arraySize)
     {
         return (T) new Object [arraySize];
-    }    
+    }  
+    
+    /**
+     * if specificHash == null, equivalent to rehash()
+     * @param object
+     * @param p
+     * @param specificHash
+     * @return
+     */
+    static<T> int rehashSpecificHash(T o, int p, HashingStrategy<T> specificHash) 
+    { 
+        return o == null ? 0 : (specificHash == null? MurmurHash3.hash(o.hashCode() ^ p) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p))); 
+    }
 }
