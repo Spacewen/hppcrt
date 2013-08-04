@@ -276,7 +276,7 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(
-                            String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
+                            String.format("((%1$s) == null ? (%2$s) == null :(%3$s).equals((%1$s),(%2$s)))",
                                 params.toArray()));
                     }
                     else
