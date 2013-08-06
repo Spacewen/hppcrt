@@ -140,25 +140,28 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     protected int perturbation;
     
     /* #if ($TemplateOptions.KTypeGeneric) */
-    /**
-     * Custom hashing strategy :
-     * comparisons and hash codes of keys will be computed
-     * with the strategy methods instead of the native Object equals() and hashCode() methods.
-     */
-    private HashingStrategy<KType> hashStrategy = new HashingStrategy<KType>() {
+    @SuppressWarnings("rawtypes")
+    private static final HashingStrategy DEFAULT_STRATEGY = new HashingStrategy() {
 
         @Override
-        public int computeHashCode(KType o) {
+        public int computeHashCode(Object o) {
             //delegate to native Object.hashCode()
             return o.hashCode();
         }
 
         @Override
-        public boolean equals(KType o1, KType o2) {
+        public boolean equals(Object o1, Object o2) {
             //delegate to native Object.equals()
             return o1.equals(o2);
         }  
     };
+    /**
+     * Custom hashing strategy :
+     * comparisons and hash codes of keys will be computed
+     * with the strategy methods instead of the native Object equals() and hashCode() methods.
+     */
+    @SuppressWarnings("unchecked")
+    private HashingStrategy<KType> hashStrategy = DEFAULT_STRATEGY;
     /* #end */
     
     /**
@@ -857,11 +860,13 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         Arrays.fill(allocated, false);
 
         /* #if ($TemplateOptions.KTypeGeneric) */
-        Arrays.fill(keys, null); // Help the GC.
+        //Slightly faster than Arrays.fill(keys, null); // Help the GC.
+        HashContainerUtils.blankMultipleOf2ObjectArray(keys);
         /* #end */
 
         /* #if ($TemplateOptions.VTypeGeneric) */
-        Arrays.fill(values, null); // Help the GC.
+        //Slightly faster than Arrays.fill(values, null); // Help the GC.
+        HashContainerUtils.blankMultipleOf2ObjectArray(values);
         /* #end */
     }
 
