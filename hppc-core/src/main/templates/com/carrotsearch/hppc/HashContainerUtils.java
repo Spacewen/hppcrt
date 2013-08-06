@@ -92,10 +92,10 @@ final class HashContainerUtils
     /**
      * Method to blank Object[] array to "null"
      * Either the size is < HashContainerUtils.BLANK_ARRAY_SIZE, or 
-     * it must be multiple of 2 sized, like in HashMaps or Sets.
+     * it must be power of 2 sized, like in HashMaps or Sets.
      * @param objectArray
      */
-    static <T> void blankMultipleOf2ObjectArray(T[] objectArray) {
+    static <T> void blankPowerOf2ObjectArray(T[] objectArray) {
         
         if (objectArray.length < HashContainerUtils.BLANK_ARRAY_SIZE)
         {
