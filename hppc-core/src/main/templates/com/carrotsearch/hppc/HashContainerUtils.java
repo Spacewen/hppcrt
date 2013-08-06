@@ -1,5 +1,8 @@
 package com.carrotsearch.hppc;
 
+import static com.carrotsearch.hppc.HashContainerUtils.BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+
+import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import com.carrotsearch.hppc.hash.MurmurHash3;
@@ -26,6 +29,19 @@ final class HashContainerUtils
      * Default load factor.
      */
     final static float DEFAULT_LOAD_FACTOR = 0.75f;
+    
+   
+    public final static int BLANK_ARRAY_SIZE_IN_BIT_SHIFT = 10;
+    
+    /**
+     * Batch blanking array size
+     */
+    public final static int BLANK_ARRAY_SIZE = 1 << BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+    
+    /**
+     * Batch blanking array with Object nulls
+     */
+    public final static Object[] BLANKING_OBJECT_ARRAY = new Object[BLANK_ARRAY_SIZE];
 
     /**
      * Computer static perturbations table.
@@ -71,5 +87,31 @@ final class HashContainerUtils
         }
 
         return current;
+    }
+    
+    /**
+     * Method to blank Object[] array to "null"
+     * Either the size is < HashContainerUtils.BLANK_ARRAY_SIZE, or 
+     * it must be multiple of 2 sized, like in HashMaps or Sets.
+     * @param objectArray
+     */
+    static <T> void blankMultipleOf2ObjectArray(T[] objectArray) {
+        
+        if (objectArray.length < HashContainerUtils.BLANK_ARRAY_SIZE)
+        {
+           Arrays.fill(objectArray, null); // Help the GC.
+        } 
+        else 
+        {
+            //if big enough, blank by batch of BLANK_ARRAY_SIZE.
+            final int nbChunks = objectArray.length >> BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+            
+            for (int ii = 0; ii < nbChunks; ii++) {
+                
+                System.arraycopy(HashContainerUtils.BLANKING_OBJECT_ARRAY, 0, 
+                                 objectArray, ii * HashContainerUtils.BLANK_ARRAY_SIZE, 
+                                 HashContainerUtils.BLANK_ARRAY_SIZE);
+            } //end for
+        }
     }
 }
