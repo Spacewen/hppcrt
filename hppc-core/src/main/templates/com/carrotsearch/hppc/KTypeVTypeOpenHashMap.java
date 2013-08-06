@@ -861,12 +861,12 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         /* #if ($TemplateOptions.KTypeGeneric) */
         //Slightly faster than Arrays.fill(keys, null); // Help the GC.
-        HashContainerUtils.blankMultipleOf2ObjectArray(keys);
+        HashContainerUtils.blankPowerOf2ObjectArray(keys);
         /* #end */
 
         /* #if ($TemplateOptions.VTypeGeneric) */
         //Slightly faster than Arrays.fill(values, null); // Help the GC.
-        HashContainerUtils.blankMultipleOf2ObjectArray(values);
+        HashContainerUtils.blankPowerOf2ObjectArray(values);
         /* #end */
     }
 
