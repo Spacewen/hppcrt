@@ -601,22 +601,39 @@ public class KTypeOpenHashSet<KType>
         return h;
     }
 
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    /**
+     * this and obj can only be equal if either:
+     * (both don't have set hash strategies)
+     * OR
+     * (both have the same hash strategy, semantically defined as this.HashStrategy<KType>.equals(obj.HashStrategy<KType>) == true)
+     * then, both maps are compared as follows: {@inheritDoc}  
+     */
+    @SuppressWarnings({ "unchecked"})
+    /*! #else  !*/
     /**
      * {@inheritDoc} 
      */
+    /*! #end !*/
     @Override
-    /* #if ($TemplateOptions.KTypeGeneric) */
-    @SuppressWarnings("unchecked") 
-    /* #end */
     public boolean equals(Object obj)
     {
         if (obj != null)
         {
             if (obj == this) return true;
+            
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            if(obj instanceof KTypeOpenHashSet<?> &&
+               !Intrinsics.equalsKType(this.hashStrategy, ((KTypeOpenHashSet<KType>) obj).hashStrategy)) {
+                
+                return false;
+            }
+            /*! #end !*/
 
             if (obj instanceof KTypeSet<?>)
             {
                 KTypeSet<Object> other = (KTypeSet<Object>) obj;
+                
                 if (other.size() == this.size())
                 {
                     for (KTypeCursor<KType> c : this)
