@@ -1,7 +1,5 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.HashContainerUtils.BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
-
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 

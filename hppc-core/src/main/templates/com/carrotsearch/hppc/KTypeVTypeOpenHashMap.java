@@ -496,8 +496,12 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             }
         }
 
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/ Arrays.fill(oldKeys,   null); /*! #end !*/
-        /*! #if ($TemplateOptions.VTypeGeneric) !*/ Arrays.fill(oldValues, null); /*! #end !*/
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
+        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
+        /*! #end !*/
+        /*! #if ($TemplateOptions.VTypeGeneric) !*/ 
+        HashContainerUtils.blankPowerOf2ObjectArray(oldValues);
+        /*! #end !*/
     }
 
     /**
@@ -900,7 +904,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      * (both have the same hash strategy, semantically defined as this.HashStrategy<KType>.equals(obj.HashStrategy<KType>) == true)
      * then, both maps are compared as follows: {@inheritDoc}  
      */
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"rawtypes" })
     /*! #else  !*/
     /**
      * {@inheritDoc} 
