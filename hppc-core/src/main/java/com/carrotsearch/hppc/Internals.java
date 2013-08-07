@@ -38,6 +38,7 @@ final class Internals
     }  
     
     /**
+     * if specificHash == null, equivalent to rehash()
      * @param object
      * @param p
      * @param specificHash
@@ -45,6 +46,6 @@ final class Internals
      */
     static<T> int rehashSpecificHash(T o, int p, HashingStrategy<T> specificHash) 
     { 
-        return o == null ? 0 : MurmurHash3.hash(specificHash.computeHashCode(o) ^ p); 
+        return o == null ? 0 : (specificHash == null? MurmurHash3.hash(o.hashCode() ^ p) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p))); 
     }
 }

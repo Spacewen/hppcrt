@@ -97,7 +97,7 @@ final class HashContainerUtils
      */
     static <T> void blankPowerOf2ObjectArray(T[] objectArray) {
         
-        if (objectArray.length < HashContainerUtils.BLANK_ARRAY_SIZE)
+        if (objectArray.length < BLANK_ARRAY_SIZE)
         {
            Arrays.fill(objectArray, null); // Help the GC.
         } 
@@ -109,8 +109,8 @@ final class HashContainerUtils
             for (int ii = 0; ii < nbChunks; ii++) {
                 
                 System.arraycopy(HashContainerUtils.BLANKING_OBJECT_ARRAY, 0, 
-                                 objectArray, ii * HashContainerUtils.BLANK_ARRAY_SIZE, 
-                                 HashContainerUtils.BLANK_ARRAY_SIZE);
+                                 objectArray, ii << BLANK_ARRAY_SIZE_IN_BIT_SHIFT, 
+                                 BLANK_ARRAY_SIZE);
             } //end for
         }
     }
