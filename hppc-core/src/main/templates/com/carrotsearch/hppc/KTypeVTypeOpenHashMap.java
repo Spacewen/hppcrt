@@ -892,16 +892,35 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         return h;
     }
 
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    /**
+     * this and obj can only be equal if either:
+     * (both don't have set hash strategies)
+     * OR
+     * (both have the same hash strategy, semantically defined as this.HashStrategy<KType>.equals(obj.HashStrategy<KType>) == true)
+     * then, both maps are compared as follows: {@inheritDoc}  
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    /*! #else  !*/
     /**
      * {@inheritDoc} 
      */
+    /*! #end !*/
     @Override
     public boolean equals(Object obj)
     {
         if (obj != null)
         {
             if (obj == this) return true;
-
+            
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            if(obj instanceof KTypeVTypeOpenHashMap &&
+               !Intrinsics.equalsKType(this.hashStrategy, ((KTypeVTypeOpenHashMap) obj).hashStrategy)) {
+                
+                return false;
+            }
+            /*! #end !*/
+            
             if (obj instanceof KTypeVTypeMap)
             {
                 /* #if ($TemplateOptions.AnyGeneric) */
