@@ -340,7 +340,9 @@ public class KTypeOpenHashSet<KType>
             }
         }
 
-        /* #if ($TemplateOptions.KTypeGeneric) */ Arrays.fill(oldKeys,   null); /* #end */
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
+        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
+        /*! #end !*/
     }
 
 
