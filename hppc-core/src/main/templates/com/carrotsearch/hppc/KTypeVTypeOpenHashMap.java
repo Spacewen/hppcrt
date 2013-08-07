@@ -140,28 +140,12 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     protected int perturbation;
     
     /* #if ($TemplateOptions.KTypeGeneric) */
-    @SuppressWarnings("rawtypes")
-    private static final HashingStrategy DEFAULT_STRATEGY = new HashingStrategy() {
-
-        @Override
-        public int computeHashCode(Object o) {
-            //delegate to native Object.hashCode()
-            return o.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object o1, Object o2) {
-            //delegate to native Object.equals()
-            return o1.equals(o2);
-        }  
-    };
-    /**
-     * Custom hashing strategy :
-     * comparisons and hash codes of keys will be computed
-     * with the strategy methods instead of the native Object equals() and hashCode() methods.
-     */
-    @SuppressWarnings("unchecked")
-    private HashingStrategy<KType> hashStrategy = DEFAULT_STRATEGY;
+     /**
+      * Custom hashing strategy : if != null,
+      * comparisons and hash codes of keys will be computed
+      * with the strategy methods instead of the native Object equals() and hashCode() methods.
+      */
+      protected HashingStrategy<KType> hashStrategy = null;
     /* #end */
     
     /**
@@ -231,7 +215,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     {
         this(initialCapacity, loadFactor);
         
-        //only accept not-null strategies to override the default one, it saves a "not-null" runtime check later on.
+        //only accept not-null strategies.
         if (strategy != null) 
         {
             this.hashStrategy = strategy;
@@ -898,9 +882,11 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     {
         int h = 0;
         for (KTypeVTypeCursor<KType, VType> c : this)
-        { 
-            //for native hashCode(), use composition of native hashCode() 
-            //elements for determinism, DO NOT USE the strategy here !
+        {
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            //This hash is an intrinsic property of the container contents,
+            //consequently is independent from the HashStrategy, so do not use it !
+            /*! #end !*/
             h += rehash(c.key) + rehash(c.value);  
         }
         return h;

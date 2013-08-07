@@ -122,31 +122,16 @@ public class KTypeOpenHashSet<KType>
      * @see "http://issues.carrot2.org/browse/HPPC-80"
      */
     protected int perturbation;
+   
     
     /* #if ($TemplateOptions.KTypeGeneric) */
-    @SuppressWarnings("rawtypes")
-    private static final HashingStrategy DEFAULT_STRATEGY = new HashingStrategy() {
-
-        @Override
-        public int computeHashCode(Object o) {
-            //delegate to native Object.hashCode()
-            return o.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object o1, Object o2) {
-            //delegate to native Object.equals()
-            return o1.equals(o2);
-        }  
-    };
     /**
-     * Custom hashing strategy :
+     * Custom hashing strategy : if != null,
      * comparisons and hash codes of keys will be computed
      * with the strategy methods instead of the native Object equals() and hashCode() methods.
      */
-    @SuppressWarnings("unchecked")
-    private HashingStrategy<KType> hashStrategy = DEFAULT_STRATEGY;
-    /* #end */
+     protected HashingStrategy<KType> hashStrategy = null;
+     /* #end */
 
     /**
      * Creates a hash set with the default capacity of {@value #DEFAULT_CAPACITY},
@@ -190,7 +175,7 @@ public class KTypeOpenHashSet<KType>
     {
         this(initialCapacity, loadFactor);
         
-        //only accept not-null startegies. That way, it saves a runtime check later on.
+        //only accept not-null strategies.
         if (strategy != null) 
         {
             this.hashStrategy = strategy;
@@ -607,8 +592,10 @@ public class KTypeOpenHashSet<KType>
         {
             if (states[i])
             {
-                //use the native Object.hashCode() the set is built with,
-                //for determinism needs, DO NOT USE the strategy here !
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                //This hash is an intrinsic property of the container contents,
+                //consequently is independent from the HashStrategy, so do not use it !
+                /*! #end !*/
                 h += rehash(keys[i]);
             }
         }
