@@ -170,6 +170,7 @@ public class KTypeOpenHashSet<KType>
     /* #if ($TemplateOptions.KTypeGeneric) */
     /**
      * Creates a hash set with the given capacity, load factor, and hash strategy.
+     * Providing a null strategy is equivalent at setting no strategy at all.
      */
     public KTypeOpenHashSet(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
     {
@@ -339,10 +340,6 @@ public class KTypeOpenHashSet<KType>
                 keys[slot] = k;                
             }
         }
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
-        /*! #end !*/
     }
 
 
@@ -508,8 +505,9 @@ public class KTypeOpenHashSet<KType>
      * 
      * #if ($TemplateOptions.KTypeGeneric) <p>Saves the associated value for fast access using {@link #lkey()}.</p>
      * <pre>
-     * if (map.contains(key))
-     *   value = map.lkey(); 
+     * if (map.contains(key)) 
+     *     value = map.lkey(); 
+     * 
      * </pre> #end
      */
     @Override
@@ -550,10 +548,10 @@ public class KTypeOpenHashSet<KType>
     {
         assigned = 0;
 
-        Arrays.fill(allocated, false);
+        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
         
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(keys, null); // Help the GC.
+        //Faster than Arrays.fill(keys, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(keys);
         /*! #end !*/
         
@@ -605,11 +603,12 @@ public class KTypeOpenHashSet<KType>
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
-     * this and obj can only be equal if either:
-     * (both don't have set hash strategies)
-     * OR
-     * (both have the same hash strategy, semantically defined as this.HashStrategy<KType>.equals(obj.HashStrategy<KType>) == true)
-     * then, both maps are compared as follows: {@inheritDoc}  
+     * this instance and obj can only be equal if either: <pre>
+     * (both don't have set hash strategies) 
+     * or
+     * (both have equal hash strategies defined by {@link #hashStrategy}.equals(obj.hashStrategy))</pre>
+     * then, both maps are compared as follows: <pre>
+     * {@inheritDoc}</pre>  
      */
     @SuppressWarnings({ "unchecked"})
     /*! #else  !*/
@@ -865,5 +864,32 @@ public class KTypeOpenHashSet<KType>
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy);
     }
+    
+    /**
+     * Returns a new object with no key perturbations (see
+     * {@link #computePerturbationValue(int)}), but with a specific capacity, load factor, and {@link HashingStrategy}.
+     * A strategy = null is equivalent at providing no strategy at all.
+     * Only use when sure the container will not
+     * be used for direct copying of keys to another hash container.
+     */
+    public static <KType> KTypeOpenHashSet<KType> newInstanceWithCapacityAndStrategyWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    {
+        return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy) {
+            @Override
+            protected int computePerturbationValue(int capacity) { return 0; }
+        };
+    }
+    
+    /**
+     * Return the current {@link HashingStrategy} in use, or {@code null} if none was set. 
+     * @return
+     */
+    public HashingStrategy<KType> strategy() 
+    {    
+        return this.hashStrategy;
+    }
+    
     /* #end */
+    
+    
 }

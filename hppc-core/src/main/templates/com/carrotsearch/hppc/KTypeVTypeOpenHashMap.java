@@ -201,7 +201,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     /**
      * Creates a hash map with the given initial capacity, load factor, and hash
      * strategy.
-     * 
+     * Providing a null strategy is equivalent at setting no strategy at all. 
      * <p>See class notes about hash distribution importance. This constructor precisely allows control over equality and hash code computation.</p>
      *  
      * @param initialCapacity Initial capacity (greater than zero and automatically
@@ -495,13 +495,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 values[slot] = v;
             }
         }
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
-        /*! #end !*/
-        /*! #if ($TemplateOptions.VTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldValues);
-        /*! #end !*/
     }
 
     /**
@@ -845,15 +838,15 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         assigned = 0;
 
         // States are always cleared.
-        Arrays.fill(allocated, false);
-
+        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
+      
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(keys, null); // Help the GC.
+        //Faster than Arrays.fill(keys, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(keys);
         /*! #end !*/
 
         /*! #if ($TemplateOptions.VTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(values, null); // Help the GC.
+        //Faster than Arrays.fill(values, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(values);
         /*! #end !*/
     }
@@ -898,11 +891,12 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
-     * this and obj can only be equal if either:
-     * (both don't have set hash strategies)
-     * OR
-     * (both have the same hash strategy, semantically defined as this.HashStrategy<KType>.equals(obj.HashStrategy<KType>) == true)
-     * then, both maps are compared as follows: {@inheritDoc}  
+     * this instance and obj can only be equal if either: <pre>
+     * (both don't have set hash strategies) 
+     * or
+     * (both have equal hash strategies defined by {@link #hashStrategy}.equals(obj.hashStrategy))</pre>
+     * then, both maps are compared as follows: <pre>
+     * {@inheritDoc}</pre>  
      */
     @SuppressWarnings({"rawtypes" })
     /*! #else  !*/
@@ -1398,5 +1392,29 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor, strategy);
     }
+    
+    /**
+     * Returns a new object with no key perturbations (see
+     * {@link #computePerturbationValue(int)}), but with a specific capacity, load factor, and {@link HashingStrategy}.
+     * A strategy = null is equivalent at providing no strategy at all. 
+     * Only use when sure the container will not
+     * be used for direct copying of keys to another hash container.
+     */
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithCapacityAndStrategyWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    {
+        return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor, strategy) {
+            @Override
+            protected int computePerturbationValue(int capacity) { return 0; }
+        };
+    } 
+    
+    /**
+     * Return the current {@link HashingStrategy} in use, or {@code null} if none was set. 
+     */
+    public HashingStrategy<KType> strategy() 
+    {    
+        return this.hashStrategy;
+    }
+    
     /* #end */
 }
