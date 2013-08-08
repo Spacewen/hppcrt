@@ -339,10 +339,6 @@ public class KTypeOpenHashSet<KType>
                 keys[slot] = k;                
             }
         }
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
-        /*! #end !*/
     }
 
 
@@ -550,10 +546,10 @@ public class KTypeOpenHashSet<KType>
     {
         assigned = 0;
 
-        Arrays.fill(allocated, false);
+        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
         
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(keys, null); // Help the GC.
+        //Faster than Arrays.fill(keys, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(keys);
         /*! #end !*/
         

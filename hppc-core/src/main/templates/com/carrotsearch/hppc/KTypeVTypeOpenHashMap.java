@@ -495,13 +495,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 values[slot] = v;
             }
         }
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldKeys);
-        /*! #end !*/
-        /*! #if ($TemplateOptions.VTypeGeneric) !*/ 
-        HashContainerUtils.blankPowerOf2ObjectArray(oldValues);
-        /*! #end !*/
     }
 
     /**
@@ -845,15 +838,15 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         assigned = 0;
 
         // States are always cleared.
-        Arrays.fill(allocated, false);
-
+        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
+      
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(keys, null); // Help the GC.
+        //Faster than Arrays.fill(keys, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(keys);
         /*! #end !*/
 
         /*! #if ($TemplateOptions.VTypeGeneric) !*/
-        //Slightly faster than Arrays.fill(values, null); // Help the GC.
+        //Faster than Arrays.fill(values, null); // Help the GC.
         HashContainerUtils.blankPowerOf2ObjectArray(values);
         /*! #end !*/
     }
