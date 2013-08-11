@@ -43,7 +43,7 @@ public class HashMapBenchmark extends AbstractBenchmark
         {
             for (int i = 0; i < numbers.length - r; i++)
             {
-                if ((numbers[i] & 0x1) == 0)
+                if ((numbers[i].intValue() & 0x1) == 0)
                     jre.remove(numbers[i + r]);
                 else
                     jre.put(numbers[i], numbers[i]);
