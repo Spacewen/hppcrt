@@ -364,9 +364,10 @@ public class KTypeVTypeOpenHashMap<KType, VType>
        
         while (allocated[slot])
         {
-            if (Intrinsics.equalsKType(key, keys[slot]))
+            if (key == keys[slot])
             {
-                return values[slot] = (VType) (values[slot] + additionValue);
+                values[slot] += additionValue;
+                return values[slot];
             }
 
             slot = (slot + 1) & mask;
@@ -396,7 +397,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         {
             if (Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy))
             {
-                return values[slot] = (VType) (values[slot] + additionValue);
+                values[slot] += additionValue;
+                return values[slot];
             }
 
             slot = (slot + 1) & mask;
