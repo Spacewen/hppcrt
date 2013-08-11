@@ -16,7 +16,7 @@ import com.carrotsearch.junitbenchmarks.AbstractBenchmark;
 public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
 {
     public static int fakeOutput;
-    public static final int COUNT = (int)4e6;
+    public static final int COUNT = (int)5e6;
     static Integer [] numbers = new Integer [COUNT];
 
     private static ObjectObjectOpenHashMap<Integer, Integer> hppc = 
@@ -70,7 +70,7 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
                         public int computeHashCode(Integer object) {
                             
                             //dimininuish the quality of hashing by striping bits
-                            return object.intValue() << 13 ;
+                            return object.intValue() << 12 ;
                         }
 
                         @Override
@@ -90,7 +90,7 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
                         public int computeHashCode(Integer object) {
                             
                             //dimininuish the quality of hashing by striping bits
-                            return object.intValue() << 13 ;
+                            return object.intValue() << 12 ;
                         }
 
                         @Override
@@ -116,8 +116,8 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
     {
         numbers = null;
         //this forces the computation result "out", so
-        //that the tests compuatation cannot be optimized away.
-        System.err.print(fakeOutput << 31);
+        //that the tests computation cannot be optimized away.
+        System.err.print(fakeOutput);
     }
 
     /* */
@@ -164,6 +164,7 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
     @Test
     public void testMultipleOperationsWithBadStrategy() throws Exception
     {
+      
         runWithParticularMap(hppc_with_bad_hash_strategy);   
     }
     
@@ -182,7 +183,7 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
         {
             for (int i = 0; i < numbers.length - r; i++)
             {
-                if ((numbers[i] & 0x1) == 0)
+                if ((numbers[i].intValue() & 0x1) == 0)
                 {
                     mapToTest.remove(numbers[i + r]);
                 }
@@ -197,7 +198,7 @@ public class ObjectObjectOpenHashMapBenchmark extends AbstractBenchmark
             { 
                 if (mapToTest.containsKey(numbers[i])) {
                     
-                    sum += mapToTest.lget();
+                    sum += mapToTest.lget().intValue();
                 }   
             }
         }
