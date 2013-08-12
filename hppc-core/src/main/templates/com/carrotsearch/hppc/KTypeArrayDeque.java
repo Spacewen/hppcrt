@@ -494,15 +494,21 @@ public class KTypeArrayDeque<KType>
     @Override
     public void clear()
     {
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
         if (head < tail)
         {
-            Arrays.fill(buffer, head, tail, Intrinsics.<KType>defaultKTypeValue());
+            //Arrays.fill(buffer, head, tail, Intrinsics.<KType>defaultKTypeValue());
+            Internals.blankObjectArray(buffer, head, tail); 
         }
         else
         {
-            Arrays.fill(buffer, 0, tail, Intrinsics.<KType>defaultKTypeValue());
-            Arrays.fill(buffer, head, buffer.length, Intrinsics.<KType>defaultKTypeValue());
+            //Arrays.fill(buffer, 0, tail, Intrinsics.<KType>defaultKTypeValue());
+            //Arrays.fill(buffer, head, buffer.length, Intrinsics.<KType>defaultKTypeValue());
+            Internals.blankObjectArray(buffer, 0, tail);
+            Internals.blankObjectArray(buffer, head, buffer.length);  
         }
+        /*! #end !*/
+        
         this.head = tail = 0;
     }
 

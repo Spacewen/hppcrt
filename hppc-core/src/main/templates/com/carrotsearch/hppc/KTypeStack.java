@@ -159,9 +159,10 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
         assert elementsCount >= count;
 
         elementsCount -= count;
-        /* #if ($TemplateOptions.KTypeGeneric) */
-        java.util.Arrays.fill(buffer, elementsCount, elementsCount + count, null);
-        /* #end */
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        //java.util.Arrays.fill(buffer, elementsCount, elementsCount + count, null);
+        Internals.blankObjectArray(buffer, elementsCount, elementsCount + count);
+        /*! #end !*/
     }
 
     /**
