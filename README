@@ -1,7 +1,22 @@
+HPPC: High Performance Primitive Collections "plus"
+---------------------------------------------------
 
-HPPC: High Performance Primitive Collections
---------------------------------------------
-
-See JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
+This is a fork of HPPC from Carrot Search:
+see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
 
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
+
+This fork intend to follow the HPPC has close as possible (currently in v0.6 dev) but
+also to add some more features which general goal is improving realtime behaviour, 
+that is, having ZERO GC at runtime.
+
+
+For now, the additional features are:
+- Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode().
+- Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations,
+especially noticable for big container sizes. (Javolution has a similar trick)
+
+In a near future:
+- Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+dynamically under the hood. 
+In particular, using the for-each construct without any allocation of new iterator instances, transparently.
