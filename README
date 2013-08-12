@@ -6,7 +6,7 @@ see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for mor
 
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
 
-This fork intend to follow the original HPPC has close as possible (currently in v0.6 dev) while 
+This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
 adding some more features which general goal is improving realtime behaviour, 
 that is, to have ZERO GC at runtime.
 
