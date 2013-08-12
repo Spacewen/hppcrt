@@ -20,5 +20,5 @@ In a near future:
 dynamically under the hood. 
 In particular using the for-each construct without any allocation of new iterator instances, transparently.
 
-Binaries, sources and Javadoc, are provided in the 'hppc/binaries' of the '0.6x_dev' branch for convenience.
+Binaries, sources and Javadoc, are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.
 
