@@ -45,8 +45,11 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     {
         if (deque != null)
         {
-            for (int i = deque.tail; i < deque.head; i = KTypeArrayDeque.oneRight(i, deque.buffer.length))
+            for (int i = deque.tail; i < deque.head; i = KTypeArrayDeque.oneRight(i, deque.buffer.length)) {
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 assertTrue(Intrinsics.<KType>defaultKTypeValue() == deque.buffer[i]);
+               /*! #end !*/
+            }
         }
     }
 

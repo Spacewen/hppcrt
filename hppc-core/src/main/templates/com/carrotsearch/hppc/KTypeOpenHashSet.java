@@ -548,11 +548,11 @@ public class KTypeOpenHashSet<KType>
     {
         assigned = 0;
 
-        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
+        Internals.blankBooleanArray(allocated, 0, allocated.length);
         
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         //Faster than Arrays.fill(keys, null); // Help the GC.
-        HashContainerUtils.blankPowerOf2ObjectArray(keys);
+        Internals.blankObjectArray(keys, 0, keys.length);
         /*! #end !*/
         
         

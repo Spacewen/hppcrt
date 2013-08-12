@@ -1,5 +1,7 @@
 package com.carrotsearch.hppc;
 
+import java.util.Arrays;
+
 import com.carrotsearch.hppc.hash.MurmurHash3;
 
 /**
@@ -7,6 +9,25 @@ import com.carrotsearch.hppc.hash.MurmurHash3;
  */
 final class Internals
 {
+    final static int BLANK_ARRAY_SIZE_IN_BIT_SHIFT = 10;
+    
+    /**
+     * Batch blanking array size
+     */
+     final static int BLANK_ARRAY_SIZE = 1 << BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+    
+    /**
+     * Batch blanking array with Object nulls
+     */
+     final static Object[] BLANKING_OBJECT_ARRAY = new Object[BLANK_ARRAY_SIZE];
+    
+    /**
+     * Batch blanking array with boolean false
+     */
+     final static boolean[] BLANKING_BOOLEAN_ARRAY = new boolean[BLANK_ARRAY_SIZE];
+
+    
+    
     static int rehash(Object o, int p) { return o == null ? 0 : MurmurHash3.hash(o.hashCode() ^ p); }
     static int rehash(byte v, int p)   { return MurmurHash3.hash(v ^ p); }
     static int rehash(short v, int p)  { return MurmurHash3.hash(v ^ p); }
@@ -47,5 +68,56 @@ final class Internals
     static<T> int rehashSpecificHash(T o, int p, HashingStrategy<T> specificHash) 
     { 
         return o == null ? 0 : (specificHash == null? MurmurHash3.hash(o.hashCode() ^ p) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p))); 
+    }
+    
+    /**
+     * Method to blank any Object[] array to "null"
+     * from [startIndex; endIndex[
+     */
+    static <T> void blankObjectArray(T[] objectArray, int startIndex, int endIndex) {
+        
+        final int size = endIndex - startIndex;
+        final int nbChunks = size >> BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+        //compute remainder
+        final int rem = size & (BLANK_ARRAY_SIZE - 1);
+        
+        for (int i = 0 ; i < nbChunks; i++) {
+            
+            System.arraycopy(BLANKING_OBJECT_ARRAY, 0, 
+                    objectArray, startIndex + (i << BLANK_ARRAY_SIZE_IN_BIT_SHIFT), 
+                    BLANK_ARRAY_SIZE);
+        } //end for
+        
+        //fill the reminder
+        if (rem > 0) {
+            Arrays.fill(objectArray, startIndex + (nbChunks << BLANK_ARRAY_SIZE_IN_BIT_SHIFT), 
+                     startIndex + (nbChunks << BLANK_ARRAY_SIZE_IN_BIT_SHIFT) + rem , null);
+        }
+    }
+    
+    /**
+     * Method to blank any boolean[] array to false
+     * from [startIndex; endIndex[
+     */
+    static <T> void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
+        
+        final int size = endIndex - startIndex;
+        final int nbChunks = size >> BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+        //compute remainder
+        final int rem = size & (BLANK_ARRAY_SIZE - 1);
+        
+        for (int i = 0 ; i < nbChunks; i++) {
+            
+            System.arraycopy(BLANKING_BOOLEAN_ARRAY, 0, 
+                    boolArray, startIndex + (i << BLANK_ARRAY_SIZE_IN_BIT_SHIFT), 
+                    BLANK_ARRAY_SIZE);
+        } //end for
+        
+        //fill the reminder
+        if (rem > 0) {
+            Arrays.fill(boolArray, startIndex + (nbChunks << BLANK_ARRAY_SIZE_IN_BIT_SHIFT), 
+                        startIndex + (nbChunks << BLANK_ARRAY_SIZE_IN_BIT_SHIFT) + rem , false);
+        }
+       
     }
 }

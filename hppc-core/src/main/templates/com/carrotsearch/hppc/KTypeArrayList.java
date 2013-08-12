@@ -284,8 +284,12 @@ public class KTypeArrayList<KType>
 
         final int count = toIndex - fromIndex;
         elementsCount -= count;
-        Arrays.fill(buffer, elementsCount, elementsCount + count, 
-            Intrinsics.<KType>defaultKTypeValue());
+        
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        //Arrays.fill(buffer, elementsCount, elementsCount + count, 
+        //    Intrinsics.<KType>defaultKTypeValue());
+        Internals.blankObjectArray(buffer, elementsCount, elementsCount + count);
+        /*! #end !*/
     }
 
     /**
@@ -418,9 +422,8 @@ public class KTypeArrayList<KType>
 
     /**
      * Truncate or expand the list to the new size. If the list is truncated, the buffer
-     * will not be reallocated (use {@link #trimToSize()} if you need a truncated buffer),
-     * but the truncated values will be reset to the default value (zero). If the list is
-     * expanded, the elements beyond the current size are initialized with JVM-defaults
+     * will not be reallocated (use {@link #trimToSize()} if you need a truncated buffer). 
+     * If the list is expanded, the elements beyond the current size are initialized with JVM-defaults
      * (zero or <code>null</code> values).
      */
     public void resize(int newSize)
@@ -429,11 +432,20 @@ public class KTypeArrayList<KType>
         {
             if (newSize < elementsCount)
             {
-                Arrays.fill(buffer, newSize, elementsCount, 
-                    Intrinsics.<KType>defaultKTypeValue());
+                //there is no point in resetting to "null" elements
+                //that becomes non-observable anyway. Still,
+                //resetting is needed for GC in case of Objects because they may become "free"
+                //if not referenced anywhere else.
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                //Arrays.fill(buffer, newSize, elementsCount, 
+                //    Intrinsics.<KType>defaultKTypeValue());
+                Internals.blankObjectArray(buffer, newSize, elementsCount);
+                /*! #end !*/
             }
             else
             {
+                //in all cases, the contract of resize if that new elements 
+                //are set to default values.
                 Arrays.fill(buffer, elementsCount, newSize, 
                     Intrinsics.<KType>defaultKTypeValue());
             }
@@ -442,6 +454,7 @@ public class KTypeArrayList<KType>
         {
             ensureCapacity(newSize);
         }
+        
         this.elementsCount = newSize; 
     }
 
@@ -467,14 +480,15 @@ public class KTypeArrayList<KType>
     }
 
     /**
-     * Sets the number of stored elements to zero. Releases and initializes the
-     * internal storage array to default values. To clear the list without cleaning
-     * the buffer, simply set the {@link #elementsCount} field to zero.
+     * Sets the number of stored elements to zero.
      */
     @Override
     public void clear()
     {
-        Arrays.fill(buffer, 0, elementsCount, Intrinsics.<KType> defaultKTypeValue()); 
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        //Arrays.fill(buffer, 0, elementsCount, Intrinsics.<KType> defaultKTypeValue()); 
+        Internals.blankObjectArray(buffer, 0, elementsCount);
+        /*! #end !*/
         this.elementsCount = 0;
     }
 

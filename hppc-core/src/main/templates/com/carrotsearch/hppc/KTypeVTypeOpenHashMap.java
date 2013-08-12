@@ -840,16 +840,16 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         assigned = 0;
 
         // States are always cleared.
-        HashContainerUtils.blankPowerOf2BooleanArray(allocated);
+        Internals.blankBooleanArray(allocated, 0, allocated.length);
       
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         //Faster than Arrays.fill(keys, null); // Help the GC.
-        HashContainerUtils.blankPowerOf2ObjectArray(keys);
+        Internals.blankObjectArray(keys, 0, keys.length);
         /*! #end !*/
 
         /*! #if ($TemplateOptions.VTypeGeneric) !*/
         //Faster than Arrays.fill(values, null); // Help the GC.
-        HashContainerUtils.blankPowerOf2ObjectArray(values);
+        Internals.blankObjectArray(values, 0, values.length);
         /*! #end !*/
     }
 
