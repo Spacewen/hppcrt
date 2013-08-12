@@ -6,17 +6,19 @@ see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for mor
 
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
 
-This fork intend to follow the HPPC has close as possible (currently in v0.6 dev) but
-also to add some more features which general goal is improving realtime behaviour, 
-that is, having ZERO GC at runtime.
-
+This fork intend to follow the original HPPC has close as possible (currently in v0.6 dev) while 
+adding some more features which general goal is improving realtime behaviour, 
+that is, to have ZERO GC at runtime.
 
 For now, the additional features are:
-- Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode().
+- Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
 - Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations,
 especially noticable for big container sizes. (Javolution has a similar trick)
 
 In a near future:
 - Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically under the hood. 
-In particular, using the for-each construct without any allocation of new iterator instances, transparently.
+In particular using the for-each construct without any allocation of new iterator instances, transparently.
+
+Binaries, sources and Javadoc, are provided in the 'hppc/binaries' of the '0.6x_dev' branch for convenience.
+
