@@ -8,7 +8,7 @@ IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
 
 This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
 adding some more features which general goal is improving realtime behaviour, 
-that is, to have ZERO GC at runtime.
+that is among others, to have ZERO GC at runtime.
 
 For now, the additional features are:
 - Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
