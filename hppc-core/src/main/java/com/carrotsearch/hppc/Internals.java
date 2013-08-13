@@ -72,9 +72,11 @@ final class Internals
     
     /**
      * Method to blank any Object[] array to "null"
-     * from [startIndex; endIndex[
+     * from [startIndex; endIndex[, equivalent to {@link Arrays}.fill(objectArray, startIndex, endIndex, null)
      */
     static <T> void blankObjectArray(T[] objectArray, int startIndex, int endIndex) {
+        
+        assert startIndex <= endIndex;
         
         final int size = endIndex - startIndex;
         final int nbChunks = size >> BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
@@ -97,9 +99,11 @@ final class Internals
     
     /**
      * Method to blank any boolean[] array to false
-     * from [startIndex; endIndex[
+     * from [startIndex; endIndex[, equivalent to {@link Arrays}.fill(boolArray, startIndex, endIndex, false)
      */
     static <T> void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
+        
+        assert startIndex <= endIndex;
         
         final int size = endIndex - startIndex;
         final int nbChunks = size >> BLANK_ARRAY_SIZE_IN_BIT_SHIFT;

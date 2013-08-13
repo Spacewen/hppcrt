@@ -78,6 +78,9 @@ public class KTypeArrayList<KType>
      * by <code>javac</code> when <code>buffer</code> is directly accessed - these casts
      * may result in exceptions at runtime. A workaround is to cast directly to
      * <code>Object[]</code> before accessing the buffer's elements.#end
+     * <p>
+     * Direct list iteration: iterate buffer[i] for i in [0; size()[
+     * </p> 
      */
     public KType [] buffer;
 
@@ -286,8 +289,6 @@ public class KTypeArrayList<KType>
         elementsCount -= count;
         
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Arrays.fill(buffer, elementsCount, elementsCount + count, 
-        //    Intrinsics.<KType>defaultKTypeValue());
         Internals.blankObjectArray(buffer, elementsCount, elementsCount + count);
         /*! #end !*/
     }
@@ -437,8 +438,6 @@ public class KTypeArrayList<KType>
                 //resetting is needed for GC in case of Objects because they may become "free"
                 //if not referenced anywhere else.
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                //Arrays.fill(buffer, newSize, elementsCount, 
-                //    Intrinsics.<KType>defaultKTypeValue());
                 Internals.blankObjectArray(buffer, newSize, elementsCount);
                 /*! #end !*/
             }
@@ -486,7 +485,6 @@ public class KTypeArrayList<KType>
     public void clear()
     {
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //Arrays.fill(buffer, 0, elementsCount, Intrinsics.<KType> defaultKTypeValue()); 
         Internals.blankObjectArray(buffer, 0, elementsCount);
         /*! #end !*/
         this.elementsCount = 0;

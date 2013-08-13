@@ -160,7 +160,6 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
 
         elementsCount -= count;
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        //java.util.Arrays.fill(buffer, elementsCount, elementsCount + count, null);
         Internals.blankObjectArray(buffer, elementsCount, elementsCount + count);
         /*! #end !*/
     }
