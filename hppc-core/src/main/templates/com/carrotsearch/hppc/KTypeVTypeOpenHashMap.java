@@ -85,8 +85,11 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /**
      * Hash-indexed array holding all keys.
-     * 
+     * <p>
+     * Direct map iteration: iterate  {keys[i], values[i]} for i in [0; keys.length[ where this.allocated[i] is true.
+     * </p>  
      * @see #values
+     * @see #allocated
      */
     public KType [] keys;
 

@@ -78,7 +78,9 @@ public class KTypeOpenHashSet<KType>
 
     /**
      * Hash-indexed array holding all set entries.
-     * 
+     * <p>
+     * Direct set iteration: iterate keys[i] for i in [0; keys.length[ where this.allocated[i] is true.
+     * </p> 
      * @see #allocated
      */
     public KType [] keys;

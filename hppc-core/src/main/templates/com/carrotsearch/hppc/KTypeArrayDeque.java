@@ -66,6 +66,9 @@ public class KTypeArrayDeque<KType>
      * by <code>javac</code> when <code>buffer</code> is directly accessed - these casts
      * may result in exceptions at runtime. A workaround is to cast directly to
      * <code>Object[]</code> before accessing the buffer's elements.#end
+     * <p>
+     * Direct deque iteration from head to tail: iterate buffer[i % buffer.length] for i in [this.head; this.head + size()[
+     * </p> 
      */
     public KType [] buffer;
 
@@ -497,13 +500,10 @@ public class KTypeArrayDeque<KType>
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         if (head < tail)
         {
-            //Arrays.fill(buffer, head, tail, Intrinsics.<KType>defaultKTypeValue());
             Internals.blankObjectArray(buffer, head, tail); 
         }
         else
         {
-            //Arrays.fill(buffer, 0, tail, Intrinsics.<KType>defaultKTypeValue());
-            //Arrays.fill(buffer, head, buffer.length, Intrinsics.<KType>defaultKTypeValue());
             Internals.blankObjectArray(buffer, 0, tail);
             Internals.blankObjectArray(buffer, head, buffer.length);  
         }
