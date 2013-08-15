@@ -831,4 +831,266 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             });
         assertSortedListEquals(map.values().toArray(), value1, value2, value2);
     }
+    
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    //only applicable to generic types keys
+    @Test
+public void testHashingStrategyCloneEquals() {
+        
+        //Works only with keys as objects
+        Assume.assumeTrue(Object[].class.isInstance(map.keys));
+     
+        //a) Check that 2 different sets filled the same way with same values and strategies = null 
+        //are indeed equal.
+        long TEST_SEED = 4987013210686416456L;
+        int TEST_SIZE = (int)1e6;
+        KTypeVTypeOpenHashMap<KType, VType> refMap = createMapWithRandomData(TEST_SIZE, null, TEST_SEED);
+        KTypeVTypeOpenHashMap<KType, VType> refMap2 =createMapWithRandomData(TEST_SIZE, null, TEST_SEED);
+        
+        assertEquals(refMap, refMap2);
+        
+        //b) Clone the above. All sets are now identical.
+        KTypeVTypeOpenHashMap<KType, VType> refMapclone = refMap.clone();
+        KTypeVTypeOpenHashMap<KType, VType> refMap2clone = refMap2.clone();
+        
+        //all strategies are null
+        assertEquals(refMap.strategy(), refMap2.strategy());
+        assertEquals(refMap2.strategy(), refMapclone.strategy());
+        assertEquals(refMapclone.strategy(), refMap2clone.strategy());
+        assertEquals(refMap2clone.strategy(), null);
+        
+        assertEquals(refMap, refMapclone);
+        assertEquals(refMapclone, refMap2);
+        assertEquals(refMap2, refMap2clone);
+        assertEquals(refMap2clone, refMap);
+        
+        //cleanup
+        refMapclone = null;
+        refMap2 = null;
+        refMap2clone = null;
+        System.gc();
+        
+        //c) Create a set nb 3 with same integer content, but with a strategy mapping on equals.
+        KTypeVTypeOpenHashMap<KType, VType> refMap3 = createMapWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        //because they do the same thing as above, but with semantically different strategies, ref3 is != ref 
+        assertFalse(refMap.equals(refMap3));
+           
+        //However, if we cloned refMap3
+        KTypeVTypeOpenHashMap<KType, VType> refMap3clone = refMap3.clone();
+        assertEquals(refMap3, refMap3clone);
+        
+        //strategies are copied by reference only
+        assertTrue(refMap3.strategy() == refMap3clone.strategy());
+
+        //d) Create identical set with same different strategy instances, but which consider themselves equals()
+        KTypeVTypeOpenHashMap<KType, VType> refMap4 = createMapWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        KTypeVTypeOpenHashMap<KType, VType> refMap4Image = createMapWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        assertEquals(refMap4, refMap4Image);
+        //but strategy instances are indeed 2 different objects
+        assertFalse(refMap4.strategy() == refMap4Image.strategy());
+        
+        //cleanup
+        refMap4 = null;
+        refMap4Image = null;
+        System.gc();
+        
+        //e) Do contrary to 4), hashStrategies always != from each other by equals.
+        HashingStrategy<KType> alwaysDifferentStrategy = new HashingStrategy<KType>() {
+
+            @Override
+            public boolean equals(Object obj) {
+                
+                //never equal !!!
+                return false;
+            }
+
+            @Override
+            public int computeHashCode(KType object) {
+                
+                return object.hashCode();
+            }
+
+            @Override
+            public boolean equals(KType o1, KType o2) {
+                 
+                return o1.equals(o2);
+            }
+        };
+        
+        KTypeVTypeOpenHashMap<KType, VType> refMap5 = createMapWithRandomData(TEST_SIZE, alwaysDifferentStrategy, TEST_SEED);
+        KTypeVTypeOpenHashMap<KType, VType> refMap5alwaysDifferent = createMapWithRandomData(TEST_SIZE, alwaysDifferentStrategy, TEST_SEED);
+        
+        //both sets are NOT equal because their strategies said they are different
+        assertFalse(refMap5.equals(refMap5alwaysDifferent));
+    }
+    
+    @Test
+    public void testHashingStrategyAddContainsGetRemove() {
+        
+        //Works only with keys as objects
+        Assume.assumeTrue(Object[].class.isInstance(map.keys));
+     
+       
+        long TEST_SEED = 15249155965216185L;
+        int TEST_SIZE = (int)1e6;
+        
+        //those following maps behave indeed the same
+        KTypeVTypeOpenHashMap<KType, VType> refMap = KTypeVTypeOpenHashMap.newInstance();
+        
+        KTypeVTypeOpenHashMap<KType, VType> refMapNullStrategy = KTypeVTypeOpenHashMap.newInstance(
+                KTypeVTypeOpenHashMap.DEFAULT_CAPACITY, 
+                KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR, null);
+        
+        KTypeVTypeOpenHashMap<KType, VType> refMapIdenticalStrategy = KTypeVTypeOpenHashMap.newInstance(
+                KTypeVTypeOpenHashMap.DEFAULT_CAPACITY, 
+                KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR,  
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        //always
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                });
+        
+        //compute the iterations doing multiple operations
+        Random prng = new Random(TEST_SEED);
+        
+        for (int i = 0 ; i < TEST_SIZE; i++) {
+            
+            //a) generate a value to put
+            int putKey = prng.nextInt();
+            int putValue = prng.nextInt();
+           
+            refMap.put(cast(putKey), vcast(putValue));
+            refMapNullStrategy.put(cast(putKey), vcast(putValue));
+            refMapIdenticalStrategy.put(cast(putKey), vcast(putValue));
+               
+            assertEquals(refMap.containsKey(cast(putKey)), refMapNullStrategy.containsKey(cast(putKey)));
+            assertEquals(refMap.containsKey(cast(putKey)), refMapIdenticalStrategy.containsKey(cast(putKey)));
+            
+            /*! #if ($TemplateOptions.VTypeGeneric) !*/
+            assertEquals(refMap.get(cast(putKey)), refMapNullStrategy.get(cast(putKey)));
+            assertEquals(refMap.get(cast(putKey)) ,  refMapIdenticalStrategy.get(cast(putKey)));
+            /*! #else 
+            assertTrue(refMap.get(cast(putKey)) == refMapNullStrategy.get(cast(putKey)));
+            assertTrue(refMap.get(cast(putKey)) ==  refMapIdenticalStrategy.get(cast(putKey)));
+             #end !*/
+           
+            boolean isToBeRemoved = (prng.nextInt() % 3  == 0);
+            putKey = prng.nextInt();
+            
+            if (isToBeRemoved) {
+                
+                refMap.remove(cast(putKey));
+                refMapNullStrategy.remove(cast(putKey));
+                refMapIdenticalStrategy.remove(cast(putKey));
+                
+                assertFalse(refMap.containsKey(cast(putKey)));
+                assertFalse(refMapNullStrategy.containsKey(cast(putKey)));
+                assertFalse(refMapIdenticalStrategy.containsKey(cast(putKey)));
+            }
+            
+            assertEquals(refMap.containsKey(cast(putKey)), refMapNullStrategy.containsKey(cast(putKey)));
+            assertEquals(refMap.containsKey(cast(putKey)), refMapIdenticalStrategy.containsKey(cast(putKey)));
+            
+            /*! #if ($TemplateOptions.VTypeGeneric) !*/
+            assertEquals(refMap.get(cast(putKey)), refMapNullStrategy.get(cast(putKey)));
+            assertEquals(refMap.get(cast(putKey)) ,  refMapIdenticalStrategy.get(cast(putKey)));
+            /*! #else 
+            assertTrue(refMap.get(cast(putKey)) == refMapNullStrategy.get(cast(putKey)));
+            assertTrue(refMap.get(cast(putKey)) ==  refMapIdenticalStrategy.get(cast(putKey)));
+             #end !*/
+              
+            //test size
+            assertEquals(refMap.size(), refMapNullStrategy.size());
+            assertEquals(refMap.size(), refMapIdenticalStrategy.size());  
+        }
+    }
+    
+    private KTypeVTypeOpenHashMap<KType, VType> createMapWithRandomData(int size, HashingStrategy<KType> strategy, long randomSeed) {
+        
+        Random prng = new Random(randomSeed);
+        
+        KTypeVTypeOpenHashMap<KType, VType> newMap = KTypeVTypeOpenHashMap.newInstance(KTypeVTypeOpenHashMap.DEFAULT_CAPACITY, 
+                KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR, strategy);
+        
+        for (int i = 0; i < size ; i++) {
+            
+            newMap.put(cast(prng.nextInt()), vcast(prng.nextInt()));
+        }
+        
+        return newMap;
+    }
+    /*! #end !*/
 }

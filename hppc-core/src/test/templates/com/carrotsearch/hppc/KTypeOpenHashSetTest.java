@@ -1,12 +1,21 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.TestUtils.*;
-import static org.junit.Assert.*;
+import static com.carrotsearch.hppc.TestUtils.assertEquals2;
+import static com.carrotsearch.hppc.TestUtils.assertSortedListEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
-import org.junit.*;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Random;
 
-import com.carrotsearch.hppc.cursors.*;
+import org.junit.After;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+
+import com.carrotsearch.hppc.cursors.IntCursor;
+import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
 
 /**
@@ -456,4 +465,250 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Arrays.sort(asCharArray);
         assertEquals("12", new String(asCharArray));
     }
+    
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    //only applicable to generic types keys
+    @Test
+    public void testHashingStrategyCloneEquals() {
+        
+        //Works only with keys as objects
+        Assume.assumeTrue(Object[].class.isInstance(set.keys));
+     
+        //a) Check that 2 different sets filled the same way with same values and strategies = null 
+        //are indeed equal.
+        long TEST_SEED = 23167132166456L;
+        int TEST_SIZE = (int)1e6;
+        KTypeOpenHashSet<KType> refSet = createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
+        KTypeOpenHashSet<KType> refSet2 =createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
+        
+        assertEquals(refSet, refSet2);
+        
+        //b) Clone the above. All sets are now identical.
+        KTypeOpenHashSet<KType> refSetclone = refSet.clone();
+        KTypeOpenHashSet<KType> refSet2clone = refSet2.clone();
+        
+        //all strategies are null
+        assertEquals(refSet.strategy(), refSet2.strategy());
+        assertEquals(refSet2.strategy(), refSetclone.strategy());
+        assertEquals(refSetclone.strategy(), refSet2clone.strategy());
+        assertEquals(refSet2clone.strategy(), null);
+        
+        assertEquals(refSet, refSetclone);
+        assertEquals(refSetclone, refSet2);
+        assertEquals(refSet2, refSet2clone);
+        assertEquals(refSet2clone, refSet);
+        
+        //cleanup
+        refSetclone = null;
+        refSet2 = null;
+        refSet2clone = null;
+        System.gc();
+        
+        //c) Create a set nb 3 with same integer content, but with a strategy mapping on equals.
+        KTypeOpenHashSet<KType> refSet3 = createSetWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        //because they do the same thing as above, but with semantically different strategies, ref3 is != ref 
+        assertFalse(refSet.equals(refSet3));
+           
+        //However, if we cloned refSet3
+        KTypeOpenHashSet<KType> refSet3clone = refSet3.clone();
+        assertEquals(refSet3, refSet3clone);
+        
+        //strategies are copied by reference only
+        assertTrue(refSet3.strategy() == refSet3clone.strategy());
+
+        //d) Create identical set with same different strategy instances, but which consider themselves equals()
+        KTypeOpenHashSet<KType> refSet4 = createSetWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        KTypeOpenHashSet<KType> refSet4Image = createSetWithRandomData(TEST_SIZE, 
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
+        
+        assertEquals(refSet4, refSet4Image);
+        //but strategy instances are indeed 2 different objects
+        assertFalse(refSet4.strategy() == refSet4Image.strategy());
+        
+        //cleanup
+        refSet4 = null;
+        refSet4Image = null;
+        System.gc();
+        
+        //e) Do contrary to 4), hashStrategies always != from each other by equals.
+        HashingStrategy<KType> alwaysDifferentStrategy = new HashingStrategy<KType>() {
+
+            @Override
+            public boolean equals(Object obj) {
+                
+                //never equal !!!
+                return false;
+            }
+
+            @Override
+            public int computeHashCode(KType object) {
+                
+                return object.hashCode();
+            }
+
+            @Override
+            public boolean equals(KType o1, KType o2) {
+                 
+                return o1.equals(o2);
+            }
+        };
+        
+        KTypeOpenHashSet<KType> refSet5 = createSetWithRandomData(TEST_SIZE, alwaysDifferentStrategy, TEST_SEED);
+        KTypeOpenHashSet<KType> refSet5alwaysDifferent = createSetWithRandomData(TEST_SIZE, alwaysDifferentStrategy, TEST_SEED);
+        
+        //both sets are NOT equal because their strategies said they are different
+        assertFalse(refSet5.equals(refSet5alwaysDifferent));
+    }
+    
+    @Test
+    public void testHashingStrategyAddContainsRemove() {
+        
+        //Works only with keys as objects
+        Assume.assumeTrue(Object[].class.isInstance(set.keys));
+     
+        //a) Check that 2 different sets filled the same way with same values and strategies = null 
+        //are indeed equal.
+        long TEST_SEED = 749741621030146103L;
+        int TEST_SIZE = (int)1e6;
+        
+        //those following sets behave inded the same
+        KTypeOpenHashSet<KType> refSet = KTypeOpenHashSet.newInstance();
+        
+        KTypeOpenHashSet<KType> refSetNullStrategy = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(
+                KTypeOpenHashSet.DEFAULT_CAPACITY, 
+                KTypeOpenHashSet.DEFAULT_LOAD_FACTOR, null);
+        
+        KTypeOpenHashSet<KType> refSetIdenticalStrategy = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(
+                KTypeOpenHashSet.DEFAULT_CAPACITY, 
+                KTypeOpenHashSet.DEFAULT_LOAD_FACTOR,  
+                new HashingStrategy<KType>() {
+
+                    @Override
+                    public boolean equals(Object obj) {
+                        
+                        //always
+                        return true;
+                    }
+
+                    @Override
+                    public int computeHashCode(KType object) {
+                        
+                        return object.hashCode();
+                    }
+
+                    @Override
+                    public boolean equals(KType o1, KType o2) {
+                         
+                        return o1.equals(o2);
+                    }
+                });
+        
+        //compute the iterations doing multiple operations
+        Random prng = new Random(TEST_SEED);
+        
+        for (int i = 0 ; i < TEST_SIZE; i++) {
+            
+            //a) generate a value to put
+            int putValue = prng.nextInt();
+            
+            refSet.add(cast(putValue));
+            refSetNullStrategy.add(cast(putValue));
+            refSetIdenticalStrategy.add(cast(putValue));
+            
+            assertEquals(refSet.contains(cast(putValue)), refSetNullStrategy.contains(cast(putValue)));
+            assertEquals(refSet.contains(cast(putValue)), refSetIdenticalStrategy.contains(cast(putValue)));
+            
+            boolean isToBeRemoved = (prng.nextInt() % 3  == 0);
+            putValue = prng.nextInt();
+            
+            if (isToBeRemoved) {
+                
+                refSet.remove(cast(putValue));
+                refSetNullStrategy.remove(cast(putValue));
+                refSetIdenticalStrategy.remove(cast(putValue));
+                
+                assertFalse(refSet.contains(cast(putValue)));
+                assertFalse(refSetNullStrategy.contains(cast(putValue)));
+                assertFalse(refSetIdenticalStrategy.contains(cast(putValue)));
+            }
+            
+            assertEquals(refSet.contains(cast(putValue)), refSetNullStrategy.contains(cast(putValue)));
+            assertEquals(refSet.contains(cast(putValue)), refSetIdenticalStrategy.contains(cast(putValue)));
+               
+            //test size
+            assertEquals(refSet.size(), refSetNullStrategy.size());
+            assertEquals(refSet.size(), refSetIdenticalStrategy.size());  
+        }
+    }
+  
+    private KTypeOpenHashSet<KType> createSetWithRandomData(int size, HashingStrategy<KType> strategy, long randomSeed) {
+        
+        Random prng = new Random(randomSeed);
+        
+        KTypeOpenHashSet<KType> newSet = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(KTypeOpenHashSet.DEFAULT_CAPACITY, 
+                KTypeOpenHashSet.DEFAULT_LOAD_FACTOR, strategy);
+        
+        for (int i = 0; i < size ; i++) {
+            
+            newSet.add(cast(prng.nextInt()));
+        }
+        
+        return newSet;
+    }
+    /*! #end !*/
 }
