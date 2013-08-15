@@ -1,14 +1,18 @@
 package com.carrotsearch.hppc;
 
-import java.util.*;
+import static com.carrotsearch.hppc.HashContainerUtils.PERTURBATIONS;
+import static com.carrotsearch.hppc.HashContainerUtils.nextCapacity;
+import static com.carrotsearch.hppc.HashContainerUtils.roundCapacity;
+import static com.carrotsearch.hppc.Internals.rehash;
+import static com.carrotsearch.hppc.Internals.rehashSpecificHash;
 
-import com.carrotsearch.hppc.cursors.*;
-import com.carrotsearch.hppc.hash.*;
-import com.carrotsearch.hppc.predicates.*;
-import com.carrotsearch.hppc.procedures.*;
+import java.util.HashSet;
+import java.util.Iterator;
 
-import static com.carrotsearch.hppc.Internals.*;
-import static com.carrotsearch.hppc.HashContainerUtils.*;
+import com.carrotsearch.hppc.cursors.KTypeCursor;
+import com.carrotsearch.hppc.hash.MurmurHash3;
+import com.carrotsearch.hppc.predicates.KTypePredicate;
+import com.carrotsearch.hppc.procedures.KTypeProcedure;
 
 /**
  * A hash set of <code>KType</code>s, implemented using using open
@@ -687,12 +691,31 @@ public class KTypeOpenHashSet<KType>
     }
 
     /**
+     * internal pool of EntryIterator
+     */
+    private final  IteratorPool<KTypeCursor<KType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeCursor<KType>, EntryIterator>(
+            new ObjectFactory<EntryIterator>() {
+
+        @Override
+        public EntryIterator create() {
+            
+            return new EntryIterator();
+        }
+
+        @Override
+        public void initialize(EntryIterator obj) {
+          obj.cursor.index = -1;
+        }
+    });
+    
+    /**
      * {@inheritDoc}
      */
     @Override
     public Iterator<KTypeCursor<KType>> iterator()
     {
-        return new EntryIterator();
+        //return new EntryIterator();
+        return this.entryIteratorPool.borrow();
     }
 
     /**

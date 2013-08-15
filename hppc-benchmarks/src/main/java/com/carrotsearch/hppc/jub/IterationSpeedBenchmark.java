@@ -1,14 +1,19 @@
 package com.carrotsearch.hppc.jub;
 
-import org.junit.*;
+import java.util.Random;
 
-import com.carrotsearch.hppc.ByteArrayList;
-import com.carrotsearch.hppc.cursors.ByteCursor;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import com.carrotsearch.hppc.IntArrayList;
+import com.carrotsearch.hppc.cursors.IntCursor;
 import com.carrotsearch.hppc.mutables.IntHolder;
-import com.carrotsearch.hppc.procedures.ByteProcedure;
+import com.carrotsearch.hppc.procedures.IntProcedure;
 import com.carrotsearch.junitbenchmarks.AbstractBenchmark;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
-import com.carrotsearch.junitbenchmarks.annotation.*;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 /**
  * Various iteration approaches on an integer list.
@@ -20,21 +25,30 @@ import com.carrotsearch.junitbenchmarks.annotation.*;
 public class IterationSpeedBenchmark extends AbstractBenchmark
 {
     public static final int CELLS = (1024 * 1024) * 200;
-    private static ByteArrayList list;
+    private static IntArrayList list;
     public volatile int guard; 
 
     /* */
     @BeforeClass
     public static void before()
     {
-        list = new ByteArrayList();
+        list = new IntArrayList();
         list.resize(CELLS);
+        
+        //fill with random values
+        Random prng = new Random(210654641246431L);
+        
+        for (int i = 0 ; i < list.size(); i++) {
+          
+            list.set(i, prng.nextInt());
+        }
     }
 
     @AfterClass
     public static void after()
     {
         list = null;
+        
     }
 
     /* */
@@ -47,7 +61,7 @@ public class IterationSpeedBenchmark extends AbstractBenchmark
             count += list.get(i);
         }
 
-        this.guard = count;
+       guard = count;
     }
 
     /* */
@@ -55,13 +69,13 @@ public class IterationSpeedBenchmark extends AbstractBenchmark
     public void testDirectBufferLoop() throws Exception
     {
         final int size = list.size();
-        final byte [] buffer = list.buffer;
+        final int [] buffer = list.buffer;
         int count = 0;
         for (int i = 0; i < size; i++)
         {
             count += buffer[i];
         }
-        this.guard = count;
+        guard = count;
     }
     
     /* */
@@ -69,11 +83,11 @@ public class IterationSpeedBenchmark extends AbstractBenchmark
     public void testIterableCursor() throws Exception
     {
         int count = 0;
-        for (ByteCursor c : list)
+        for (IntCursor c : list)
         {
             count += c.value;
         }
-        this.guard = count;
+        guard = count;
     }
 
     /* */
@@ -81,13 +95,13 @@ public class IterationSpeedBenchmark extends AbstractBenchmark
     public void testWithProcedureClosure()
     {
         final IntHolder holder = new IntHolder();
-        list.forEach(new ByteProcedure() {
-            public void apply(byte v)
+        list.forEach(new IntProcedure() {
+            public void apply(int v)
             {
                 holder.value += v;
             }
         });
-        this.guard = holder.value;
+        guard = holder.value;
     }
 
     /* */
@@ -99,6 +113,6 @@ public class IterationSpeedBenchmark extends AbstractBenchmark
         {
             count += c;
         }
-        this.guard = count;
+        guard = count;
     }
 }
