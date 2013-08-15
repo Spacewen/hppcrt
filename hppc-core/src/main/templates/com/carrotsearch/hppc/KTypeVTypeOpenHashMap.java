@@ -984,6 +984,24 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             return cursor;
         }
     }
+    
+    /**
+     * internal pool of EntryIterator
+     */
+    private final  IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator>(
+            new ObjectFactory<EntryIterator>() {
+
+        @Override
+        public EntryIterator create() {
+            
+            return new EntryIterator();
+        }
+
+        @Override
+        public void initialize(EntryIterator obj) {
+          obj.cursor.index = -1;
+        }
+    });
 
     /**
      * {@inheritDoc}
@@ -991,7 +1009,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     @Override
     public Iterator<KTypeVTypeCursor<KType, VType>> iterator()
     {
-        return new EntryIterator();
+        //return new EntryIterator();
+        return this.entryIteratorPool.borrow();
     }
 
     /**
@@ -1079,7 +1098,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         @Override
         public Iterator<KTypeCursor<KType>> iterator()
         {
-            return new KeysIterator();
+            //return new KeysIterator();
+            return this.keyIteratorPool.borrow();
         }
 
         @Override
@@ -1112,6 +1132,24 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             }
             return result;
         }
+        
+        /**
+         * internal pool of KeysIterator
+         */
+        private final  IteratorPool<KTypeCursor<KType>, KeysIterator> keyIteratorPool = new IteratorPool<KTypeCursor<KType>, KeysIterator>(
+                new ObjectFactory<KeysIterator>() {
+
+            @Override
+            public KeysIterator create() {
+                
+                return new KeysIterator();
+            }
+
+            @Override
+            public void initialize(KeysIterator obj) {
+              obj.cursor.index = -1;
+            }
+        });
     };
     
     /**
@@ -1160,7 +1198,10 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      * A view over the set of values of this map.                                                                                                         
      */                                                                                                                                       
     private final class ValuesContainer extends AbstractKTypeCollection<VType>                                                               
-    {                                                                                                                                         
+    {
+        private final KTypeVTypeOpenHashMap<KType, VType> owner = 
+                KTypeVTypeOpenHashMap.this;
+        
         @Override                                                                                                                             
         public int size()                                                                                                                     
         {                                                                                                                                     
@@ -1177,8 +1218,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         public boolean contains(VType value)                                                                                                  
         {                                                                                                                                     
             // This is a linear scan over the values, but it's in the contract, so be it.                                                     
-            final boolean [] allocated = KTypeVTypeOpenHashMap.this.allocated;                                                              
-            final VType [] values = KTypeVTypeOpenHashMap.this.values;                                                                      
+            final boolean [] allocated = owner.allocated;                                                              
+            final VType [] values = owner.values;                                                                      
                                                                                                                                               
             for (int slot = 0; slot < allocated.length; slot++)                                                                               
             {                                                                                                                                 
@@ -1193,8 +1234,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         @Override                                                                                                                             
         public <T extends KTypeProcedure<? super VType>> T forEach(T procedure)                                                              
         {                                                                                                                                     
-            final boolean [] allocated = KTypeVTypeOpenHashMap.this.allocated;                                                              
-            final VType [] values = KTypeVTypeOpenHashMap.this.values;                                                                      
+            final boolean [] allocated = owner.allocated;                                                              
+            final VType [] values = owner.values;                                                                      
                                                                                                                                               
             for (int i = 0; i < allocated.length; i++)                                                                                        
             {                                                                                                                                 
@@ -1208,8 +1249,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         @Override                                                                                                                             
         public <T extends KTypePredicate<? super VType>> T forEach(T predicate)                                                              
         {                                                                                                                                     
-            final boolean [] allocated = KTypeVTypeOpenHashMap.this.allocated;                                                              
-            final VType [] values = KTypeVTypeOpenHashMap.this.values;                                                                      
+            final boolean [] allocated = owner.allocated;                                                              
+            final VType [] values = owner.values;                                                                      
                                                                                                                                               
             for (int i = 0; i < allocated.length; i++)                                                                                        
             {                                                                                                                                 
@@ -1226,7 +1267,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         @Override                                                                                                                             
         public Iterator<KTypeCursor<VType>> iterator()                                                                                       
         {                                                                                                                                     
-            return new ValuesIterator();                                                                                                      
+            // return new ValuesIterator();
+            return valuesIteratorPool.borrow();
         }                                                                                                                                     
 
         @Override                                                                                                                             
@@ -1245,7 +1287,25 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         public void clear()                                                                                                                   
         {                                                                                                                                     
             throw new UnsupportedOperationException();                                                                                        
-        }                                                                                                                                     
+        } 
+        
+        /**
+         * internal pool of KeysIterator
+         */
+        private final  IteratorPool<KTypeCursor<VType>, ValuesIterator> valuesIteratorPool = new IteratorPool<KTypeCursor<VType>, ValuesIterator>(
+                new ObjectFactory<ValuesIterator>() {
+
+            @Override
+            public ValuesIterator create() {
+                
+                return new ValuesIterator();
+            }
+
+            @Override
+            public void initialize(ValuesIterator obj) {
+              obj.cursor.index = -1;
+            }
+        });
     }                                                                                                                                         
                                                                                                                                               
     /**                                                                                                                                       

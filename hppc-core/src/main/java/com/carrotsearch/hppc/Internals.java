@@ -9,6 +9,9 @@ import com.carrotsearch.hppc.hash.MurmurHash3;
  */
 final class Internals
 {
+    
+    final static int NB_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
+    
     final static int BLANK_ARRAY_SIZE_IN_BIT_SHIFT = 10;
     
     /**
@@ -101,7 +104,7 @@ final class Internals
      * Method to blank any boolean[] array to false
      * from [startIndex; endIndex[, equivalent to {@link Arrays}.fill(boolArray, startIndex, endIndex, false)
      */
-    static <T> void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
+    static void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
         
         assert startIndex <= endIndex;
         
