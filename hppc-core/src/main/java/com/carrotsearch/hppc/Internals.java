@@ -101,7 +101,7 @@ final class Internals
      * Method to blank any boolean[] array to false
      * from [startIndex; endIndex[, equivalent to {@link Arrays}.fill(boolArray, startIndex, endIndex, false)
      */
-    static <T> void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
+    static void blankBooleanArray(boolean[] boolArray, int startIndex, int endIndex) {
         
         assert startIndex <= endIndex;
         
