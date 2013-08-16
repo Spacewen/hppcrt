@@ -9,6 +9,9 @@ import com.carrotsearch.hppc.hash.MurmurHash3;
  */
 final class Internals
 {
+    
+    final static int NB_OF_PROCESSORS = Runtime.getRuntime().availableProcessors();
+    
     final static int BLANK_ARRAY_SIZE_IN_BIT_SHIFT = 10;
     
     /**

@@ -88,6 +88,18 @@ public class KTypeArrayDeque<KType>
      * Buffer resizing strategy.
      */
     protected final ArraySizingStrategy resizer;
+    
+    
+    /**
+     * internal pool of DescendingValueIterator (must be created in constructor)
+     */
+    protected final  IteratorPool<KTypeCursor<KType>, DescendingValueIterator> descendingValueIteratorPool;
+    
+    /**
+     * internal pool of ValueIterator (must be created in constructor)
+     */
+    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
+
 
     /**
      * Create with default sizing strategy and initial capacity for storing 
@@ -121,6 +133,40 @@ public class KTypeArrayDeque<KType>
         this.resizer = resizer;
         initialCapacity = resizer.round(initialCapacity);
         buffer = Intrinsics.newKTypeArray(initialCapacity);
+        
+        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
+                new ObjectFactory<ValueIterator>() {
+
+            @Override
+            public ValueIterator create() {
+                
+                return new ValueIterator();
+            }
+
+            @Override
+            public void initialize(ValueIterator obj) {
+                
+                obj.cursor.index = oneLeft(head, buffer.length);
+                obj.remaining = size();
+            }
+        });
+
+        this.descendingValueIteratorPool = new IteratorPool<KTypeCursor<KType>, DescendingValueIterator>(
+                new ObjectFactory<DescendingValueIterator>() {
+
+            @Override
+            public DescendingValueIterator create() {
+                
+                return new DescendingValueIterator();
+            }
+
+            @Override
+            public void initialize(DescendingValueIterator obj) {
+                
+                obj.cursor.index = tail;
+                obj.remaining = size();
+            }
+        });
     }
 
     /**
@@ -657,7 +703,8 @@ public class KTypeArrayDeque<KType>
             return cursor;
         }
     }
-
+    
+   
     /**
      * An iterator implementation for {@link ObjectArrayDeque#descendingIterator()}.
      */
@@ -684,6 +731,8 @@ public class KTypeArrayDeque<KType>
             return cursor;
         }
     }
+    
+   
 
     /**
      * Returns a cursor over the values of this deque (in head to tail order). The
@@ -702,7 +751,8 @@ public class KTypeArrayDeque<KType>
      */
     public Iterator<KTypeCursor<KType>> iterator()
     {
-        return new ValueIterator();
+        //return new ValueIterator();
+        return this.valueIteratorPool.borrow();
     }
 
     /**
@@ -723,7 +773,8 @@ public class KTypeArrayDeque<KType>
      */
     public Iterator<KTypeCursor<KType>> descendingIterator()
     {
-        return new DescendingValueIterator();
+        //return new DescendingValueIterator();
+        return this.descendingValueIteratorPool.borrow();
     }
 
     /**

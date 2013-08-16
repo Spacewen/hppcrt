@@ -3,7 +3,9 @@ package com.carrotsearch.hppc;
 import java.util.Arrays;
 import java.util.Iterator;
 
+import com.carrotsearch.hppc.KTypeArrayList.ValueIterator;
 import com.carrotsearch.hppc.cursors.IntCursor;
+import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.predicates.IntPredicate;
 import com.carrotsearch.hppc.procedures.IntProcedure;
 
@@ -42,6 +44,12 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
      * Buffer resizing strategy.
      */
     protected final ArraySizingStrategy resizer;
+    
+    /**
+     * internal pool of ValueIterator (must be created in constructor)
+     */
+    protected final  IteratorPool<IntCursor, IntArrayList.ValueIterator> valueIteratorPool;
+
 
     /**
      * Create with default sizing strategy and initial dense capacity of 
@@ -77,6 +85,24 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         this.resizer = resizer;
         ensureDenseCapacity(resizer.round(denseCapacity));
         ensureSparseCapacity(sparseCapacity);
+        
+        this.valueIteratorPool = new IteratorPool<IntCursor, IntArrayList.ValueIterator>(
+                new ObjectFactory<IntArrayList.ValueIterator>() {
+
+            @Override
+            public IntArrayList.ValueIterator create() {
+                
+                return new IntArrayList.ValueIterator(dense, size());
+            }
+
+            @Override
+            public void initialize( IntArrayList.ValueIterator obj) {
+                
+                obj.cursor.index = -1;
+                obj.size = size();
+                obj.buffer = dense;
+            }
+        });
     }
 
     /**
@@ -293,10 +319,13 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         return removeAllOccurrences(key) == 1;
     }
 
+    
+    
     @Override
     public Iterator<IntCursor> iterator()
     {
-        return new IntArrayList.ValueIterator(dense, size());
+        return this.valueIteratorPool.borrow();
+        //return new IntArrayList.ValueIterator(dense, size());
     }
 
     @Override

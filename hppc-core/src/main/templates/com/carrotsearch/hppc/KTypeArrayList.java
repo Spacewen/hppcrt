@@ -93,6 +93,11 @@ public class KTypeArrayList<KType>
      * Buffer resizing strategy.
      */
     protected final ArraySizingStrategy resizer;
+    
+    /**
+     * internal pool of ValueIterator (must be created in constructor)
+     */
+    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
 
     /**
      * Create with default sizing strategy and initial capacity for storing 
@@ -125,6 +130,24 @@ public class KTypeArrayList<KType>
 
         this.resizer = resizer;
         ensureBufferSpace(resizer.round(initialCapacity));
+        
+        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator<KType>>(
+                new ObjectFactory<ValueIterator<KType>>() {
+
+            @Override
+            public ValueIterator<KType> create() {
+                
+                return new ValueIterator<KType>(KTypeArrayList.this.buffer, size());
+            }
+
+            @Override
+            public void initialize( ValueIterator<KType> obj) {
+                
+                obj.cursor.index = -1;
+                obj.size = size();
+                obj.buffer = KTypeArrayList.this.buffer;
+            }
+        });
     }
 
     /**
@@ -624,13 +647,14 @@ public class KTypeArrayList<KType>
 
     /**
      * An iterator implementation for {@link ObjectArrayList#iterator}.
+     * (package visibility because used elsewhere in the same package)
      */
     final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+         final KTypeCursor<KType> cursor;
 
-        private final KType [] buffer;
-        private final int size;
+          KType [] buffer;
+          int size;
         
         public ValueIterator(KType [] buffer, int size)
         {
@@ -650,6 +674,8 @@ public class KTypeArrayList<KType>
             return cursor;
         }
     }
+    
+   
 
     /**
      * {@inheritDoc}
@@ -657,7 +683,8 @@ public class KTypeArrayList<KType>
     @Override
     public Iterator<KTypeCursor<KType>> iterator()
     {
-        return new ValueIterator<KType>(buffer, size());
+        //return new ValueIterator<KType>(buffer, size());
+        return this.valueIteratorPool.borrow();
     }
 
     /**
