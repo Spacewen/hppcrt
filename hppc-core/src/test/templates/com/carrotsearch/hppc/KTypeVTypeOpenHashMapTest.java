@@ -1092,5 +1092,21 @@ public void testHashingStrategyCloneEquals() {
         
         return newMap;
     }
+    
     /*! #end !*/
+    
+    private KTypeVTypeOpenHashMap<KType, VType> createMapWithRandomData(int size, long randomSeed) {
+        
+        Random prng = new Random(randomSeed);
+        
+        KTypeVTypeOpenHashMap<KType, VType> newMap = KTypeVTypeOpenHashMap.newInstance(KTypeVTypeOpenHashMap.DEFAULT_CAPACITY, 
+                KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR);
+        
+        for (int i = 0; i < size ; i++) {
+            
+            newMap.put(cast(prng.nextInt()), vcast(prng.nextInt()));
+        }
+        
+        return newMap;
+    }  
 }

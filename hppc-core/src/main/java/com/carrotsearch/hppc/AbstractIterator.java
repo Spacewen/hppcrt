@@ -113,8 +113,8 @@ abstract class AbstractIterator<E> implements Iterator<E>
      * This method must be called if the iterator has not yet been automatically
      * recycled, in case of:
      * <pre>
-     * - Iterator obtained by explicit {@link Iterator}.iterator() or any other factory-like interface, 
-     *   so it needs to be returned to its pool explicitly in a symmetrical manner.</pre>
+     * Iterator obtained by explicit {@link Iterator}.iterator() or any other factory-like interface, 
+     * so it needs to be returned to its pool explicitly in a symmetrical manner.</pre>
      * Of course, using the iterator after it has been released is a logical error,
      * since such object is supposed to be "freed".  
      */
