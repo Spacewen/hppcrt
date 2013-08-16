@@ -15,7 +15,7 @@ public interface ObjectFactory<E> {
     
     /**
      * Method to initialize/re-initialize the object
-     * when the object is borrowed from the pool. That way,
+     * when the object is borrowed from an {@link ObjectPool}. That way,
      * any object coming out of a pool is set properly
      * in a user-controlled state.
      * @param obj

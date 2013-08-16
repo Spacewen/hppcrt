@@ -693,7 +693,7 @@ public class KTypeOpenHashSet<KType>
     /**
      * internal pool of EntryIterator
      */
-    private final  IteratorPool<KTypeCursor<KType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeCursor<KType>, EntryIterator>(
+    protected final  IteratorPool<KTypeCursor<KType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeCursor<KType>, EntryIterator>(
             new ObjectFactory<EntryIterator>() {
 
         @Override
