@@ -779,6 +779,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
             for (KTypeCursor<KType> cursor : testContainer)
             {
+                guard += castType(cursor.value);
                 //we consume 1 iterator for this loop, but reallocs can happen,
                 //so we can only say its != initialPoolSize
                 assertTrue(initialPoolSize != testContainer.entryIteratorPool.size());
@@ -833,7 +834,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.entryIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 

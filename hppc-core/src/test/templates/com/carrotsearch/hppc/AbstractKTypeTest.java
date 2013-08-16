@@ -46,11 +46,10 @@ public abstract class AbstractKTypeTest<KType>
         /*! #end !*/
     }
 
-    /** Convert to long a KType (being a boxed elementary type), else it always
-     * returns 0L
-     * 
-     * @param v
-     * @return */
+    /**
+     * Convert a KType to long, (KType being a boxed elementary type or a primitive), else
+     * returns 0L.
+     */
     public long castType(KType type)
     {
         /*! #if ($TemplateOptions.KTypePrimitive)
