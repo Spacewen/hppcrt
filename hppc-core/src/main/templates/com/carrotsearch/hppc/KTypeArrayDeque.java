@@ -93,12 +93,12 @@ public class KTypeArrayDeque<KType>
     /**
      * internal pool of DescendingValueIterator (must be created in constructor)
      */
-    private final  IteratorPool<KTypeCursor<KType>, DescendingValueIterator> descendingValueIteratorPool;
+    protected final  IteratorPool<KTypeCursor<KType>, DescendingValueIterator> descendingValueIteratorPool;
     
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    private final  IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
+    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
 
 
     /**
@@ -680,7 +680,7 @@ public class KTypeArrayDeque<KType>
     /**
      * An iterator implementation for {@link ObjectArrayDeque#iterator}.
      */
-    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    private final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
         private int remaining;
@@ -708,7 +708,7 @@ public class KTypeArrayDeque<KType>
     /**
      * An iterator implementation for {@link ObjectArrayDeque#descendingIterator()}.
      */
-    public final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    private final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
         private int remaining;

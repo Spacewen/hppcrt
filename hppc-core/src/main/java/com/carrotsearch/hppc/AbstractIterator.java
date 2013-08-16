@@ -24,7 +24,7 @@ abstract class AbstractIterator<E> implements Iterator<E>
     
     
     /**
-     * The ObjectPool the iterator comes from, if any. (if != null).
+     * The {@link IteratorPool} the iterator comes from, if any. (if != null).
      */
     private IteratorPool<E, AbstractIterator<E>> iteratorPool = null;
     
@@ -41,7 +41,8 @@ abstract class AbstractIterator<E> implements Iterator<E>
         }
           
         //if there is an attached pool, auto-release this object when there is no element left.
-        //this is especially useful in case of the for-each construct.
+        //this is especially useful in case of the for-each construct, which release 
+        //the hidden iterator automatically when exiting the fully iterated for-each.
         if (state == AT_END && this.iteratorPool != null) {
             
             this.iteratorPool.release(this);
@@ -108,7 +109,14 @@ abstract class AbstractIterator<E> implements Iterator<E>
     }
     
     /**
-     * Explicit call to return this to its associated pool, if any.
+     * Returns the iterator back to its associated pool, if any.
+     * This method must be called if the iterator has not yet been automatically
+     * recycled, in case of:
+     * <pre>
+     * - Iterator obtained by explicit {@link Iterator}.iterator() or any other factory-like interface, 
+     *   so it needs to be returned to its pool explicitly in a symmetrical manner.</pre>
+     * Of course, using the iterator after it has been released is a logical error,
+     * since such object is supposed to be "freed".  
      */
     public final void release() {
         

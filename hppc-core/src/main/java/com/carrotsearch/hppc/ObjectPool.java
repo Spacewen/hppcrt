@@ -1,8 +1,9 @@
 package com.carrotsearch.hppc;
 
 /**
- * A Object pool of configurable extensible size, from which 
- * pre-allocated objects can be generated, and recycled after use. 
+ * An Object pool of configurable and extensible size, from which 
+ * pre-allocated objects can be borrowed, and released after use
+ * by returning them to the pool.
  *
  * @param <E>
  */
@@ -26,7 +27,7 @@ public class ObjectPool<E> {
     
     
     /**
-     * Controls the way more objects are produced when the pool get empty.
+     * Controls the way more objects are produced when the pool is empty.
      */
     protected ArraySizingStrategy growthPolicy;
     
@@ -67,16 +68,16 @@ public class ObjectPool<E> {
     
     
     /**
-     * borrow an Object from  the pool. If there 
-     * is no more Objects, more Objects are allocated using the {@link #growthPolicy} 
-     * policy. Any borrowed object is properly initialized with {@link #factory}.initialize() 
+     * Borrow an Object from  the pool. If there 
+     * is no more Objects, more of them are allocated using the {@link #growthPolicy} 
+     * policy. The returned object is assured to be initialized with {@link #factory}.initialize(). 
      */
     @SuppressWarnings("unchecked")
     public E borrow() {
         
         E borrowedObject = null;
         
-        //A) Check that there is enough objects, else allocate new ones following the policy
+        //A) Check that there are enough objects, else allocate new ones following the policy
         if (this.currentSize <= 0) {
             
             //at least add 1 object...
@@ -87,11 +88,8 @@ public class ObjectPool<E> {
             
                 Object[] newPoolArray = new Object[newSize];
                 
-                //copy the references
-                System.arraycopy(this.arrayPool, 0, newPoolArray , 0, this.capacity);
-                
-                //construct the additional objects
-                for (int i = this.capacity; i < newSize; i++) {
+                //construct and add the additional objects
+                for (int i = 0; i < (newSize - this.capacity); i++) {
                     
                     newPoolArray[i] = this.factory.create();
                 }
@@ -103,11 +101,16 @@ public class ObjectPool<E> {
             }
         }
         
-        //B) extract object. Size could be null if resize was indeed forbidden by policy
-        //in this case the pool returns a null pointer
+        //B) extract object. currentSize could still be null if resize was indeed forbidden by policy,
+        //in this case the pool returns a null pointer.
         if (this.currentSize > 0) {
             
             borrowedObject = this.arrayPool[this.currentSize - 1];
+            
+            //null the just extracted place in arrayPool, so there is no dangling reference in the pool
+            //while the object is no longer "there". This is useful in case a given object is never actually returned
+            //to the pool, so that it can be collected by GC after all. 
+            this.arrayPool[this.currentSize - 1] = null;
             //initialize just before use, not before. Needed for closure-like contexts when
             //the context is essentially captured at borrow time.
             this.factory.initialize(borrowedObject);
@@ -119,7 +122,9 @@ public class ObjectPool<E> {
     }
     
     /**
-     * Release this object E by putting it back to the pool after it has been used
+     * Release this object E by putting it back to the pool.
+     * Of course, using releasedObject after it has been released is a logical error,
+     * since such object is supposed to be "freed". 
      * @param releasedObject
      */
     public void release(E releasedObject) {

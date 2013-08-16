@@ -97,7 +97,7 @@ public class KTypeArrayList<KType>
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    private final  IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
+    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
 
     /**
      * Create with default sizing strategy and initial capacity for storing 
@@ -647,13 +647,14 @@ public class KTypeArrayList<KType>
 
     /**
      * An iterator implementation for {@link ObjectArrayList#iterator}.
+     * (package visibility because used elsewhere in the same package)
      */
-    public final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
+    final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+         final KTypeCursor<KType> cursor;
 
-        private  KType [] buffer;
-        private  int size;
+          KType [] buffer;
+          int size;
         
         public ValueIterator(KType [] buffer, int size)
         {

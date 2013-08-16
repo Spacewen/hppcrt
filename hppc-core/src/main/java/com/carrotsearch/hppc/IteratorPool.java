@@ -1,8 +1,7 @@
 package com.carrotsearch.hppc;
 
 /**
- * This class represents a specialized Object Pool of Iterators ITERATOR_TYPE derived from AbstractIterator<OBJECT_TYPE>
- * for iterating on OBJECT_TYPE objects
+ * This class represents a specialized {@link ObjectPool} of Iterators of type ITERATOR_TYPE, which are  {@link AbstractIterator}s for OBJECT_TYPE objects.
  * @param <ITERATOR_TYPE>
  * @param <OBJECT_TYPE>
  */
@@ -19,17 +18,22 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE  extends AbstractIterator<O
             
             @Override
             public int grow(int currentBufferLength, int elementsCount, int expectedAdditions) {
-                // Add at most Internals.NB_OF_PROCESSORS new iterator instances
+                // Add at most Internals.NB_OF_PROCESSORS + expected new iterator instances
                 return Math.max(elementsCount, currentBufferLength)  + Internals.NB_OF_PROCESSORS + expectedAdditions;
             }
         });
     }
 
+    /**
+     * Customized borrow(), that properly 
+     * attach the borrowed iterator to its corresponding pool
+     * and resets it to allow iteration as if the iterator was created for the first time.
+     */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public ITERATOR_TYPE borrow() {
         
-        //extract an initialized object
+        //extract an initialized object, never null by construction
         ITERATOR_TYPE newObject =  super.borrow();
         
         //attach instance to pool

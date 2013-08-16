@@ -988,7 +988,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     /**
      * internal pool of EntryIterator
      */
-    private final  IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator>(
+    protected final  IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeVTypeCursor<KType, VType>, EntryIterator>(
             new ObjectFactory<EntryIterator>() {
 
         @Override
@@ -1043,8 +1043,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /**
      * A view of the keys inside this hash map.
+     * (package visibility for UT)
      */
-    public final class KeysContainer 
+    final class KeysContainer 
         extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner = 
@@ -1136,7 +1137,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         /**
          * internal pool of KeysIterator
          */
-        private final  IteratorPool<KTypeCursor<KType>, KeysIterator> keyIteratorPool = new IteratorPool<KTypeCursor<KType>, KeysIterator>(
+        protected final  IteratorPool<KTypeCursor<KType>, KeysIterator> keyIteratorPool = new IteratorPool<KTypeCursor<KType>, KeysIterator>(
                 new ObjectFactory<KeysIterator>() {
 
             @Override
@@ -1195,9 +1196,10 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }                                                                                                                                         
 
     /**                                                                                                                                       
-     * A view over the set of values of this map.                                                                                                         
+     * A view over the set of values of this map.
+     * (package visibility for UT)                                                                                                         
      */                                                                                                                                       
-    private final class ValuesContainer extends AbstractKTypeCollection<VType>                                                               
+    final class ValuesContainer extends AbstractKTypeCollection<VType>                                                               
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner = 
                 KTypeVTypeOpenHashMap.this;
@@ -1290,9 +1292,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         } 
         
         /**
-         * internal pool of KeysIterator
+         * internal pool of ValuesIterator
          */
-        private final  IteratorPool<KTypeCursor<VType>, ValuesIterator> valuesIteratorPool = new IteratorPool<KTypeCursor<VType>, ValuesIterator>(
+        protected final  IteratorPool<KTypeCursor<VType>, ValuesIterator> valuesIteratorPool = new IteratorPool<KTypeCursor<VType>, ValuesIterator>(
                 new ObjectFactory<ValuesIterator>() {
 
             @Override
