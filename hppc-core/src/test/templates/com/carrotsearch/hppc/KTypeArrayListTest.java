@@ -624,7 +624,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorForEach()
     {
-        //A) Unbroken for-each loop
+        // Unbroken for-each loop
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -667,10 +667,8 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorBrokenForEach()
     {
-        //A) for-each loop interrupted
+        // for-each loop interrupted
 
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -684,6 +682,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
             for (KTypeCursor<KType> cursor : testContainer)
             {
+                guard += castType(cursor.value);
                 //we consume 1 iterator for this loop, but reallocs can happen,
                 //so we can only say its != initialPoolSize
                 assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
@@ -711,10 +710,8 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorFullIteratorLoop()
     {
-        //A) for-each loop interrupted
+        // for-each loop interrupted
 
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -739,7 +736,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -763,10 +760,8 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorBrokenIteratorLoop()
     {
-        //A) for-each loop interrupted
+        // for-each loop interrupted
 
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 

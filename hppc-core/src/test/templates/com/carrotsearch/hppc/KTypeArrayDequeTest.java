@@ -665,7 +665,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorForEach()
     {
-        //A) Unbroken for-each loop
+        // Unbroken for-each loop
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -708,10 +708,6 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorBrokenForEach()
     {
-        //A) for-each loop interrupted
-
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -725,6 +721,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
             for (KTypeCursor<KType> cursor : testContainer)
             {
+                guard += castType(cursor.value);
                 //we consume 1 iterator for this loop, but reallocs can happen,
                 //so we can only say its != initialPoolSize
                 assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
@@ -752,10 +749,6 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorFullIteratorLoop()
     {
-        //A) for-each loop interrupted, test in both directions
-
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -781,11 +774,12 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             //A) Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
             testValue = 0;
+
             while (loopIterator.hasNext())
             {
                 testValue += castType(loopIterator.next().value);
@@ -800,7 +794,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             //B) Descending iterator loop
             initialPoolSize = testContainer.descendingValueIteratorPool.size();
 
-            loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.descendingIterator();
+            loopIterator = testContainer.descendingIterator();
 
             assertEquals(initialPoolSize - 1, testContainer.descendingValueIteratorPool.size());
 
@@ -826,8 +820,6 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorBrokenIteratorLoop()
     {
-        //must accommodate even the smallest primitive type
-        //so that the iteration do not break before it should...
         int TEST_SIZE = 10000;
         long TEST_ROUNDS = 100;
 
@@ -907,7 +899,6 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         for (int i = 0; i < size; i++)
         {
-
             newArray.addLast(cast(i));
         }
 
