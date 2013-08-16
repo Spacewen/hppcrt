@@ -101,7 +101,7 @@ public class BlankingArraysTest
         //Check identity
         assertArrayEquals(referenceArray, testArray);
         
-        //e) Blank non-null subrange
+       //e) Blank non-null subrange
         
         //e-1) first element
         testArray = buildArray(1284047);
@@ -132,6 +132,16 @@ public class BlankingArraysTest
         Internals.blankObjectArray(testArray, 179939, 185533);
         //Check
         checkIntegerArray(testArray, 179939, 185533);
+        
+        testArray = buildArray(876257);
+        Internals.blankObjectArray(testArray, 1024, 3*1024);
+        //Check
+        checkIntegerArray(testArray, 1024, 3*1024);
+        
+        testArray = buildArray(434293);
+        Internals.blankObjectArray(testArray, 1024, 11*1024 + 17);
+        //Check
+        checkIntegerArray(testArray, 1024, 11*1024 + 17);
     }
     
     @Test
@@ -255,6 +265,16 @@ public class BlankingArraysTest
         Internals.blankBooleanArray(testArray, 179939, 185533);
         //Check
         checkBooleanArray(testArray, 179939, 185533);
+        
+        testArray = buildBooleanArray(876257);
+        Internals.blankBooleanArray(testArray, 1024, 3*1024);
+        //Check
+        checkBooleanArray(testArray, 1024, 3*1024);
+        
+        testArray = buildBooleanArray(434293);
+        Internals.blankBooleanArray(testArray, 1024, 11*1024 + 17);
+        //Check
+        checkBooleanArray(testArray, 1024, 11*1024 + 17);
     }
     
     

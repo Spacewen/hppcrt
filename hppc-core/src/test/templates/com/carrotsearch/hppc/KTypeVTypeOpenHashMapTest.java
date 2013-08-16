@@ -843,7 +843,7 @@ public void testHashingStrategyCloneEquals() {
         //a) Check that 2 different sets filled the same way with same values and strategies = null 
         //are indeed equal.
         long TEST_SEED = 4987013210686416456L;
-        int TEST_SIZE = (int)1e6;
+        int TEST_SIZE = (int)500e3;
         KTypeVTypeOpenHashMap<KType, VType> refMap = createMapWithRandomData(TEST_SIZE, null, TEST_SEED);
         KTypeVTypeOpenHashMap<KType, VType> refMap2 =createMapWithRandomData(TEST_SIZE, null, TEST_SEED);
         
@@ -989,9 +989,9 @@ public void testHashingStrategyCloneEquals() {
      
        
         long TEST_SEED = 15249155965216185L;
-        int TEST_SIZE = (int)1e6;
+        int TEST_SIZE = (int)500e3;
         
-        //those following maps behave indeed the same
+       //those following 3  maps behave indeed the same in the test context:
         KTypeVTypeOpenHashMap<KType, VType> refMap = KTypeVTypeOpenHashMap.newInstance();
         
         KTypeVTypeOpenHashMap<KType, VType> refMapNullStrategy = KTypeVTypeOpenHashMap.newInstance(
