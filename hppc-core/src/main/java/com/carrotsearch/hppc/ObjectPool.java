@@ -28,6 +28,15 @@ public class ObjectPool<E> {
     
     /**
      * Controls the way more objects are produced when the pool is empty.
+     * The meaning of {@link ArraySizingStrategy}.grow() differs a bit in the
+     * ObjectPool context: <p>
+     * a) if grow() >= 0, follow the original contract, <p>
+     * b) if -capacity() < grow() < 0 (grow() == -nbNewElements), it means that the
+     * pool is to generate nbNewElements Objects, but the capacity is unchanged,
+     * which means that (nbNewElements) Objects allocated previously are virtually discarded, for GC to collect.
+     * This particular policy prevent the pool to grow indefinitely if some reference
+     * Objects get "lost" over time when a proper release() was impossible to do on them.
+     * @see #release   
      */
     protected ArraySizingStrategy growthPolicy;
     
@@ -81,22 +90,36 @@ public class ObjectPool<E> {
         if (this.currentSize <= 0) {
             
             //at least add 1 object...
-            int newSize = this.growthPolicy.grow(this.capacity, this.capacity, 1);
+            int newCapacity = this.growthPolicy.grow(this.capacity, this.capacity, 1);
             
+            //particular case: generate newCapacity objects, keeping the same capacity.
+            if (newCapacity < 0 && (-newCapacity < this.capacity)) {
+                
+                newCapacity = - newCapacity;
+                
+                //construct and add the additional objects by o
+                for (int i = 0; i < newCapacity; i++) {
+                    
+                    this.arrayPool[i] = this.factory.create();
+                    
+                    //update structures
+                    this.currentSize = newCapacity;
+                } 
+            }
             //reallocate if policy indeed authorized growth
-            if (newSize > this.capacity) {
+            else if (newCapacity > this.capacity) {
             
-                Object[] newPoolArray = new Object[newSize];
+                Object[] newPoolArray = new Object[newCapacity];
                 
                 //construct and add the additional objects
-                for (int i = 0; i < (newSize - this.capacity); i++) {
+                for (int i = 0; i < (newCapacity - this.capacity); i++) {
                     
                     newPoolArray[i] = this.factory.create();
                 }
                 
                 //update structures
-                this.currentSize = newSize - this.capacity;
-                this.capacity = newSize;
+                this.currentSize = newCapacity - this.capacity;
+                this.capacity = newCapacity;
                 this.arrayPool = (E[]) newPoolArray;
             }
         }

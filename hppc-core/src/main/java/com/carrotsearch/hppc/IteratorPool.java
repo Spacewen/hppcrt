@@ -7,6 +7,12 @@ package com.carrotsearch.hppc;
  */
 public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE  extends AbstractIterator<OBJECT_TYPE>> extends ObjectPool<ITERATOR_TYPE> {
 
+    /**
+     * An Iterator pool never get bigger than MAX_SIZE_GROWTH_FACTOR 
+     * times its original size.
+     */
+    public static final int MAX_SIZE_GROWTH_FACTOR = 4;
+    
     public IteratorPool(ObjectFactory<ITERATOR_TYPE> objFactory) {
         super(objFactory, Internals.NB_OF_PROCESSORS, new ArraySizingStrategy() {
             
@@ -18,8 +24,17 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE  extends AbstractIterator<O
             
             @Override
             public int grow(int currentBufferLength, int elementsCount, int expectedAdditions) {
+                
                 // Add at most Internals.NB_OF_PROCESSORS + expected new iterator instances
-                return Math.max(elementsCount, currentBufferLength)  + Internals.NB_OF_PROCESSORS + expectedAdditions;
+                int newSize =  Math.max(elementsCount, currentBufferLength)  + Internals.NB_OF_PROCESSORS + expectedAdditions;
+                
+                if (newSize > MAX_SIZE_GROWTH_FACTOR * Internals.NB_OF_PROCESSORS) {
+                    
+                    //discard NB_OF_PROCESSORS objects
+                    newSize = -Internals.NB_OF_PROCESSORS;   
+                }
+         
+                return newSize ;  
             }
         });
     }
