@@ -477,7 +477,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         //a) Check that 2 different sets filled the same way with same values and strategies = null 
         //are indeed equal.
         long TEST_SEED = 23167132166456L;
-        int TEST_SIZE = (int)1e6;
+        int TEST_SIZE = (int)500e3;
         KTypeOpenHashSet<KType> refSet = createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
         KTypeOpenHashSet<KType> refSet2 =createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
         
@@ -621,12 +621,10 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         //Works only with keys as objects
         Assume.assumeTrue(Object[].class.isInstance(set.keys));
      
-        //a) Check that 2 different sets filled the same way with same values and strategies = null 
-        //are indeed equal.
         long TEST_SEED = 749741621030146103L;
-        int TEST_SIZE = (int)1e6;
+        int TEST_SIZE = (int)500e3;
         
-        //those following sets behave inded the same
+        //those following 3  sets behave indeed the same in the test context:
         KTypeOpenHashSet<KType> refSet = KTypeOpenHashSet.newInstance();
         
         KTypeOpenHashSet<KType> refSetNullStrategy = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(
