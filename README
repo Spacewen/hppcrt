@@ -1,24 +1,32 @@
-HPPC: High Performance Primitive Collections "plus"
+HPPC: High Performance Primitive Collections "Plus"
 ---------------------------------------------------
 
-This is a fork of HPPC from Carrot Search:
+This is a fork of HPPC from CarrotSearch:
 see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
-
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
+-------------------------------------------------
 
 This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
-adding some more features which general goal is improving realtime behaviour, 
-that is among others, to have ZERO GC at runtime.
+adding some features which general goal is improving realtime behaviour, 
+that is among others to have ZERO GC at runtime.
 
 For now, the additional features are:
-- Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
-- Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations,
+*************************************************
+a) Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
+
+b) Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations
 especially noticable for big container sizes. (Javolution has a similar trick)
 
-In a near future:
-- Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
-dynamically under the hood. 
-In particular using the for-each construct without any allocation of new iterator instances, transparently.
+c) Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+dynamically at runtime. 
+That means in particular using the for-each construct without any dynamic allocation below.
 
-Binaries, sources and Javadoc, are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.
+TODO:
+Examples for these new features...
+************************************************
+
+All these new features are Unit tested, so should work reasonably well.
+Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.
+
+
 
