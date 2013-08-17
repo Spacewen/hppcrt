@@ -744,7 +744,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.MAX_SIZE_GROWTH_FACTOR * Internals.NB_OF_PROCESSORS + 1);
+        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
     }
 
     @Test
