@@ -680,6 +680,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //for-each in test :
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
+            count = 0;
             for (KTypeCursor<KType> cursor : testContainer)
             {
                 guard += castType(cursor.value);
@@ -778,6 +779,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
+            count = 0;
             while (loopIterator.hasNext())
             {
                 guard += castType(loopIterator.next().value);
@@ -799,6 +801,72 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //now the pool is restored
             assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
 
+        } //end for rounds
+
+        // pool initial size is untouched anyway
+        assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+    }
+
+    @Test
+    public void testPooledIteratorExceptionIteratorLoop()
+    {
+        int TEST_SIZE = 10000;
+        long TEST_ROUNDS = 100;
+
+        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+
+        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+
+            long count;
+
+            @Override
+            public void apply(KType value)
+            {
+                count += castType(value);
+            }
+        }).count;
+
+        int startingPoolSize = testContainer.valueIteratorPool.size();
+
+        int count = 0;
+        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+
+        for (int round = 0; round < TEST_ROUNDS; round++)
+        {
+            try
+            {
+                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
+
+                guard = 0;
+                count = 0;
+                while (loopIterator.hasNext())
+                {
+                    guard += castType(loopIterator.next().value);
+
+                    //brutally interrupt in the middle some of the loops, but not all
+                    if (round > TEST_ROUNDS / 2 && count > TEST_SIZE / 2)
+                    {
+                        throw new Exception("Oups some problem in the loop occured");
+                    }
+                    count++;
+                } //end while
+
+                //iterator is returned to its pool in case of normal loop termination
+                assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+                assertEquals(checksum, guard);
+
+            } catch (Exception e)
+            {
+                //iterator is NOT returned to its pool because of the exception
+                assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
+
+                //manual return to the pool then
+                loopIterator.release();
+
+                //now the pool is restored
+                assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+            }
         } //end for rounds
 
         // pool initial size is untouched anyway

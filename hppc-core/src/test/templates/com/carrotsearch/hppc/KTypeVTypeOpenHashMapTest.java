@@ -1428,6 +1428,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
+            count = 0;
             while (loopIterator.hasNext())
             {
                 guard += vcastType(loopIterator.next().value);
@@ -1456,6 +1457,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
 
             assertEquals(initialPoolSize - 1, keyset.keyIteratorPool.size());
 
+            count = 0;
             while (keyLoopIterator.hasNext())
             {
                 guard += castType(keyLoopIterator.next().value);
@@ -1484,6 +1486,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
 
             assertEquals(initialPoolSize - 1, valueset.valuesIteratorPool.size());
 
+            count = 0;
             while (valueLoopIterator.hasNext())
             {
                 guard += vcastType(valueLoopIterator.next().value);
@@ -1511,6 +1514,75 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
         assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
         assertEquals(startingPoolSize, keyset.keyIteratorPool.size());
         assertEquals(startingPoolSize, valueset.valuesIteratorPool.size());
+    }
+
+    @Test
+    public void testPooledIteratorExceptionIteratorLoop()
+    {
+        //must accommodate even the smallest primitive type
+        //so that the iteration do not break before it should...
+        int TEST_SIZE = 126;
+        long TEST_ROUNDS = 10000;
+
+        KTypeVTypeOpenHashMap<KType, VType> testContainer = createMapWithOrderedData(TEST_SIZE);
+
+        long checksum = testContainer.forEach(new KTypeVTypeProcedure<KType, VType>() {
+
+            long count;
+
+            @Override
+            public void apply(KType key, VType value)
+            {
+                count += vcastType(value);
+            }
+        }).count;
+
+        int startingPoolSize = testContainer.entryIteratorPool.size();
+
+        int count = 0;
+        AbstractIterator<KTypeVTypeCursor<KType, VType>> loopIterator = null;
+
+        for (int round = 0; round < TEST_ROUNDS; round++)
+        {
+            try
+            {
+                loopIterator = (AbstractIterator<KTypeVTypeCursor<KType, VType>>) testContainer.iterator();
+
+                assertEquals(startingPoolSize - 1, testContainer.entryIteratorPool.size());
+
+                guard = 0;
+                count = 0;
+                while (loopIterator.hasNext())
+                {
+                    guard += vcastType(loopIterator.next().value);
+
+                    //brutally interrupt in the middle some of the loops, but not all
+                    if (round > TEST_ROUNDS / 2 && count > TEST_SIZE / 2)
+                    {
+                        throw new Exception("Oups some problem in the loop occured");
+                    }
+                    count++;
+                } //end while
+
+                //iterator is returned to its pool in case of normal loop termination
+                assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
+                assertEquals(checksum, guard);
+
+            } catch (Exception e)
+            {
+                //iterator is NOT returned to its pool because of the exception
+                assertEquals(startingPoolSize - 1, testContainer.entryIteratorPool.size());
+
+                //manual return to the pool then
+                loopIterator.release();
+
+                //now the pool is restored
+                assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
+            }
+        } //end for rounds
+
+        // pool initial size is untouched anyway
+        assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
     }
 
     private KTypeVTypeOpenHashMap<KType, VType> createMapWithOrderedData(int size)
