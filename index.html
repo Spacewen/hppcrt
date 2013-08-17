@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Hppc : Fork of HPPC, originally from Carrot Search: " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Hppc</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/vsonnier/hppc">View on GitHub</a>
+
+          <h1 id="project_title">Hppc</h1>
+          <h2 id="project_tagline">Fork of HPPC, originally from Carrot Search: </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/vsonnier/hppc/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/vsonnier/hppc/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="hppc-high-performance-primitive-collections-plus" class="anchor" href="#hppc-high-performance-primitive-collections-plus"><span class="octicon octicon-link"></span></a>HPPC: High Performance Primitive Collections "Plus"</h2>
+
+<p>This is a fork of HPPC from CarrotSearch:
+see JavaDoc and documentation at: <a href="http://labs.carrotsearch.com/hppc.html">http://labs.carrotsearch.com/hppc.html</a> for more info.</p>
+
+<h2>
+<a name="important-developers---read-install-file-for-proper-eclipse-setup" class="anchor" href="#important-developers---read-install-file-for-proper-eclipse-setup"><span class="octicon octicon-link"></span></a>IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!</h2>
+
+<p>This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
+adding some features which general goal is improving realtime behaviour, 
+that is among others to have ZERO GC at runtime.</p>
+
+<p>For now, the additional features are:</p>
+
+<hr><p>a) Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). </p>
+
+<p>b) Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations
+especially noticable for big container sizes. (Javolution has a similar trick)</p>
+
+<p>c) Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+dynamically at runtime. 
+That means in particular using the for-each construct without any dynamic allocation below.</p>
+
+<p>TODO:
+Examples for these new features...</p>
+
+<hr><p>All these new features are Unit tested, so should work reasonably well.
+Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Hppc maintained by <a href="https://github.com/vsonnier">vsonnier</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
