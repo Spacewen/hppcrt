@@ -11,10 +11,10 @@ import com.carrotsearch.hppc.procedures.IntProcedure;
 
 /**
  * A double-linked set of <code>int</code> values. This data structure is characterized by
- * constant-time lookup, insertions, deletions and removal of all set elements (unlike a 
- * {@link BitSet} which takes time proportional to the maximum element's length). 
+ * constant-time lookup, insertions, deletions and removal of all set elements (unlike a
+ * {@link BitSet} which takes time proportional to the maximum element's length).
  * 
- * <p>The implementation in based on 
+ * <p>The implementation in based on
  * <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.30.7319">
  * Preston Briggs and Linda Torczon's paper "An Efficient Representation for Sparse Sets"</a></p>
  */
@@ -26,7 +26,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     public final static int DEFAULT_CAPACITY = 5;
 
     /**
-     * Dense array of set elements. 
+     * Dense array of set elements.
      */
     public int [] dense = EmptyArrays.EMPTY_INT_ARRAY;
 
@@ -44,7 +44,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
      * Buffer resizing strategy.
      */
     protected final ArraySizingStrategy resizer;
-    
+
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
@@ -52,7 +52,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
 
 
     /**
-     * Create with default sizing strategy and initial dense capacity of 
+     * Create with default sizing strategy and initial dense capacity of
      * {@value #DEFAULT_CAPACITY} elements and initial sparse capacity of zero (first insert
      * will cause reallocation).
      * 
@@ -85,24 +85,24 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         this.resizer = resizer;
         ensureDenseCapacity(resizer.round(denseCapacity));
         ensureSparseCapacity(sparseCapacity);
-        
+
         this.valueIteratorPool = new IteratorPool<IntCursor, IntArrayList.ValueIterator>(
                 new ObjectFactory<IntArrayList.ValueIterator>() {
 
-            @Override
-            public IntArrayList.ValueIterator create() {
-                
-                return new IntArrayList.ValueIterator(dense, size());
-            }
+                    @Override
+                    public IntArrayList.ValueIterator create() {
 
-            @Override
-            public void initialize( IntArrayList.ValueIterator obj) {
-                
-                obj.cursor.index = -1;
-                obj.size = size();
-                obj.buffer = dense;
-            }
-        });
+                        return new IntArrayList.ValueIterator(dense, size());
+                    }
+
+                    @Override
+                    public void initialize( IntArrayList.ValueIterator obj) {
+
+                        obj.cursor.index = -1;
+                        obj.size = size();
+                        obj.buffer = dense;
+                    }
+                });
     }
 
     /**
@@ -129,7 +129,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         {
             final int newSize = resizer.grow(bufferLen, elementsCount, expectedAdditions);
             assert newSize >= elementsCount + expectedAdditions : "Resizer failed to" +
-                    " return sensible new size: " + newSize + " <= " 
+                    " return sensible new size: " + newSize + " <= "
                     + (elementsCount + expectedAdditions);
 
             final int [] newBuffer = new int [newSize];
@@ -167,11 +167,16 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     }
 
     @Override
-    public int [] toArray()
+    public int[] toArray()
     {
-        int [] result = new int [size()];
-        System.arraycopy(dense, 0, result, 0, size());
-        return result;
+        return toArray(new int[size()]);
+    }
+
+    @Override
+    public int[] toArray(int[] target)
+    {
+        System.arraycopy(dense, 0, target, 0, size());
+        return target;
     }
 
     @Override
@@ -191,9 +196,9 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     {
         int index;
         return value >= 0
-            && value < sparse.length
-            && (index = sparse[value]) < elementsCount
-            && dense[index] == value;
+                && value < sparse.length
+                && (index = sparse[value]) < elementsCount
+                && dense[index] == value;
     }
 
     @Override
@@ -201,13 +206,13 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     {
         assert value >= 0 : "Double linked set supports values >= 0 only.";
 
-        final boolean containsAlready = contains(value);  
+        final boolean containsAlready = contains(value);
         if (!containsAlready)
         {
             // TODO: check if a fixed-size set is (much) faster without these checks?
             ensureDenseCapacity(1);
             ensureSparseCapacity(value);
-            
+
             sparse[value] = elementsCount;
             dense[elementsCount++] = value;
         }
@@ -215,14 +220,14 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     }
 
     /**
-     * A faster version of {@link #add(int)} that does check or attempt to expand the 
+     * A faster version of {@link #add(int)} that does check or attempt to expand the
      * internal buffers. Assertions are still present.
      */
     private void addNoChecks(int value)
     {
         assert value >= 0 : "Double linked set supports values >= 0 only.";
 
-        final boolean containsAlready = contains(value);  
+        final boolean containsAlready = contains(value);
         if (!containsAlready)
         {
             assert size() + 1 < dense.length : "Dense array too small.";
@@ -232,7 +237,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
             dense[elementsCount++] = value;
         }
     }
-    
+
     /**
      * Adds two elements to the set.
      */
@@ -246,7 +251,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
 
     /**
      * Vararg-signature method for adding elements to this set.
-     * <p><b>This method is handy, but costly if used in tight loops (anonymous 
+     * <p><b>This method is handy, but costly if used in tight loops (anonymous
      * array passing)</b></p>
      * 
      * @return Returns the number of elements that were added to the set
@@ -287,7 +292,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
 
         return count;
     }
-    
+
     /*
      * 
      */
@@ -319,8 +324,8 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         return removeAllOccurrences(key) == 1;
     }
 
-    
-    
+
+
     @Override
     public Iterator<IntCursor> iterator()
     {
@@ -351,7 +356,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
             if (predicate.apply(dense[i]))
                 break;
         }
-        
+
         return predicate;
     }
 
@@ -429,15 +434,15 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
             };
         });
     }
-    
+
     /**
      * Create a set from a variable number of arguments or an array of <code>int</code>.
      * The elements are copied from the argument to the internal buffer.
      */
     public static IntDoubleLinkedSet from(int... elements)
     {
-        final IntDoubleLinkedSet set = 
-            new IntDoubleLinkedSet(elements.length, 1 + maxElement(elements));
+        final IntDoubleLinkedSet set =
+                new IntDoubleLinkedSet(elements.length, 1 + maxElement(elements));
         for (int i : elements)
             set.addNoChecks(i);
         return set;
@@ -452,15 +457,15 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     }
 
     /**
-     * Static constructor-like method similar to other (generic) collections. 
+     * Static constructor-like method similar to other (generic) collections.
      */
     public static IntDoubleLinkedSet newInstance()
     {
         return new IntDoubleLinkedSet();
     }
-    
+
     /**
-     * Return the value of the maximum element (or zero) in a given container. 
+     * Return the value of the maximum element (or zero) in a given container.
      */
     private static int maxElement(IntContainer container)
     {
@@ -471,7 +476,7 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     }
 
     /**
-     * Return the value of the maximum element (or zero) in a given container. 
+     * Return the value of the maximum element (or zero) in a given container.
      */
     private static int maxElement(int... elements)
     {

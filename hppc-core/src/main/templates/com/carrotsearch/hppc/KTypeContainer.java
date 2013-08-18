@@ -48,7 +48,7 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * Return the current number of elements in this container. The time for calculating
      * the container's size may take <code>O(n)</code> time, although implementing classes
      * should try to maintain the current size and return in constant time.
-     */ 
+     */
     public int size();
 
     /**
@@ -60,10 +60,10 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * Copies all elements from this container to an array of this container's component
      * type. The returned array is always a copy, regardless of the storage used by the container.
      */
-    /*!#if ($TemplateOptions.KTypePrimitive)   
+    /*! #if ($TemplateOptions.KTypePrimitive)
     public KType [] toArray();
        #else !*/
-    public KType [] toArray(Class<? super KType> clazz);
+    public KType[] toArray(Class<? super KType> clazz);
     /*! #end !*/
 
     /* #if ($TemplateOptions.KTypeGeneric) */
@@ -75,6 +75,13 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      */
     public Object[] toArray();    
     /* #end */
+
+    /**
+     * Copies all elements of this container to an existing array of the same type.
+     * @param target The target array must be large enough to hold all elements, i.e >= {@link #size()}.
+     * @return Returns the target argument for chaining.
+     */
+    public KType[] toArray(KType[] target);
 
     /**
      * Applies a <code>procedure</code> to all container elements. Returns the argument (any
@@ -91,7 +98,7 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
 
     /**
      * Applies a <code>predicate</code> to container elements as long, as the predicate
-     * returns <code>true</code>. The iteration is interrupted otherwise. 
+     * returns <code>true</code>. The iteration is interrupted otherwise.
      */
     public <T extends KTypePredicate<? super KType>> T forEach(T predicate);
 }

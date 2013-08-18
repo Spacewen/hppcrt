@@ -6,7 +6,7 @@ import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
 
 /**
- * Common superclass for collections. 
+ * Common superclass for collections.
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
@@ -23,12 +23,12 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
         // We know c holds sub-types of KType and we're not modifying c, so go unchecked.
         final KTypeContainer<KType> c2 = (KTypeContainer<KType>) c;
         return this.removeAll(new KTypePredicate<KType>()
-        {
+                {
             public boolean apply(KType k)
             {
                 return c2.contains(k);
             }
-        });
+                });
     }
 
     /**
@@ -43,12 +43,12 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
         // We know c holds sub-types of KType and we're not modifying c, so go unchecked.
         final KTypeContainer<KType> c2 = (KTypeContainer<KType>) c;
         return this.removeAll(new KTypePredicate<KType>()
-        {
+                {
             public boolean apply(KType k)
             {
                 return !c2.contains(k);
             }
-        });
+                });
     }
 
     /**
@@ -59,16 +59,16 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     public int retainAll(final KTypePredicate<? super KType> predicate)
     {
         return removeAll(new KTypePredicate<KType>()
-        {
+                {
             public boolean apply(KType value)
             {
                 return !predicate.apply(value);
             };
-        });
+                });
     }
 
     /**
-     * Default implementation of copying to an array.
+     * Default implementation of copying to a new array.
      */
     @Override
     /*!#if ($TemplateOptions.KTypePrimitive)
@@ -79,19 +79,34 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     /*! #end !*/
     {
         final int size = size();
-        final KType [] array = 
-        /*!#if ($TemplateOptions.KTypePrimitive) 
-           new KType [size];   
-           #else !*/
-           (KType []) java.lang.reflect.Array.newInstance(clazz, size);
+
+        final KType [] array =
+                /*!#if ($TemplateOptions.KTypePrimitive)
+                new KType [size];
+                #else !*/
+                (KType[]) java.lang.reflect.Array.newInstance(clazz, size);
         /*!#end !*/
 
+        return toArray(array);
+    }
+
+    /**
+     * Default implementation of copying to an existing array.
+     */
+    @Override
+    public KType[] toArray(KType[] target)
+    {
+        assert target.length >= size() : "Target array must be >= " + size();
+
         int i = 0;
+
+        //use default iterator capability
         for (KTypeCursor<KType> c : this)
         {
-            array[i++] = c.value;
+            target[i++] = c.value;
         }
-        return array;
+
+        return target;
     }
 
     /* #if ($TemplateOptions.KTypeGeneric) */
@@ -107,6 +122,7 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
         return array;
     }
     /* #end */
+
 
     /**
      * Convert the contents of this container to a human-friendly string.

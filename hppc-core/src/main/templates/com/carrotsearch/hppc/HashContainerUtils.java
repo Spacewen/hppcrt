@@ -1,6 +1,5 @@
 package com.carrotsearch.hppc;
 
-import java.util.Arrays;
 import java.util.concurrent.Callable;
 
 import com.carrotsearch.hppc.hash.MurmurHash3;

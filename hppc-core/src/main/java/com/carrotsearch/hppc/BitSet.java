@@ -1,8 +1,8 @@
-/* 
+/*
  * Repackaged from org.apache.lucene.util.OpenBitSet (Lucene).
  * svn rev. 1479633, https://svn.apache.org/repos/asf/lucene/dev/trunk
  * 
- * Minor changes in class hierarchy, removed serialization and several methods. 
+ * Minor changes in class hierarchy, removed serialization and several methods.
  * Added container adapters.
  */
 
@@ -45,7 +45,7 @@ import com.carrotsearch.hppc.procedures.LongProcedure;
  * <p>
  * The index range for a bitset can easily exceed positive <code>int</code> range in Java
  * (0x7fffffff), so many methods in this class accept or return a <code>long</code>. There
- * are adapter methods that return views compatible with 
+ * are adapter methods that return views compatible with
  * {@link LongLookupContainer} and {@link IntLookupContainer} interfaces.</p>
  * 
  * @see #asIntLookupContainer()
@@ -61,7 +61,7 @@ public class BitSet implements Cloneable
     private static final long DEFAULT_NUM_BITS = 64;
 
     /**
-     * Internal representation of bits in this bit set. 
+     * Internal representation of bits in this bit set.
      */
     public long [] bits;
 
@@ -104,7 +104,7 @@ public class BitSet implements Cloneable
     }
 
     /**
-     * Static constructor-like method similar to other (generic) collections. 
+     * Static constructor-like method similar to other (generic) collections.
      */
     public static BitSet newInstance()
     {
@@ -148,19 +148,19 @@ public class BitSet implements Cloneable
         trimTrailingZeros();
         if (wlen == 0) return 0;
         return (((long) wlen - 1) << 6)
-            + (64 - Long.numberOfLeadingZeros(bits[wlen - 1]));
+                + (64 - Long.numberOfLeadingZeros(bits[wlen - 1]));
     }
 
-    /** 
-     * Returns true if there are no set bits 
+    /**
+     * Returns true if there are no set bits
      */
     public boolean isEmpty()
     {
         return cardinality() == 0;
     }
 
-    /** 
-     * Returns true or false for the specified bit index. 
+    /**
+     * Returns true or false for the specified bit index.
      */
     public boolean get(int index)
     {
@@ -186,8 +186,8 @@ public class BitSet implements Cloneable
         return (bits[i] & bitmask) != 0;
     }
 
-    /** 
-     * Sets a bit, expanding the set size if necessary. 
+    /**
+     * Sets a bit, expanding the set size if necessary.
      */
     public void set(long index)
     {
@@ -215,7 +215,7 @@ public class BitSet implements Cloneable
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
-                                          // due to wrap
+        // due to wrap
 
         if (startWord == endWord)
         {
@@ -278,7 +278,7 @@ public class BitSet implements Cloneable
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
-                                          // due to wrap
+        // due to wrap
 
         // invert masks since we are clearing
         startmask = ~startmask;
@@ -319,7 +319,7 @@ public class BitSet implements Cloneable
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
-                                          // due to wrap
+        // due to wrap
 
         // invert masks since we are clearing
         startmask = ~startmask;
@@ -369,7 +369,7 @@ public class BitSet implements Cloneable
         return val;
     }
 
-    /** 
+    /**
      * Flips a bit, expanding the set size if necessary.
      */
     public void flip(long index)
@@ -423,7 +423,7 @@ public class BitSet implements Cloneable
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
-                                          // due to wrap
+        // due to wrap
 
         if (startWord == endWord)
         {
@@ -562,8 +562,8 @@ public class BitSet implements Cloneable
         try
         {
             BitSet obs = (BitSet) super.clone();
-            obs.bits = (long []) obs.bits.clone(); // hopefully an array clone is as
-                                                   // fast(er) than arraycopy
+            obs.bits = obs.bits.clone(); // hopefully an array clone is as
+            // fast(er) than arraycopy
             return obs;
         }
         catch (CloneNotSupportedException e)
@@ -813,7 +813,7 @@ public class BitSet implements Cloneable
 
         return builder.toString();
     }
-    
+
     /**
      * Returns a view over this bitset data compatible with {@link IntLookupContainer}. A new
      * object is always returned, but its methods reflect the current state of the bitset
@@ -822,7 +822,7 @@ public class BitSet implements Cloneable
      * <p>Methods of the returned {@link IntLookupContainer} may throw a {@link RuntimeException}
      * if the cardinality of this bitset exceeds the int range.
      */
-    public IntLookupContainer asIntLookupContainer() 
+    public IntLookupContainer asIntLookupContainer()
     {
         return new IntLookupContainer()
         {
@@ -844,7 +844,7 @@ public class BitSet implements Cloneable
                 return new Iterator<IntCursor>() {
                     private long nextBitSet = BitSet.this.nextSetBit(0);
                     private final IntCursor cursor = new IntCursor();
-                    
+
                     @Override
                     public boolean hasNext()
                     {
@@ -856,7 +856,7 @@ public class BitSet implements Cloneable
                     {
                         final long value = nextBitSet;
                         if (value < 0) throw new NoSuchElementException();
-                        if (value > Integer.MAX_VALUE) 
+                        if (value > Integer.MAX_VALUE)
                             throw new RuntimeException("BitSet range larger than maximum positive integer.");
 
                         nextBitSet = BitSet.this.nextSetBit(value + 1);
@@ -875,13 +875,18 @@ public class BitSet implements Cloneable
             @Override
             public int [] toArray()
             {
-                final int [] data = new int [getCurrentCardinality()];
+                return toArray(new int[getCurrentCardinality()]);
+            }
+
+            @Override
+            public int[] toArray(int[] target)
+            {
                 final BitSetIterator i = BitSet.this.iterator();
                 for (int j = 0, bit = i.nextSetBit(); bit >= 0; bit = i.nextSetBit())
                 {
-                    data[j++] = bit;
+                    target[j++] = bit;
                 }
-                return data;
+                return target;
             }
 
             @Override
@@ -908,7 +913,7 @@ public class BitSet implements Cloneable
 
                 return procedure;
             }
-            
+
             @Override
             public boolean contains(int index)
             {
@@ -916,26 +921,26 @@ public class BitSet implements Cloneable
             }
 
             /**
-             * Rounds the bitset's cardinality to an integer or throws a 
-             * {@link RuntimeException} if the cardinality exceeds maximum int range. 
+             * Rounds the bitset's cardinality to an integer or throws a
+             * {@link RuntimeException} if the cardinality exceeds maximum int range.
              */
             private int getCurrentCardinality()
             {
                 long cardinality = BitSet.this.cardinality();
                 if (cardinality > Integer.MAX_VALUE)
-                    throw new RuntimeException("Bitset is larger than maximum positive integer: " 
-                        + cardinality);
+                    throw new RuntimeException("Bitset is larger than maximum positive integer: "
+                            + cardinality);
                 return (int) cardinality;
             }
         };
     }
-    
+
     /**
      * Returns a view over this bitset data compatible with {@link LongLookupContainer}. A new
      * object is always returned, but its methods reflect the current state of the bitset
      * (the view is not a snapshot).
      */
-    public LongLookupContainer asLongLookupContainer() 
+    public LongLookupContainer asLongLookupContainer()
     {
         return new LongLookupContainer()
         {
@@ -987,14 +992,19 @@ public class BitSet implements Cloneable
             @Override
             public long [] toArray()
             {
-                final long [] data = new long [getCurrentCardinality()];
+                return toArray(new long[getCurrentCardinality()]);
+            }
+
+            @Override
+            public long[] toArray(long[] target)
+            {
                 final BitSet bset = BitSet.this;
                 int j = 0;
                 for (long bit = bset.nextSetBit((long) 0); bit >= 0; bit = bset.nextSetBit(bit + 1))
                 {
-                    data[j++] = bit;
+                    target[j++] = bit;
                 }
-                return data;
+                return target;
             }
 
             @Override
@@ -1029,15 +1039,15 @@ public class BitSet implements Cloneable
             }
 
             /**
-             * Rounds the bitset's cardinality to an integer or throws a 
-             * {@link RuntimeException} if the cardinality exceeds maximum int range. 
+             * Rounds the bitset's cardinality to an integer or throws a
+             * {@link RuntimeException} if the cardinality exceeds maximum int range.
              */
             private int getCurrentCardinality()
             {
                 long cardinality = BitSet.this.cardinality();
                 if (cardinality > Integer.MAX_VALUE)
-                    throw new RuntimeException("Bitset is larger than maximum positive integer: " 
-                        + cardinality);
+                    throw new RuntimeException("Bitset is larger than maximum positive integer: "
+                            + cardinality);
                 return (int) cardinality;
             }
         };
