@@ -932,8 +932,12 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 KTypeVTypeMap<KType, VType> other = (KTypeVTypeMap<KType, VType>) obj;
                 if (other.size() == this.size())
                 {
-                    for (KTypeVTypeCursor<KType, VType> c : this)
+                    final EntryIterator it = (EntryIterator) this.iterator();
+
+                    while (it.hasNext())
                     {
+                        final KTypeVTypeCursor<KType, VType> c = it.next();
+
                         if (other.containsKey(c.key))
                         {
                             VType v = other.get(c.key);
@@ -942,6 +946,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                                 continue;
                             }
                         }
+                        //recycle
+                        it.release();
                         return false;
                     }
                     return true;
@@ -1036,6 +1042,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * Returns a specialized view of the keys of this associated container.
      * The view additionally implements {@link ObjectLookupContainer}.
      */
+    @Override
     public KeysContainer keys()
     {
         return new KeysContainer();
@@ -1043,9 +1050,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
     /**
      * A view of the keys inside this hash map.
-     * (package visibility for UT)
      */
-    final class KeysContainer
+    public final class KeysContainer
     extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
@@ -1151,6 +1157,37 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                         obj.cursor.index = -1;
                     }
                 });
+
+        @Override
+        public KType[] toArray(KType[] target)
+        {
+            final boolean[] alloc = owner.allocated;
+
+            int count = 0;
+            for (int i = 0; i < keys.length; i++)
+            {
+                if (alloc[i])
+                {
+                    target[count++] = owner.keys[i];
+                }
+            }
+
+            assert count == owner.assigned;
+            return target;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        /*! #if ($TemplateOptions.KTypePrimitive)
+        public KType [] toArray()
+            #else !*/
+        public Object[] toArray()
+        /*! #end !*/
+        {
+            return toArray(Intrinsics.<KType[]> newKTypeArray(assigned));
+        }
     };
 
     /**
@@ -1189,6 +1226,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * @return Returns a container with all values stored in this map.
      */
+    @Override
     public ValuesContainer values()
     {
         return new ValuesContainer();
@@ -1196,9 +1234,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
     /**
      * A view over the set of values of this map.
-     * (package visibility for UT)
      */
-    final class ValuesContainer extends AbstractKTypeCollection<VType>
+    public final class ValuesContainer extends AbstractKTypeCollection<VType>
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
                 KTypeVTypeOpenHashMap.this;
@@ -1206,13 +1243,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         @Override
         public int size()
         {
-            return KTypeVTypeOpenHashMap.this.size();
+            return owner.size();
         }
 
         @Override
         public boolean isEmpty()
         {
-            return KTypeVTypeOpenHashMap.this.isEmpty();
+            return owner.isEmpty();
         }
 
         @Override
@@ -1307,6 +1344,37 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                         obj.cursor.index = -1;
                     }
                 });
+
+        @Override
+        public VType[] toArray(VType[] target)
+        {
+            final boolean[] alloc = owner.allocated;
+
+            int count = 0;
+            for (int i = 0; i < values.length; i++)
+            {
+                if (alloc[i])
+                {
+                    target[count++] = owner.values[i];
+                }
+            }
+
+            assert count == owner.assigned;
+            return target;
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        /*! #if ($TemplateOptions.VTypePrimitive)
+        public VType [] toArray()
+           #else !*/
+        public Object[] toArray()
+        /*! #end !*/
+        {
+            return toArray(Intrinsics.<VType[]> newVTypeArray(assigned));
+        }
     }
 
     /**
