@@ -62,6 +62,9 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE  extends AbstractIterator<O
         //properly reset state of the Iterator for a new iteration
         newObject.resetState();
 
+        //flag this iterator as borrowed, now
+        newObject.setBorrowed();
+
         return newObject;
     }
 
