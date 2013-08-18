@@ -17,6 +17,12 @@ public abstract class AbstractIterator<E> implements Iterator<E>
     private int state = NOT_CACHED;
 
     /**
+     * true if the iterator is in the pool (i.e free)
+     * else it means it is in use, somewhere outside the pool
+     */
+    private boolean isFree = true;
+
+    /**
      * The next element to be returned from {@link #next()} if
      * fetched.
      */
@@ -43,9 +49,11 @@ public abstract class AbstractIterator<E> implements Iterator<E>
         //if there is an attached pool, auto-release this object when there is no element left.
         //this is especially useful in case of the for-each construct, which release
         //the hidden iterator automatically when exiting the fully iterated for-each.
-        if (state == AT_END && this.iteratorPool != null) {
+        if (state == AT_END && this.iteratorPool != null && !this.isFree)
+        {
 
             this.iteratorPool.release(this);
+            this.isFree = true;
         }
 
         return (state == CACHED);
@@ -95,7 +103,6 @@ public abstract class AbstractIterator<E> implements Iterator<E>
     protected final void setPool(IteratorPool<E, AbstractIterator<E>> pool) {
 
         assert pool != null;
-
         this.iteratorPool = pool;
     }
 
@@ -109,20 +116,34 @@ public abstract class AbstractIterator<E> implements Iterator<E>
     }
 
     /**
+     * Call to notify the iterator is now borrowed, i.e
+     * no longer in in its associated pool (if any)
+     */
+    protected final void setBorrowed()
+    {
+        isFree = false;
+    }
+
+    /**
      * Returns the iterator back to its associated pool, if any.
-     * This method must be called if the iterator has not yet been automatically
-     * recycled, in case of:
+     * This method must be called if the iterator cannot be automatically
+     * recycled, in the cases:
      * <pre>
      * Iterator obtained by explicit {@link Iterator}.iterator() or any other factory-like interface,
-     * so it needs to be returned to its pool explicitly in a symmetrical manner.</pre>
-     * Of course, using the iterator after it has been released is a logical error,
+     * then later implied in an incomplete iteration loop.
+     * </pre>
+     * 
+     * Note it is always safe to call release() whatever the iterator has already been effectively released or not.
+     * 
+     * Of course, using the iterator after a release() is always a logical error,
      * since such object is supposed to be "freed".
      */
     public final void release() {
 
-        if (this.iteratorPool != null) {
-
+        if (this.iteratorPool != null && !this.isFree)
+        {
             this.iteratorPool.release(this);
+            this.isFree = true;
         }
     }
 

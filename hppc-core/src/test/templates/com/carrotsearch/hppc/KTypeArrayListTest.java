@@ -873,6 +873,107 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
+    @Test
+    public void testPooledIteratorExceptionSafe()
+    {
+        int TEST_SIZE = 224171;
+        long TEST_ROUNDS = 15;
+
+        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+
+        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+
+            long count;
+
+            @Override
+            public void apply(KType value)
+            {
+                count += castType(value);
+            }
+        }).count;
+
+
+        int initialPoolSize = testContainer.valueIteratorPool.size();
+
+        //start with a non full pool, remove 3 elements
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake2 = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake3 = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+
+        int startingTestPoolSize = testContainer.valueIteratorPool.size();
+
+        assertEquals(initialPoolSize - 3, startingTestPoolSize);
+
+        int count = 0;
+        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+
+        for (int round = 0; round < TEST_ROUNDS; round++)
+        {
+            try
+            {
+                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
+
+                guard = 0;
+                count = 0;
+
+                while (loopIterator.hasNext())
+                {
+                    guard += castType(loopIterator.next().value);
+
+                    //brutally interrupt in the middle some of the loops, but not all
+                    if (round > TEST_ROUNDS / 2 && count > TEST_SIZE / 2)
+                    {
+                        throw new Exception("Oups some problem in the loop occured");
+                    }
+                    count++;
+                } //end while
+
+                //iterator is returned to its pool in case of normal loop termination
+                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+                assertEquals(checksum, guard);
+
+                //still, try to return it ....
+                loopIterator.release();
+
+                //nothing has changed
+                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+            }
+            catch (Exception e)
+            {
+                //iterator is NOT returned to its pool because of the exception
+                assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
+
+                //manual return to the pool then
+                loopIterator.release();
+
+                //now the pool is restored
+                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+
+                //continue to try to release...
+                loopIterator.release();
+
+                //nothing has changed
+                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+            }
+        } //end for rounds
+
+        // pool initial size is untouched anyway
+        assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+
+        //finally return the fake ones, several times
+        loopIteratorFake.release();
+        loopIteratorFake.release();
+        loopIteratorFake.release();
+        loopIteratorFake2.release();
+        loopIteratorFake2.release();
+        loopIteratorFake2.release();
+        loopIteratorFake3.release();
+        loopIteratorFake3.release();
+
+        assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
+    }
+
     private KTypeArrayList<KType> createArrayWithOrderedData(int size)
     {
         KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
