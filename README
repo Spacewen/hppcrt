@@ -11,7 +11,8 @@ adding some features which general goal is improving realtime behaviour,
 that is among others to have ZERO GC at runtime.
 
 For now, the additional features are:
-*************************************************
+******************************************************************************************************
+******************************************************************************************************
 a) Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
 
 b) Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations
@@ -19,14 +20,16 @@ especially noticable for big container sizes. (Javolution has a similar trick)
 
 c) Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically at runtime. 
-That means in particular using the for-each construct without any dynamic allocation below.
+That means in particular using the for-each construct without any dynamic allocation underneath.
+
+d) Some API fixes:
+toArray(existing array) for everybody fitted, also good for a no-runtime dynamic allocation policy.
+
 
 TODO:
 Examples for these new features...
-************************************************
 
 All these new features are Unit tested, so should work reasonably well.
 Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.
-
-
-
+******************************************************************************************************
+******************************************************************************************************
