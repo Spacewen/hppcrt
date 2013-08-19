@@ -863,7 +863,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     }
 
     /**
-     * Returns a new object of this class with no need to declare generic type (shortcut
+     * Create a new hash set with default parameters (shortcut
      * instead of using a constructor).
      */
     public static <KType> KTypeOpenHashSet<KType> newInstance()
@@ -872,15 +872,18 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     }
 
     /**
-     * Returns a new object with no key perturbations (see
-     * {@link #computePerturbationValue(int)}). Only use when sure the container will not
+     * Create a new hash set with no key perturbations, and default parameters (see
+     * {@link #computePerturbationValue(int)}). This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
     public static <KType> KTypeOpenHashSet<KType> newInstanceWithoutPerturbations()
     {
         return new KTypeOpenHashSet<KType>() {
             @Override
-            protected int computePerturbationValue(int capacity) { return 0; }
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
         };
     }
 
@@ -893,28 +896,48 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor);
     }
 
+    /**
+     * Create a new hash set with initial capacity and load factor control, with no key perturbations. (see
+     * {@link #computePerturbationValue(int)}). This may lead to increased performance, but only use when sure the container will not
+     * be used for direct copying of keys to another hash container.
+     */
+    public static <KType> KTypeOpenHashSet<KType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor)
+    {
+        return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor) {
+            @Override
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
+        };
+    }
+
     /* #if ($TemplateOptions.KTypeGeneric) */
     /**
-     * Returns a new object of this class with no need to declare generic type, using a specific hash strategy (shortcut
-     * instead of using a constructor).
+     * Create a new hash set with full parameter control, using a specific hash strategy.
+     * A strategy = null is equivalent at providing no strategy at all.
      */
-    public static <KType> KTypeOpenHashSet<KType> newInstanceWithCapacityAndStrategy(int initialCapacity, float loadFactor , HashingStrategy<KType> strategy)
+    public static <KType> KTypeOpenHashSet<KType> newInstance(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy);
     }
 
+
     /**
-     * Returns a new object with no key perturbations (see
-     * {@link #computePerturbationValue(int)}), but with a specific capacity, load factor, and {@link HashingStrategy}.
+     * Create a new hash set with full parameter control, using a specific hash strategy, with no key perturbations (see
+     * {@link #computePerturbationValue(int)}).
      * A strategy = null is equivalent at providing no strategy at all.
-     * Only use when sure the container will not
+     * This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
-    public static <KType> KTypeOpenHashSet<KType> newInstanceWithCapacityAndStrategyWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    public static <KType> KTypeOpenHashSet<KType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy) {
             @Override
-            protected int computePerturbationValue(int capacity) { return 0; }
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
         };
     }
 

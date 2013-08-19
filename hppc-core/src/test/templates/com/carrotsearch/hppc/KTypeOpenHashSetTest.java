@@ -632,11 +632,11 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         //those following 3  sets behave indeed the same in the test context:
         KTypeOpenHashSet<KType> refSet = KTypeOpenHashSet.newInstance();
 
-        KTypeOpenHashSet<KType> refSetNullStrategy = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(
+        KTypeOpenHashSet<KType> refSetNullStrategy = KTypeOpenHashSet.newInstance(
                 KTypeOpenHashSet.DEFAULT_CAPACITY,
                 KTypeOpenHashSet.DEFAULT_LOAD_FACTOR, null);
 
-        KTypeOpenHashSet<KType> refSetIdenticalStrategy = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(
+        KTypeOpenHashSet<KType> refSetIdenticalStrategy = KTypeOpenHashSet.newInstance(
                 KTypeOpenHashSet.DEFAULT_CAPACITY,
                 KTypeOpenHashSet.DEFAULT_LOAD_FACTOR,
                 new HashingStrategy<KType>() {
@@ -703,7 +703,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     {
         Random prng = new Random(randomSeed);
 
-        KTypeOpenHashSet<KType> newSet = KTypeOpenHashSet.newInstanceWithCapacityAndStrategy(KTypeOpenHashSet.DEFAULT_CAPACITY,
+        KTypeOpenHashSet<KType> newSet = KTypeOpenHashSet.newInstance(KTypeOpenHashSet.DEFAULT_CAPACITY,
                 KTypeOpenHashSet.DEFAULT_LOAD_FACTOR, strategy);
 
         for (int i = 0; i < size; i++)

@@ -1496,20 +1496,23 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
 
     /**
-     * Returns a new object with no key perturbations (see
-     * {@link #computePerturbationValue(int)}). Only use when sure the container will not
+     * Create a new hash map with no key perturbations, and default parameters (see
+     * {@link #computePerturbationValue(int)}). This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
     public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations()
     {
         return new KTypeVTypeOpenHashMap<KType, VType>() {
             @Override
-            protected int computePerturbationValue(int capacity) { return 0; }
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
         };
     }
 
     /**
-     * Create a new hash map without providing the full generic signature (constructor
+     * Create a new hash map with initial capacity and load factor control. (constructor
      * shortcut).
      */
     public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(int initialCapacity, float loadFactor)
@@ -1517,10 +1520,26 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor);
     }
 
+    /**
+     * Create a new hash map with initial capacity and load factor control, with no key perturbations. (see
+     * {@link #computePerturbationValue(int)}). This may lead to increased performance, but only use when sure the container will not
+     * be used for direct copying of keys to another hash container.
+     */
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor)
+    {
+        return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor) {
+            @Override
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
+        };
+    }
+
     /* #if ($TemplateOptions.KTypeGeneric) */
     /**
-     * Create a new hash map without providing the full generic signature, using a specific hash strategy. (constructor
-     * shortcut).
+     * Create a new hash map with full parameter control, using a specific hash strategy.
+     * A strategy = null is equivalent at providing no strategy at all.
      */
     public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
     {
@@ -1528,17 +1547,20 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
 
     /**
-     * Returns a new object with no key perturbations (see
-     * {@link #computePerturbationValue(int)}), but with a specific capacity, load factor, and {@link HashingStrategy}.
+     * Create a new hash map with full parameter control, using a specific hash strategy, with no key perturbations (see
+     * {@link #computePerturbationValue(int)}).
      * A strategy = null is equivalent at providing no strategy at all.
-     * Only use when sure the container will not
+     * This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithCapacityAndStrategyWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor, strategy) {
             @Override
-            protected int computePerturbationValue(int capacity) { return 0; }
+            protected final int computePerturbationValue(int capacity)
+            {
+                return 0;
+            }
         };
     }
 
