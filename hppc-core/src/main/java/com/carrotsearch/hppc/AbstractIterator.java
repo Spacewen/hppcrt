@@ -100,8 +100,8 @@ public abstract class AbstractIterator<E> implements Iterator<E>
     /**
      * Associate the pool the iterator instance came from.
      */
-    protected final void setPool(IteratorPool<E, AbstractIterator<E>> pool) {
-
+    public final void setPool(IteratorPool<E, AbstractIterator<E>> pool)
+    {
         assert pool != null;
         this.iteratorPool = pool;
     }
@@ -110,8 +110,8 @@ public abstract class AbstractIterator<E> implements Iterator<E>
      * reset state of the Iterator, so it is ready to iterate
      * again, just as in a new creation.
      */
-    protected final void resetState() {
-
+    public final void resetState()
+    {
         state = NOT_CACHED;
     }
 
@@ -119,7 +119,7 @@ public abstract class AbstractIterator<E> implements Iterator<E>
      * Call to notify the iterator is now borrowed, i.e
      * no longer in in its associated pool (if any)
      */
-    protected final void setBorrowed()
+    public final void setBorrowed()
     {
         isFree = false;
     }
