@@ -47,14 +47,14 @@ Another way is to add convenient methods/API that allow filling and reuse pre-ex
 <a name="for-now-the-additional-features-are" class="anchor" href="#for-now-the-additional-features-are"><span class="octicon octicon-link"></span></a>For now, the additional features are:</h2>
 
 <ol>
-<li><p>Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). </p></li>
+<li><p>Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode(). </p></li>
 <li><p>Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
 especially noticable for big container sizes. </p></li>
 <li><p>Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically at runtime. 
 That means in particular using the enhanced for loop without any dynamic allocation underneath.</p></li>
 <li><p>Some API tweaks:
-toArray(existing array) for every conatiner, good for array reuse.</p></li>
+toArray(existing array) for every container, good for array reuse.</p></li>
 <li><p>Tweaked internal implementation to remove dynamic allocation of temporary Objects</p></li>
 <li><p>TODO:
 Creating examples for the new methods/API. </p></li>
