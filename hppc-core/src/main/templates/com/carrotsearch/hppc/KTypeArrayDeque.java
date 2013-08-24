@@ -528,15 +528,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public boolean isEmpty()
-    {
-        return size() == 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
     public int size()
     {
         if (head <= tail)
@@ -604,20 +595,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             }
             this.buffer = newBuffer;
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    /*! #if ($TemplateOptions.KTypePrimitive)
-    public KType [] toArray()
-        #else !*/
-    public Object [] toArray()
-    /*! #end !*/
-    {
-        final int size = size();
-        return toArray(Intrinsics.<KType[]>newKTypeArray(size));
     }
 
     /**

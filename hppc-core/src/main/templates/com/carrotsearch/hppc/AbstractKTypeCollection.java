@@ -11,6 +11,33 @@ import com.carrotsearch.hppc.predicates.KTypePredicate;
 /*! ${TemplateOptions.generatedAnnotation} !*/
 abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
 {
+    protected KTypeContainer<KType> testContainer;
+    protected KTypePredicate<? super KType> testPredicate;
+
+    protected KTypePredicate<KType> containsTestPredicate = new KTypePredicate<KType>() {
+
+        public boolean apply(KType k)
+        {
+            return testContainer.contains(k);
+        }
+    };
+
+    protected KTypePredicate<KType> containsNegateTestPredicate = new KTypePredicate<KType>() {
+
+        public boolean apply(KType k)
+        {
+            return !testContainer.contains(k);
+        }
+    };
+
+    protected KTypePredicate<KType> negatePredicate = new KTypePredicate<KType>() {
+
+        public boolean apply(KType k)
+        {
+            return !testPredicate.apply(k);
+        }
+    };
+
     /**
      * Default implementation uses a predicate for removal.
      */
@@ -21,14 +48,8 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     public int removeAll(final KTypeLookupContainer<? extends KType> c)
     {
         // We know c holds sub-types of KType and we're not modifying c, so go unchecked.
-        final KTypeContainer<KType> c2 = (KTypeContainer<KType>) c;
-        return this.removeAll(new KTypePredicate<KType>()
-                {
-            public boolean apply(KType k)
-            {
-                return c2.contains(k);
-            }
-                });
+        this.testContainer = (KTypeContainer<KType>) c;
+        return this.removeAll(this.containsTestPredicate);
     }
 
     /**
@@ -41,14 +62,8 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     public int retainAll(final KTypeLookupContainer<? extends KType> c)
     {
         // We know c holds sub-types of KType and we're not modifying c, so go unchecked.
-        final KTypeContainer<KType> c2 = (KTypeContainer<KType>) c;
-        return this.removeAll(new KTypePredicate<KType>()
-                {
-            public boolean apply(KType k)
-            {
-                return !c2.contains(k);
-            }
-                });
+        this.testContainer = (KTypeContainer<KType>) c;
+        return this.removeAll(this.containsNegateTestPredicate);
     }
 
     /**
@@ -58,40 +73,30 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     @Override
     public int retainAll(final KTypePredicate<? super KType> predicate)
     {
-        return removeAll(new KTypePredicate<KType>()
-                {
-            public boolean apply(KType value)
-            {
-                return !predicate.apply(value);
-            };
-                });
+        this.testPredicate = predicate;
+        return this.removeAll(this.negatePredicate);
     }
 
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
-     * Default implementation of copying to a new array.
+     * Default implementation for:
+     * {@inheritDoc}
      */
     @Override
-    /*!#if ($TemplateOptions.KTypePrimitive)
-    public KType [] toArray()
-       #else !*/
     @SuppressWarnings("unchecked")
     public KType [] toArray(Class<? super KType> clazz)
-    /*! #end !*/
     {
         final int size = size();
 
-        final KType [] array =
-                /*!#if ($TemplateOptions.KTypePrimitive)
-                new KType [size];
-                #else !*/
-                (KType[]) java.lang.reflect.Array.newInstance(clazz, size);
-        /*!#end !*/
+        final KType[] array = (KType[]) java.lang.reflect.Array.newInstance(clazz, size);
 
         return toArray(array);
     }
+    /*! #end !*/
 
     /**
-     * Default implementation of copying to an existing array.
+     * Default implementation for:
+     * {@inheritDoc}
      */
     @Override
     public KType[] toArray(KType[] target)
@@ -99,7 +104,6 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
         assert target.length >= size() : "Target array must be >= " + size();
 
         int i = 0;
-
         //use default iterator capability
         for (KTypeCursor<KType> c : this)
         {
@@ -109,20 +113,18 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
         return target;
     }
 
-    /* #if ($TemplateOptions.KTypeGeneric) */
+    /**
+     * {@inheritDoc}
+     */
     @Override
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public KType [] toArray()
+    #else !*/
     public Object[] toArray()
+    /*! #end !*/
     {
-        final Object [] array = new Object [size()];
-        int i = 0;
-        for (KTypeCursor<KType> c : this)
-        {
-            array[i++] = c.value;
-        }
-        return array;
+        return toArray(Intrinsics.<KType[]> newKTypeArray(size()));
     }
-    /* #end */
-
 
     /**
      * Convert the contents of this container to a human-friendly string.
@@ -132,4 +134,11 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     {
         return Arrays.toString(this.toArray());
     }
+
+    @Override
+    public boolean isEmpty()
+    {
+        return size() == 0;
+    }
+
 }

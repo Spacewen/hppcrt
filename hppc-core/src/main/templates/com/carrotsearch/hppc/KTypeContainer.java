@@ -52,29 +52,35 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
     public int size();
 
     /**
-     * Shortcut for <code>size() == 0</code>.
+     * True if there is no elements in the container,
+     * equivalent to <code>size() == 0</code>
      */
     public boolean isEmpty();
 
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
      * Copies all elements from this container to an array of this container's component
-     * type. The returned array is always a copy, regardless of the storage used by the container.
+     * type.
+     * <p>The returned array is sized to match exactly
+     * the number of elements of the container.</p>
+     * The returned array is always a copy, regardless of the storage used by the container.
      */
-    /*! #if ($TemplateOptions.KTypePrimitive)
-    public KType [] toArray();
-       #else !*/
     public KType[] toArray(Class<? super KType> clazz);
     /*! #end !*/
 
-    /* #if ($TemplateOptions.KTypeGeneric) */
     /**
-     * Copies all elements from this container to an Object array. If you need an array
-     * of the type identical with this container's generic type, use {@link #toArray(Class)}.
+     * Copies all elements from this container to an array.
+     * <p>The returned array is sized to match exactly
+     * the number of elements of the container.</p>
+     * If you need an array of the type identical with this container's generic type, use {@link #toArray(Class)}.
      * 
-     * @see #toArray(Class) 
+     * @see #toArray(Class)
      */
-    public Object[] toArray();    
-    /* #end */
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public KType [] toArray();
+    #else !*/
+    public Object[] toArray();
+    /*! #end !*/
 
     /**
      * Copies all elements of this container to an existing array of the same type.

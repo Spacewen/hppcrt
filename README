@@ -1,35 +1,34 @@
-HPPC: High Performance Primitive Collections "Plus"
----------------------------------------------------
+#HPPC-RT: High Performance Primitive Collections "RealTime"
 
 This is a fork of HPPC from CarrotSearch:
 see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
--------------------------------------------------
 
-This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
-adding some features which general goal is improving realtime behaviour, 
-that is among others to have ZERO GC at runtime.
+---------------------------------------
 
-For now, the additional features are:
-******************************************************************************************************
-******************************************************************************************************
-a) Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
+This fork intend to follow the original HPPC as close as possible while 
+adding, tweaking, and even modifiying some features, for the goal of improving HPPC realtime behaviour. 
+Most of the internal modifications intend to reach zero temporaries Objects creation at runtime.
+Another way is to add convenient methods/API that allow filling and reuse pre-existing Objects. 
 
-b) Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations
-especially noticable for big container sizes. (Javolution has a similar trick)
+##For now, the additional features are:
 
-c) Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+1. Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
+
+2. Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
+especially noticable for big container sizes. 
+
+3. Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically at runtime. 
-That means in particular using the for-each construct without any dynamic allocation underneath.
+That means in particular using the enhanced for loop without any dynamic allocation underneath.
 
-d) Some API fixes:
-toArray(existing array) for everybody fitted, also good for a no-runtime dynamic allocation policy.
+4. Some API tweaks:
+toArray(existing array) for every conatiner, good for array reuse.
 
+5. Tweaked internal implementation to remove dynamic allocation of temporary Objects
 
-TODO:
-Examples for these new features...
+6. TODO:
+Creating examples for the new methods/API. 
 
 All these new features are Unit tested, so should work reasonably well.
-Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.
-******************************************************************************************************
-******************************************************************************************************
+Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6x-RT' branch for convenience.

@@ -18,7 +18,7 @@ import com.carrotsearch.hppc.procedures.IntProcedure;
  * <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.30.7319">
  * Preston Briggs and Linda Torczon's paper "An Efficient Representation for Sparse Sets"</a></p>
  */
-public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
+public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLookupContainer, IntSet, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -49,7 +49,6 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
      * internal pool of ValueIterator (must be created in constructor)
      */
     protected final  IteratorPool<IntCursor, IntArrayList.ValueIterator> valueIteratorPool;
-
 
     /**
      * Create with default sizing strategy and initial dense capacity of
@@ -167,22 +166,10 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
     }
 
     @Override
-    public int[] toArray()
-    {
-        return toArray(new int[size()]);
-    }
-
-    @Override
     public int[] toArray(int[] target)
     {
         System.arraycopy(dense, 0, target, 0, size());
         return target;
-    }
-
-    @Override
-    public boolean isEmpty()
-    {
-        return size() == 0;
     }
 
     @Override
@@ -421,18 +408,6 @@ public class IntDoubleLinkedSet implements IntLookupContainer, IntSet, Cloneable
         }
         this.elementsCount = max;
         return removed;
-    }
-
-    @Override
-    public int retainAll(final IntPredicate predicate)
-    {
-        return removeAll(new IntPredicate()
-        {
-            public boolean apply(int value)
-            {
-                return !predicate.apply(value);
-            };
-        });
     }
 
     /**

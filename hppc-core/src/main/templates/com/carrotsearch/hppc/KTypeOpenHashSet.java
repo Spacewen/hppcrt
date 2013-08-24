@@ -560,8 +560,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         //Faster than Arrays.fill(keys, null); // Help the GC.
         Internals.blankObjectArray(keys, 0, keys.length);
         /*! #end !*/
-
-
     }
 
     /**
@@ -571,15 +569,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     public int size()
     {
         return assigned;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEmpty()
-    {
-        return size() == 0;
     }
 
     /**
@@ -751,19 +740,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
                 target[j++] = keys[i];
 
         return target;
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    /*! #if ($TemplateOptions.KTypePrimitive)
-    public KType [] toArray()
-        #else !*/
-    public Object [] toArray()
-    /*! #end !*/
-    {
-        return toArray(Intrinsics.<KType[]> newKTypeArray(assigned));
     }
 
     /**

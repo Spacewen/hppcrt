@@ -408,15 +408,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * {@inheritDoc}
-     */
-    @Override
-    public boolean isEmpty()
-    {
-        return elementsCount == 0;
-    }
-
-    /**
      * Increases the capacity of this instance, if necessary, to ensure
      * that it can hold at least the number of elements specified by
      * the minimum capacity argument.
@@ -529,22 +520,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         this.buffer = (KType []) EMPTY;
         this.elementsCount = 0;
-    }
-
-    /**
-     * {@inheritDoc}
-     * 
-     * <p>The returned array is sized to match exactly
-     * the number of elements of the array.</p>
-     */
-    @Override
-    /*! #if ($TemplateOptions.KTypePrimitive)
-    public KType [] toArray()
-        #else !*/
-    public Object [] toArray()
-    /*! #end !*/
-    {
-        return toArray(Intrinsics.<KType[]> newKTypeArray(elementsCount));
     }
 
     /**

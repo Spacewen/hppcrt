@@ -1097,12 +1097,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public boolean isEmpty()
-        {
-            return owner.isEmpty();
-        }
-
-        @Override
         public Iterator<KTypeCursor<KType>> iterator()
         {
             //return new KeysIterator();
@@ -1175,19 +1169,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             assert count == owner.assigned;
             return target;
         }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        /*! #if ($TemplateOptions.KTypePrimitive)
-        public KType [] toArray()
-            #else !*/
-        public Object[] toArray()
-        /*! #end !*/
-        {
-            return toArray(Intrinsics.<KType[]> newKTypeArray(assigned));
-        }
     };
 
     /**
@@ -1244,12 +1225,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         public int size()
         {
             return owner.size();
-        }
-
-        @Override
-        public boolean isEmpty()
-        {
-            return owner.isEmpty();
         }
 
         @Override
@@ -1361,19 +1336,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
             assert count == owner.assigned;
             return target;
-        }
-
-        /**
-         * {@inheritDoc}
-         */
-        @Override
-        /*! #if ($TemplateOptions.VTypePrimitive)
-        public VType [] toArray()
-           #else !*/
-        public Object[] toArray()
-        /*! #end !*/
-        {
-            return toArray(Intrinsics.<VType[]> newVTypeArray(assigned));
         }
     }
 
