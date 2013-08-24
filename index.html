@@ -4,11 +4,11 @@
   <head>
     <meta charset='utf-8' />
     <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Hppc : Fork of HPPC, originally from Carrot Search: " />
+    <meta name="description" content="Hppc-RT : Fork of HPPC, originally from Carrot Search" />
 
     <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>Hppc</title>
+    <title>Hppc-RT</title>
   </head>
 
   <body>
@@ -18,8 +18,8 @@
         <header class="inner">
           <a id="forkme_banner" href="https://github.com/vsonnier/hppc">View on GitHub</a>
 
-          <h1 id="project_title">Hppc</h1>
-          <h2 id="project_tagline">Fork of HPPC, originally from Carrot Search: </h2>
+          <h1 id="project_title">Hppc-RT</h1>
+          <h2 id="project_tagline">Fork of HPPC, originally from Carrot Search</h2>
 
             <section id="downloads">
               <a class="zip_download_link" href="https://github.com/vsonnier/hppc/zipball/master">Download this project as a .zip file</a>
@@ -31,42 +31,42 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h2>
-<a name="hppc-high-performance-primitive-collections-plus" class="anchor" href="#hppc-high-performance-primitive-collections-plus"><span class="octicon octicon-link"></span></a>HPPC: High Performance Primitive Collections "Plus"</h2>
+        <h1>
+<a name="hppc-rt-high-performance-primitive-collections-realtime" class="anchor" href="#hppc-rt-high-performance-primitive-collections-realtime"><span class="octicon octicon-link"></span></a>HPPC-RT: High Performance Primitive Collections "RealTime"</h1>
 
 <p>This is a fork of HPPC from CarrotSearch:
-see JavaDoc and documentation at: <a href="http://labs.carrotsearch.com/hppc.html">http://labs.carrotsearch.com/hppc.html</a> for more info.</p>
+see JavaDoc and documentation at: <a href="http://labs.carrotsearch.com/hppc.html">http://labs.carrotsearch.com/hppc.html</a> for more info.
+IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!</p>
+
+<hr><p>This fork intend to follow the original HPPC as close as possible while 
+adding, tweaking, and even modifiying some features, for the goal of improving HPPC realtime behaviour. 
+Most of the internal modifications intend to reach zero temporaries Objects creation at runtime.
+Another way is to add convenient methods/API that allow filling and reuse pre-existing Objects. </p>
 
 <h2>
-<a name="important-developers---read-install-file-for-proper-eclipse-setup" class="anchor" href="#important-developers---read-install-file-for-proper-eclipse-setup"><span class="octicon octicon-link"></span></a>IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!</h2>
+<a name="for-now-the-additional-features-are" class="anchor" href="#for-now-the-additional-features-are"><span class="octicon octicon-link"></span></a>For now, the additional features are:</h2>
 
-<p>This fork intend to follow the original HPPC as close as possible (currently in v0.6 dev) while 
-adding some features which general goal is improving realtime behaviour, 
-that is among others to have ZERO GC at runtime.</p>
-
-<p>For now, the additional features are:</p>
-
-<hr><p>a) Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). </p>
-
-<p>b) Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear() like operations
-especially noticable for big container sizes. (Javolution has a similar trick)</p>
-
-<p>c) Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+<ol>
+<li><p>Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). </p></li>
+<li><p>Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
+especially noticable for big container sizes. </p></li>
+<li><p>Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically at runtime. 
-That means in particular using the for-each construct without any dynamic allocation below.</p>
-
-<p>TODO:
-Examples for these new features...</p>
-
-<hr><p>All these new features are Unit tested, so should work reasonably well.
-Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6.x_plus' branch for convenience.</p>
+That means in particular using the enhanced for loop without any dynamic allocation underneath.</p></li>
+<li><p>Some API tweaks:
+toArray(existing array) for every conatiner, good for array reuse.</p></li>
+<li><p>Tweaked internal implementation to remove dynamic allocation of temporary Objects</p></li>
+<li><p>TODO:
+Creating examples for the new methods/API. </p></li>
+</ol><p>All these new features are Unit tested, so should work reasonably well.
+Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6x-RT' branch for convenience.</p>
       </section>
     </div>
 
     <!-- FOOTER  -->
     <div id="footer_wrap" class="outer">
       <footer class="inner">
-        <p class="copyright">Hppc maintained by <a href="https://github.com/vsonnier">vsonnier</a></p>
+        <p class="copyright">Hppc-RT maintained by <a href="https://github.com/vsonnier">vsonnier</a></p>
         <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
       </footer>
     </div>
