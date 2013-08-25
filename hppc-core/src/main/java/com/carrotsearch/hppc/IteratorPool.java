@@ -7,7 +7,6 @@ package com.carrotsearch.hppc;
  */
 public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE extends AbstractIterator<OBJECT_TYPE>> extends ObjectPool<ITERATOR_TYPE>
 {
-
     /**
      * An Iterator pool never get bigger than MAX_SIZE_GROWTH_FACTOR
      * times its original size.

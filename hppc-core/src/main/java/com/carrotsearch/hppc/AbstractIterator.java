@@ -51,7 +51,6 @@ public abstract class AbstractIterator<E> implements Iterator<E>
         //the hidden iterator automatically when exiting the fully iterated for-each.
         if (state == AT_END && this.iteratorPool != null && !this.isFree)
         {
-
             this.iteratorPool.release(this);
             this.isFree = true;
         }
@@ -102,7 +101,6 @@ public abstract class AbstractIterator<E> implements Iterator<E>
      */
     public final void setPool(IteratorPool<E, AbstractIterator<E>> pool)
     {
-        assert pool != null;
         this.iteratorPool = pool;
     }
 
@@ -129,9 +127,9 @@ public abstract class AbstractIterator<E> implements Iterator<E>
      * This method must be called if the iterator cannot be automatically
      * recycled, in the cases:
      * <pre>
-     * Iterator obtained by explicit {@link Iterator}.iterator() or any other factory-like interface,
-     * then later implied in an incomplete iteration loop.
-     * </pre>
+     * Iterator obtained by explicit {@link Iterable}.iterator() or any other factory-like interface,
+     * then later implied in an incomplete iteration loop, i.e where {@link Iterator}.hasNext()
+     * has never returned false.</pre>
      * 
      * Note it is always safe to call release() whatever the iterator has already been effectively released or not.
      * 

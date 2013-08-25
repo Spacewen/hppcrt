@@ -1,7 +1,7 @@
-#HPPC-RT: High Performance Primitive Collections "RealTime"
+##HPPC-RT: High Performance Primitive Collections "RealTime"
 
-This is a fork of HPPC from CarrotSearch:
-see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
+This is a fork of HPPC from CarrotSearch, see JavaDoc and documentation at: http://labs.carrotsearch.com/hppc.html for more info.
+
 IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
 
 ---------------------------------------
@@ -11,9 +11,9 @@ adding, tweaking, and even modifiying some features, for the goal of improving H
 Most of the internal modifications intend to reach zero temporaries Objects creation at runtime.
 Another way is to add convenient methods/API that allow filling and reuse pre-existing Objects. 
 
-##For now, the additional features are:
+###For now, the additional features are:
 
-1. Custom HashingStrategy for HashMaps/HashSets, to override the usual equals()/hashCode(). 
+1. Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode(). 
 
 2. Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
 especially noticable for big container sizes. 
@@ -23,7 +23,7 @@ dynamically at runtime.
 That means in particular using the enhanced for loop without any dynamic allocation underneath.
 
 4. Some API tweaks:
-toArray(existing array) for every conatiner, good for array reuse.
+toArray(existing array) for every container, good for array reuse.
 
 5. Tweaked internal implementation to remove dynamic allocation of temporary Objects
 
