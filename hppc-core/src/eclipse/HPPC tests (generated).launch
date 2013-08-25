@@ -12,5 +12,5 @@
 <stringAttribute key="org.eclipse.jdt.junit.TEST_KIND" value="org.eclipse.jdt.junit.loader.junit4"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value=""/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="hppc"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;-server&#13;&#10;-Xmx1024m&#13;&#10;-Djub.rounds.warmup=0&#13;&#10;-Djub.rounds.benchmark=1&#13;&#10;-Djub.ignore.callgc=true&#13;&#10;-Djub.ignore.annotations=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-ea&#13;&#10;-server&#13;&#10;-Xmx1024m&#13;&#10;-Djub.rounds.warmup=0&#13;&#10;-Djub.rounds.benchmark=1&#13;&#10;-Djub.ignore.callgc=true&#13;&#10;-Djub.ignore.annotations=true&#13;&#10;-DHPPC_ITERATOR_POOLSIZE=32"/>
 </launchConfiguration>

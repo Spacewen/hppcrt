@@ -12,14 +12,37 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE extends AbstractIterator<OB
      * times its original size.
      */
     public static final int MAX_SIZE_GROWTH_FACTOR = 4;
-    public static final int LINEAR_GROWTH_SIZE = Internals.NB_OF_PROCESSORS;
+
+    public static final String POOL_INITIAL_SIZE_PROPERTY = "HPPC_ITERATOR_POOLSIZE";
+
+    private static int INITIAL_SIZE;
+
+    static
+    {
+        try
+        {
+            //read a configurable poperty to limit the number of preallocated iterators per pool.
+            INITIAL_SIZE = Integer.parseInt(System.clearProperty(POOL_INITIAL_SIZE_PROPERTY));
+
+            if (INITIAL_SIZE < 1)
+            {
+                INITIAL_SIZE = 1;
+            }
+        }
+        catch (Exception e)
+        {
+            INITIAL_SIZE = Internals.NB_OF_PROCESSORS;
+        }
+    } //end static initializer
+
+    public static final int LINEAR_GROWTH_SIZE = INITIAL_SIZE;
 
     public static final int MAX_SIZE = MAX_SIZE_GROWTH_FACTOR * LINEAR_GROWTH_SIZE;
 
-    public static final int DISCARDING_SIZE = LINEAR_GROWTH_SIZE;
+    public static final int DISCARDING_SIZE = INITIAL_SIZE;
 
     public IteratorPool(ObjectFactory<ITERATOR_TYPE> objFactory) {
-        super(objFactory, Internals.NB_OF_PROCESSORS, new ArraySizingStrategy() {
+        super(objFactory, INITIAL_SIZE, new ArraySizingStrategy() {
 
             @Override
             public int round(int capacity) {
@@ -36,7 +59,7 @@ public class IteratorPool<OBJECT_TYPE, ITERATOR_TYPE extends AbstractIterator<OB
                 if (newSize > MAX_SIZE)
                 {
                     //discard NB_OF_PROCESSORS objects
-                    newSize = -DISCARDING_SIZE;
+                    newSize = -1 * DISCARDING_SIZE;
                 }
 
                 return newSize ;
