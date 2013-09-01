@@ -1,14 +1,15 @@
 package com.carrotsearch.hppc.sorting;
 
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.Random;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.carrotsearch.hppc.CloverSupport;
 import com.carrotsearch.hppc.XorShiftRandom;
-
-import static org.junit.Assert.*;
 
 /**
  * Test cases for {@link IndirectSort}.
@@ -18,8 +19,8 @@ public class IndirectSortTest
     /**
      * Limit data length if running with Clover.
      */
-    static final int DATA_LENGTH = 
-        CloverSupport.isClover() ? 10000 : 1000000;
+    static final int DATA_LENGTH =
+            CloverSupport.isClover() ? 10000 : 1000000;
 
     /**
      * Implies the same order as the order of indices.
@@ -53,7 +54,7 @@ public class IndirectSortTest
 
     enum Algorithm
     {
-        MERGESORT
+        MERGESORT, MERGESORT_RT, QUICKSORT
     }
 
     /**
@@ -65,15 +66,27 @@ public class IndirectSortTest
         sortCertification(Algorithm.MERGESORT);
     }
 
+    @Test
+    public void testSortCertificationMergeSortRT()
+    {
+        sortCertification(Algorithm.MERGESORT_RT);
+    }
+
+    @Test
+    public void testSortCertificationQuicksort()
+    {
+        sortCertification(Algorithm.QUICKSORT);
+    }
+
     /**
      * Run a "sort certification" test.
      */
     static void sortCertification(Algorithm algorithm)
     {
         int [] n_values =
-        {
-            100, 1023, 1024, 1025, 1024 * 32
-        };
+            {
+                100, 1023, 1024, 1025, 1024 * 32
+            };
 
         for (int n : n_values)
         {
@@ -164,7 +177,7 @@ public class IndirectSortTest
 
     private static int [] copy(int [] x)
     {
-        return (int []) x.clone();
+        return x.clone();
     }
 
     /*
@@ -179,6 +192,15 @@ public class IndirectSortTest
         {
             case MERGESORT:
                 order = IndirectSort.mergesort(0, x.length, c);
+                break;
+            case MERGESORT_RT:
+                order = new int[x.length];
+                int[] tmp = new int[x.length];
+                IndirectSort.mergesort(0, x.length, c, tmp, order);
+                break;
+            case QUICKSORT:
+                order = new int[x.length];
+                IndirectSort.quicksort(0, x.length, c, order);
                 break;
             default:
                 Assert.fail();
@@ -231,7 +253,7 @@ public class IndirectSortTest
      * 
      */
     private static void assertOrder(final int [] order, int length,
-        final IndirectComparator comparator)
+            final IndirectComparator comparator)
     {
         for (int i = 1; i < length; i++)
         {
@@ -255,7 +277,7 @@ public class IndirectSortTest
             final int [] input = generateRandom(maxSize, vocabulary, rnd);
 
             final IndirectComparator comparator = new IndirectComparator.AscendingIntComparator(
-                input);
+                    input);
 
             final int start = rnd.nextInt(input.length - 1);
             final int length = (input.length - start);
@@ -281,7 +303,7 @@ public class IndirectSortTest
             final int [] input = generateRandom(maxSize, vocabulary, rnd);
 
             final IndirectComparator comparator = new IndirectComparator.DescendingIntComparator(
-                input);
+                    input);
 
             final int start = rnd.nextInt(input.length - 1);
             final int length = (input.length - start);
@@ -306,7 +328,7 @@ public class IndirectSortTest
             final double [] input = generateRandom(maxSize, rnd);
 
             final IndirectComparator comparator = new IndirectComparator.AscendingDoubleComparator(
-                input);
+                    input);
 
             final int start = rnd.nextInt(input.length - 1);
             final int length = (input.length - start);
@@ -318,7 +340,7 @@ public class IndirectSortTest
 
     /**
      * Sort random integers from the range 0..0xff based on their 4 upper bits. The relative
-     * order of 0xf0-masked integers should be preserved from the input. 
+     * order of 0xf0-masked integers should be preserved from the input.
      */
     @Test
     public void testMergeSortIsStable()
@@ -345,12 +367,12 @@ public class IndirectSortTest
             }
         }
     }
-    
+
     /*
      * 
      */
     private int [] generateRandom(final int maxSize, final int vocabulary,
-        final Random rnd)
+            final Random rnd)
     {
         final int [] input = new int [2 + rnd.nextInt(maxSize)];
         for (int i = 0; i < input.length; i++)
