@@ -87,7 +87,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Current number of elements stored in {@link #buffer}.
      */
-    public int elementsCount;
+    protected int elementsCount;
 
     /**
      * Buffer resizing strategy.
@@ -97,7 +97,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
 
     /**
      * Create with default sizing strategy and initial capacity for storing
@@ -638,9 +638,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * An iterator implementation for {@link ObjectArrayList#iterator}.
-     * (package visibility because used elsewhere in the same package)
      */
-    final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
+    public final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
     {
         final KTypeCursor<KType> cursor;
 
@@ -670,9 +669,9 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * {@inheritDoc}
+     * @return
      */
-    @Override
-    public Iterator<KTypeCursor<KType>> iterator()
+    public ValueIterator<KType> iterator()
     {
         //return new ValueIterator<KType>(buffer, size());
         return this.valueIteratorPool.borrow();

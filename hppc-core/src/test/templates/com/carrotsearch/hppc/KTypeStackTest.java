@@ -16,6 +16,12 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
      */
     public KTypeStack<KType> stack;
 
+    @BeforeClass
+    public static void configure()
+    {
+        IteratorPool.configureInitialPoolSize(8);
+    }
+
     /* */
     @Before
     public void initialize()
@@ -64,7 +70,7 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
         assertEquals2(key2, stack.get(0));
         assertEquals2(key3, stack.get(1));
     }
-    
+
     /* */
     @Test
     public void testAddAllPushAll()
@@ -77,7 +83,7 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
 
         assertListEquals(stack.toArray(), 0, 1, 2, 0, 1, 2);
     }
-    
+
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /* */
     @Test
@@ -89,8 +95,8 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
         stack.discard(2);
         assertEquals(0, stack.size());
 
-        /* 
-         * Cleanup only for the generic version (to allow GCing of references). 
+        /*
+         * Cleanup only for the generic version (to allow GCing of references).
          */
         for (int i = 0; i < stack.buffer.length; i++)
         {
@@ -118,7 +124,7 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
         stack.discard(2);
         assertEquals(0, stack.size());
     }
-    
+
     /* */
     @Test(expected = AssertionError.class)
     public void testGetAssertions()
@@ -211,9 +217,9 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testToString()
     {
-        assertEquals("[" 
-            + key1 + ", "
-            + key2 + ", "
-            + key3 + "]", KTypeStack.from(key1, key2, key3).toString());
-    }    
+        assertEquals("["
+                + key1 + ", "
+                + key2 + ", "
+                + key3 + "]", KTypeStack.from(key1, key2, key3).toString());
+    }
 }

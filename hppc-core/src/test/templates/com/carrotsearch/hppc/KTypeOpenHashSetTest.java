@@ -13,8 +13,10 @@ import java.util.Random;
 import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.carrotsearch.hppc.KTypeOpenHashSet.EntryIterator;
 import com.carrotsearch.hppc.cursors.IntCursor;
 import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
@@ -32,6 +34,12 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     public KTypeOpenHashSet<KType> set;
 
     public volatile long guard;
+
+    @BeforeClass
+    public static void configure()
+    {
+        IteratorPool.configureInitialPoolSize(8);
+    }
 
     /* */
     @Before
@@ -802,7 +810,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.entryIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
+        assertTrue(testContainer.entryIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
     }
 
     @Test
@@ -835,7 +843,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.entryIteratorPool.size();
 
-            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
+            KTypeOpenHashSet<KType>.EntryIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
@@ -875,7 +883,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.entryIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            KTypeOpenHashSet<KType>.EntryIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
@@ -931,13 +939,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         int startingPoolSize = testContainer.entryIteratorPool.size();
 
         int count = 0;
-        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+        KTypeOpenHashSet<KType>.EntryIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             try
             {
-                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                loopIterator = testContainer.iterator();
 
                 assertEquals(startingPoolSize - 1, testContainer.entryIteratorPool.size());
 

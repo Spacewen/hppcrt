@@ -100,13 +100,13 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * Cached number of assigned slots in {@link #allocated}.
      */
-    public int assigned;
+    protected int assigned;
 
     /**
      * The load factor for this map (fraction of allocated slots
      * before the buffers must be rehashed or reallocated).
      */
-    public final float loadFactor;
+    protected float loadFactor;
 
     /**
      * Resize buffers when {@link #allocated} hits this value.
@@ -632,7 +632,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
                 if (other.size() == this.size())
                 {
-                    final EntryIterator it = (EntryIterator) this.iterator();
+                    final EntryIterator it = this.iterator();
 
                     while (it.hasNext())
                     {
@@ -653,7 +653,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * An iterator implementation for {@link #iterator}.
      */
-    private final class EntryIterator extends AbstractIterator<KTypeCursor<KType>>
+    public final class EntryIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
 
@@ -703,9 +703,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
     /**
      * {@inheritDoc}
+     * @return
      */
     @Override
-    public Iterator<KTypeCursor<KType>> iterator()
+    public EntryIterator iterator()
     {
         //return new EntryIterator();
         return this.entryIteratorPool.borrow();

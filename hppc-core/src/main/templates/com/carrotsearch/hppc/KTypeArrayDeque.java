@@ -93,12 +93,12 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     /**
      * internal pool of DescendingValueIterator (must be created in constructor)
      */
-    protected final  IteratorPool<KTypeCursor<KType>, DescendingValueIterator> descendingValueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, DescendingValueIterator> descendingValueIteratorPool;
 
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    protected final  IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
 
 
     /**
@@ -670,7 +670,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     /**
      * An iterator implementation for {@link ObjectArrayDeque#iterator}.
      */
-    private final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
         private int remaining;
@@ -698,7 +698,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     /**
      * An iterator implementation for {@link ObjectArrayDeque#descendingIterator()}.
      */
-    private final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    public final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
         private int remaining;
@@ -738,8 +738,9 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      *         + c.index + &quot; value=&quot; + c.value);
      * }
      * </pre>
+     * @return
      */
-    public Iterator<KTypeCursor<KType>> iterator()
+    public ValueIterator iterator()
     {
         //return new ValueIterator();
         return this.valueIteratorPool.borrow();
@@ -760,8 +761,9 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      *         + c.index + &quot; value=&quot; + c.value);
      * }
      * </pre>
+     * @return
      */
-    public Iterator<KTypeCursor<KType>> descendingIterator()
+    public DescendingValueIterator descendingIterator()
     {
         //return new DescendingValueIterator();
         return this.descendingValueIteratorPool.borrow();

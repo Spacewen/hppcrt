@@ -31,6 +31,12 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
      */
     private KTypeArrayList<KType> sequence;
 
+    @BeforeClass
+    public static void configure()
+    {
+        IteratorPool.configureInitialPoolSize(8);
+    }
+
     /* */
     @Before
     public void initialize()
@@ -744,7 +750,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
+        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
     }
 
     @Test
@@ -834,7 +840,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             //A) Classical iterator loop, with manually allocated Iterator, forward
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -855,7 +861,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
             //manual return to the pool
-            loopIterator.release();
+            ((KTypeArrayDeque<KType>.ValueIterator) loopIterator).release();
 
             //now the pool is restored
             assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
@@ -863,7 +869,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             //B) Descending iteration
             initialPoolSize = testContainer.descendingValueIteratorPool.size();
 
-            loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.descendingIterator();
+            loopIterator = testContainer.descendingIterator();
 
             assertEquals(initialPoolSize - 1, testContainer.descendingValueIteratorPool.size());
 
@@ -884,7 +890,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             assertEquals(initialPoolSize - 1, testContainer.descendingValueIteratorPool.size());
 
             //manual return to the pool
-            loopIterator.release();
+            ((KTypeArrayDeque<KType>.DescendingValueIterator) loopIterator).release();
 
             //now the pool is restored
             assertEquals(initialPoolSize, testContainer.descendingValueIteratorPool.size());
@@ -918,13 +924,13 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
-        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+        Iterator<KTypeCursor<KType>> loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             try
             {
-                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                loopIterator = testContainer.iterator();
                 assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 guard = 0;
@@ -951,7 +957,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
                 assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 //manual return to the pool then
-                loopIterator.release();
+                ((KTypeArrayDeque<KType>.ValueIterator) loopIterator).release();
 
                 //now the pool is restored
                 assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());

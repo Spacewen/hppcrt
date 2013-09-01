@@ -7,8 +7,11 @@ import java.util.*;
 
 import org.junit.*;
 
+import com.carrotsearch.hppc.KTypeVTypeOpenHashMap.EntryIterator;
 import com.carrotsearch.hppc.KTypeVTypeOpenHashMap.KeysContainer;
+import com.carrotsearch.hppc.KTypeVTypeOpenHashMap.KeysIterator;
 import com.carrotsearch.hppc.KTypeVTypeOpenHashMap.ValuesContainer;
+import com.carrotsearch.hppc.KTypeVTypeOpenHashMap.ValuesIterator;
 import com.carrotsearch.hppc.cursors.*;
 import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
@@ -25,6 +28,12 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
     protected VType value3 = vcast(3);
 
     public volatile long guard;
+
+    @BeforeClass
+    public static void configure()
+    {
+        IteratorPool.configureInitialPoolSize(8);
+    }
 
     /**
      * Per-test fresh initialized instance.
@@ -1302,9 +1311,9 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.entryIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
-        assertTrue(keyset.keyIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
-        assertTrue(valueset.valuesIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
+        assertTrue(testContainer.entryIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
+        assertTrue(keyset.keyIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
+        assertTrue(valueset.valuesIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
     }
 
     @Test
@@ -1340,7 +1349,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //A) Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.entryIteratorPool.size();
 
-            Iterator<KTypeVTypeCursor<KType, VType>> loopIterator = testContainer.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.EntryIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
@@ -1359,7 +1368,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //B) Loop on keys
             initialPoolSize = keyset.keyIteratorPool.size();
 
-            Iterator<KTypeCursor<KType>> keyLoopIterator = keyset.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.KeysIterator keyLoopIterator = keyset.iterator();
 
             assertEquals(initialPoolSize - 1, keyset.keyIteratorPool.size());
 
@@ -1378,7 +1387,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //C) Loop on values
             initialPoolSize = valueset.valuesIteratorPool.size();
 
-            Iterator<KTypeCursor<VType>> valueLoopIterator = valueset.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.ValuesIterator valueLoopIterator = valueset.iterator();
 
             assertEquals(initialPoolSize - 1, valueset.valuesIteratorPool.size());
 
@@ -1424,7 +1433,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //A) Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.entryIteratorPool.size();
 
-            AbstractIterator<KTypeVTypeCursor<KType, VType>> loopIterator = (AbstractIterator<KTypeVTypeCursor<KType, VType>>) testContainer.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.EntryIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
@@ -1453,7 +1462,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //B) Iterate on keys
             initialPoolSize = keyset.keyIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> keyLoopIterator = (AbstractIterator<KTypeCursor<KType>>) keyset.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.KeysIterator keyLoopIterator = keyset.iterator();
 
             assertEquals(initialPoolSize - 1, keyset.keyIteratorPool.size());
 
@@ -1482,7 +1491,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             //C) Iterate on values
             initialPoolSize = valueset.valuesIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<VType>> valueLoopIterator = (AbstractIterator<KTypeCursor<VType>>) valueset.iterator();
+            KTypeVTypeOpenHashMap<KType, VType>.ValuesIterator valueLoopIterator = valueset.iterator();
 
             assertEquals(initialPoolSize - 1, valueset.valuesIteratorPool.size());
 
@@ -1540,13 +1549,13 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
         int startingPoolSize = testContainer.entryIteratorPool.size();
 
         int count = 0;
-        AbstractIterator<KTypeVTypeCursor<KType, VType>> loopIterator = null;
+        KTypeVTypeOpenHashMap<KType, VType>.EntryIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             try
             {
-                loopIterator = (AbstractIterator<KTypeVTypeCursor<KType, VType>>) testContainer.iterator();
+                loopIterator = testContainer.iterator();
 
                 assertEquals(startingPoolSize - 1, testContainer.entryIteratorPool.size());
 

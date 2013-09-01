@@ -112,13 +112,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Cached number of assigned slots in {@link #allocated}.
      */
-    public int assigned;
+    protected int assigned;
 
     /**
      * The load factor for this map (fraction of allocated slots
      * before the buffers must be rehashed or reallocated).
      */
-    public final float loadFactor;
+    protected final float loadFactor;
 
     /**
      * Resize buffers when {@link #allocated} hits this value.
@@ -932,7 +932,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 KTypeVTypeMap<KType, VType> other = (KTypeVTypeMap<KType, VType>) obj;
                 if (other.size() == this.size())
                 {
-                    final EntryIterator it = (EntryIterator) this.iterator();
+                    final EntryIterator it = this.iterator();
 
                     while (it.hasNext())
                     {
@@ -960,7 +960,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * An iterator implementation for {@link #iterator}.
      */
-    private final class EntryIterator extends AbstractIterator<KTypeVTypeCursor<KType, VType>>
+    public final class EntryIterator extends AbstractIterator<KTypeVTypeCursor<KType, VType>>
     {
         private final KTypeVTypeCursor<KType, VType> cursor;
 
@@ -1011,9 +1011,9 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
     /**
      * {@inheritDoc}
+     * @return
      */
-    @Override
-    public Iterator<KTypeVTypeCursor<KType, VType>> iterator()
+    public EntryIterator iterator()
     {
         //return new EntryIterator();
         return this.entryIteratorPool.borrow();
@@ -1096,8 +1096,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             return predicate;
         }
 
-        @Override
-        public Iterator<KTypeCursor<KType>> iterator()
+        public KeysIterator iterator()
         {
             //return new KeysIterator();
             return this.keyIteratorPool.borrow();
@@ -1174,7 +1173,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * An iterator over the set of assigned keys.
      */
-    private final class KeysIterator extends AbstractIterator<KTypeCursor<KType>>
+    public final class KeysIterator extends AbstractIterator<KTypeCursor<KType>>
     {
         private final KTypeCursor<KType> cursor;
 
@@ -1277,8 +1276,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             return predicate;
         }
 
-        @Override
-        public Iterator<KTypeCursor<VType>> iterator()
+        public ValuesIterator iterator()
         {
             // return new ValuesIterator();
             return valuesIteratorPool.borrow();
@@ -1342,7 +1340,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * An iterator over the set of assigned values.
      */
-    private final class ValuesIterator extends AbstractIterator<KTypeCursor<VType>>
+    public final class ValuesIterator extends AbstractIterator<KTypeCursor<VType>>
     {
         private final KTypeCursor<VType> cursor;
 

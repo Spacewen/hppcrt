@@ -8,6 +8,7 @@ import java.util.Iterator;
 
 import org.junit.*;
 
+import com.carrotsearch.hppc.KTypeArrayList.ValueIterator;
 import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.mutables.IntHolder;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
@@ -25,6 +26,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public KTypeArrayList<KType> list;
 
     public volatile long guard;
+
+    @BeforeClass
+    public static void configure()
+    {
+        IteratorPool.configureInitialPoolSize(8);
+    }
 
     /* */
     @Before
@@ -705,7 +712,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.MAX_SIZE + 1);
+        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
     }
 
     @Test
@@ -737,7 +744,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            Iterator<KTypeCursor<KType>> loopIterator = testContainer.iterator();
+            ValueIterator<KType> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -775,7 +782,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            AbstractIterator<KTypeCursor<KType>> loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+            ValueIterator<KType> loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -829,13 +836,13 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
-        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+        ValueIterator<KType> loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             try
             {
-                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                loopIterator = testContainer.iterator();
                 assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 guard = 0;
@@ -896,22 +903,22 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         int initialPoolSize = testContainer.valueIteratorPool.size();
 
         //start with a non full pool, remove 3 elements
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake2 = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake3 = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake = testContainer.iterator();
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake2 = testContainer.iterator();
+        AbstractIterator<KTypeCursor<KType>> loopIteratorFake3 = testContainer.iterator();
 
         int startingTestPoolSize = testContainer.valueIteratorPool.size();
 
         assertEquals(initialPoolSize - 3, startingTestPoolSize);
 
         int count = 0;
-        AbstractIterator<KTypeCursor<KType>> loopIterator = null;
+        ValueIterator<KType> loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             try
             {
-                loopIterator = (AbstractIterator<KTypeCursor<KType>>) testContainer.iterator();
+                loopIterator = testContainer.iterator();
                 assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 guard = 0;
