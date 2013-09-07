@@ -1,18 +1,30 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.TestUtils.*;
-import static org.junit.Assert.*;
+import static com.carrotsearch.hppc.TestUtils.assertEquals2;
+import static com.carrotsearch.hppc.TestUtils.assertListEquals;
+import static com.carrotsearch.hppc.TestUtils.assertSortedListEquals;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Random;
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.carrotsearch.hppc.KTypeArrayList.ValueIterator;
 import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.mutables.IntHolder;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
 import com.carrotsearch.hppc.procedures.KTypeProcedure;
+import com.carrotsearch.hppc.sorting.KTypeComparator;
 
 /**
  * Unit tests for {@link KTypeArrayList}.
@@ -981,14 +993,95 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
     }
 
+    @Test
+    public void testSort()
+    {
+        //natural ordering comparator
+        KTypeComparator<KType> comp = new KTypeComparator<KType>() {
+
+            @Override
+            public int compare(KType e1, KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = -1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = 1;
+                }
+
+                return res;
+            }
+        };
+
+        int TEST_SIZE = (int) 1e6;
+        //A) Sort an array of random values of primitive types
+
+        /*! #if ($TemplateOptions.KTypePrimitive)
+        //A-1) full sort
+        KTypeArrayList<KType> primitiveList = createArrayWithRandomData(TEST_SIZE, 1515411541215L);
+        primitiveList.sort();
+        assertOrder(primitiveList, 0, primitiveList.size());
+        //A-2) Partial sort
+        primitiveList = createArrayWithRandomData(TEST_SIZE, 87454541215L);
+        primitiveList.sort(12150,789444);
+        assertOrder(primitiveList, 12150, 789444);
+        #end !*/
+
+        //B) Sort with Comparator
+        //B-1) Full sort
+        KTypeArrayList<KType> comparatorList = createArrayWithRandomData(TEST_SIZE, 4871164545215L);
+        comparatorList.sort(comp);
+        assertOrder(comparatorList, 0, comparatorList.size());
+        //B-2) Partial sort
+        comparatorList = createArrayWithRandomData(TEST_SIZE, 877521454L);
+        comparatorList.sort(98748, 999548, comp);
+        assertOrder(comparatorList, 98748, 999548);
+    }
+
+    /**
+     * Test natural ordering between [startIndex; endIndex[
+     * @param expected
+     * @param actual
+     * @param length
+     */
+    private void assertOrder(KTypeArrayList<KType> order, int startIndex, int endIndex)
+    {
+        for (int i = startIndex + 1; i < endIndex; i++)
+        {
+            if (castType(order.get(i - 1)) > castType(order.get(i)))
+            {
+                Assert.assertTrue(String.format("Not ordered: (previous, next) = (%d, %d) at index %d",
+                        castType(order.get(i - 1)), castType(order.get(i)), i), false);
+            }
+        }
+    }
+
     private KTypeArrayList<KType> createArrayWithOrderedData(int size)
     {
         KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
 
         for (int i = 0; i < size; i++)
         {
-
             newArray.add(cast(i));
+        }
+
+        return newArray;
+    }
+
+    private KTypeArrayList<KType> createArrayWithRandomData(int size, long randomSeed)
+    {
+        Random prng = new Random(randomSeed);
+
+        KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
+
+        for (int i = 0; i < size; i++)
+        {
+
+            newArray.add(cast(prng.nextInt()));
         }
 
         return newArray;

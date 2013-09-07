@@ -22,8 +22,10 @@ especially noticable for big container sizes.
 dynamically at runtime. 
 That means in particular using the enhanced for loop without any dynamic allocation underneath.
 
-4. Some API tweaks:
-toArray(existing array) for every container, good for array reuse.
+4. API additions:
+   1.  toArray(existing array) for every container, good for array reuse in RealTime environnement
+   2.  In hppc.sorting, primitive and Generics in place array sorts, similar to java.util.Arrays using Comparable and Comparator versions
+   3.  ArrayList has now sorting methods too.
 
 5. Tweaked internal implementation to remove dynamic allocation of temporary Objects
 

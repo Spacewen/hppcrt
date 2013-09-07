@@ -3,8 +3,9 @@ package com.carrotsearch.hppc;
 import java.util.*;
 
 import com.carrotsearch.hppc.cursors.*;
-import com.carrotsearch.hppc.predicates.KTypePredicate;
+import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
+import com.carrotsearch.hppc.sorting.*;
 
 import static com.carrotsearch.hppc.Internals.*;
 
@@ -839,5 +840,84 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     KTypeArrayList<KType> from(KTypeContainer<KType> container)
     {
         return new KTypeArrayList<KType>(container);
+    }
+
+    /**
+     * Sort the list by dual-pivot quicksort, from [beginIndex, endIndex[
+     * by natural ordering (smaller first)
+     * @param beginIndex
+     * @param endIndex
+     */
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public void sort(int beginIndex, int endIndex)
+    {
+        assert endIndex <= elementsCount;
+
+        if (endIndex - beginIndex > 1)
+        {
+            KTypeSort.quicksort(buffer, beginIndex, endIndex);
+        }
+    }
+    #end !*/
+
+    /**
+     * Sort the whole list by dual-pivot quicksort by natural ordering (smaller first)
+     * @param beginIndex
+     * @param endIndex
+     */
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public void sort()
+    {
+        if (elementsCount > 1)
+        {
+            KTypeSort.quicksort(buffer, 0, elementsCount);
+        }
+    }
+    #end !*/
+
+    ////////////////////////////
+    /**
+     * Sort by  dual-pivot quicksort the list of <code>KType</code>s from [beginIndex, endIndex[
+     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * </b></p>
+     */
+    public void sort(
+            int beginIndex, int endIndex,
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            Comparator<KType>
+            /*! #else
+            KTypeComparator<KType>
+            #end !*/
+            comp)
+    {
+        assert endIndex <= elementsCount;
+
+        if (endIndex - beginIndex > 1)
+        {
+            KTypeSort.quicksort(buffer, beginIndex, endIndex, comp);
+        }
+    }
+
+    /**
+     * Sort by  dual-pivot quicksort an entire list
+     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * </b></p>
+     */
+    public void sort(
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            Comparator<KType>
+            /*! #else
+            KTypeComparator<KType>
+            #end !*/
+            comp)
+    {
+        if (elementsCount > 1)
+        {
+            KTypeSort.quicksort(buffer, 0, elementsCount, comp);
+        }
     }
 }
