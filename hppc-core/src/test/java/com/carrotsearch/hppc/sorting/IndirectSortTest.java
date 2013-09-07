@@ -81,7 +81,7 @@ public class IndirectSortTest
     /**
      * Run a "sort certification" test.
      */
-    static void sortCertification(Algorithm algorithm)
+    private static void sortCertification(Algorithm algorithm)
     {
         int [] n_values =
             {
@@ -113,7 +113,7 @@ public class IndirectSortTest
      * 
      * @param m Step for sawtooth, stagger, plateau and shuffle.
      */
-    static int [] generate(final DataDistribution dist, int n, int m)
+    private  static int[] generate(final DataDistribution dist, int n, int m)
     {
         // Start from a constant seed (repeatable tests).
         final Random rand = new Random(0x11223344);
@@ -148,14 +148,14 @@ public class IndirectSortTest
         return x;
     }
 
-    static int [] sort(int [] x)
+    private static int[] sort(int[] x)
     {
         x = copy(x);
         Arrays.sort(x);
         return x;
     }
 
-    static int [] dither(int [] x)
+    private static int[] dither(int[] x)
     {
         x = copy(x);
         for (int i = 0; i < x.length; i++)
@@ -163,7 +163,7 @@ public class IndirectSortTest
         return x;
     }
 
-    static int [] reverse(int [] x, int start, int end)
+    private static int[] reverse(int[] x, int start, int end)
     {
         x = copy(x);
         for (int i = start, j = end - 1; i < j; i++, j--)

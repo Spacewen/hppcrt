@@ -84,10 +84,10 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
      * Convert a VType to long, (VType being a boxed elementary type or a primitive), else
      * returns 0L.
      */
-    protected long vcastType(VType type)
+    protected int vcastType(VType type)
     {
         /*! #if ($TemplateOptions.VTypePrimitive)
-        return (long) type;
+        return (int) type;
         #else !*/
         long k = 0L;
 
@@ -100,7 +100,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
             k = ((Number) type).longValue();
         }
 
-        return k;
+        return (int) k;
         /*! #end !*/
     }
 

@@ -41,19 +41,39 @@ public abstract class AbstractKTypeTest<KType>
             return (KType) v;
             #else !*/
         // @SuppressWarnings("unchecked")
-        KType k = (KType)(Object) v;
+        KType k = (KType) (Object) v;
         return k;
         /*! #end !*/
     }
 
     /**
-     * Convert a KType to long, (KType being a boxed elementary type or a primitive), else
-     * returns 0L.
+     * Convert to target type from an integer used to test stuff.
+     * return a Comparable object, indeed a number
      */
-    public long castType(KType type)
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    public <KType extends Comparable<KType>> KType castComparable(int v)
+    /*! #else
+    public KType castComparable(int v)
+    #end !*/
     {
         /*! #if ($TemplateOptions.KTypePrimitive)
-        return (long) type;
+            return (KType) v;
+            #else !*/
+        // @SuppressWarnings("unchecked")
+        KType k = (KType) (Object) v;
+        return k;
+        /*! #end !*/
+    }
+
+    /**
+     * Convert a KType to int, (KType being a boxed elementary type or a primitive), else
+     * returns 0.
+     */
+    @SuppressWarnings("hiding")
+    public <KType> int castType(KType type)
+    {
+        /*! #if ($TemplateOptions.KTypePrimitive)
+        return (int) type;
         #else !*/
         long k = 0L;
 
@@ -66,7 +86,7 @@ public abstract class AbstractKTypeTest<KType>
             k = ((Number) type).longValue();
         }
 
-        return k;
+        return (int) k;
         /*! #end !*/
     }
 
@@ -80,27 +100,63 @@ public abstract class AbstractKTypeTest<KType>
 
     /**
      * Create a new array of a given type and copy the arguments to this array.
+     * These elements are indeed Comparable Numbers
+     * (deep copy)
      */
-    public KType [] newArray(KType... elements)
+    public KType[] newArray(KType... elements)
     {
-        return newArray0(elements);
+        KType[] values = Intrinsics.newKTypeArray(elements.length);
+        for (int i = 0; i < elements.length; i++)
+        {
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            if (elements[i] != null)
+            {
+                values[i] = castComparable(castType(elements[i]));
+            }
+            else
+            {
+                values[i] = null;
+            }
+            /*! #else
+            values[i] =  (KType)elements[i];
+            #end !*/
+        }
+
+        return values;
     }
 
-    private KType [] newArray0(KType... elements)
+    /**
+     * Create a new array of Comparable a given type and copy the arguments to this array.
+     * These elements are indeed Comparable Numbers
+     * (deep copy)
+     */
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+    public Comparable[] newComparableArray(KType... elements)
+    /*! #else
+    KType[] newComparableArray(KType... elements)
+    #end !*/
     {
-        return elements;
-    }
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        Comparable[] values = new Comparable[elements.length];
+        /*! #else
+        KType[] values = Intrinsics.newKTypeArray(elements.length);
+        #end !*/
+        for (int i = 0; i < elements.length; i++)
+        {
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            if (elements[i] != null)
+            {
+                values[i] = castComparable(castType(elements[i]));
+            }
+            else
+            {
+                values[i] = null;
+            }
+            /*! #else
+            values[i] =  (KType)elements[i];
+            #end !*/
+        }
 
-    public KType [] newArray(KType v0) { return this.newArray0(v0); }
-    public KType [] newArray(KType v0, KType v1) { return this.newArray0(v0, v1); }
-    public KType [] newArray(KType v0, KType v1, KType v2) { return this.newArray0(v0, v1, v2); }
-    public KType [] newArray(KType v0, KType v1, KType v2, KType v3) { return this.newArray0(v0, v1, v2, v3); }
-    public KType [] newArray(KType v0, KType v1, KType v2, KType v3,
-            KType v4, KType v5, KType v6) { return this.newArray0(v0, v1, v2, v3, v4, v5, v6); }
-    public KType [] newArray(KType v0, KType v1, KType v2, KType v3,
-            KType v4, KType v5) { return this.newArray0(v0, v1, v2, v3, v4, v5); }
-    public KType [] newArray(KType v0, KType v1, KType v2, KType v3,
-            KType v4) { return this.newArray0(v0, v1, v2, v3, v4); }
-    public KType [] newArray(KType v0, KType v1, KType v2, KType v3,
-            KType v4, KType v5, KType v6, KType v7) { return this.newArray0(v0, v1, v2, v3, v4, v5, v6, v7); }
+        return values;
+    }
 }

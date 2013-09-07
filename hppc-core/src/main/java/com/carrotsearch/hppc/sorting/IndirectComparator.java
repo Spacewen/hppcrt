@@ -11,7 +11,7 @@ import java.util.Comparator;
  * arbitrary numbers can appear on input. Use regular comparison operations - they are
  * very fast anyway.
  */
-public interface IndirectComparator
+public interface IndirectComparator extends IntComparator
 {
     /**
      * See class documentation.
@@ -198,5 +198,5 @@ public interface IndirectComparator
         {
             return this.getClass().getSimpleName() + " -> " + delegate;
         }
-    }    
+    }
 }

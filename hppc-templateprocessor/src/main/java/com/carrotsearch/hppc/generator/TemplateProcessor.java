@@ -42,7 +42,7 @@ public final class TemplateProcessor
     {
         this.verbose = verbose;
     }
-    
+
     /**
      * 
      */
@@ -50,7 +50,7 @@ public final class TemplateProcessor
     {
         this.incremental = incremental;
     }
-    
+
     /**
      * 
      */
@@ -74,11 +74,11 @@ public final class TemplateProcessor
     {
         // Collect files/ checksums from the output folder.
         List<OutputFile> outputs = collectOutputFiles(new ArrayList<OutputFile>(),
-            outputDir);
+                outputDir);
 
         // Collect template files in the input folder.
         List<TemplateFile> inputs = collectTemplateFiles(new ArrayList<TemplateFile>(),
-            templatesDir);
+                templatesDir);
 
         // Process templates
         System.out.println("Processing " + inputs.size() + " templates to: " + outputDir.getPath());
@@ -106,12 +106,12 @@ public final class TemplateProcessor
             {
                 updated++;
                 if (verbose) System.out.println("Updated: "
-                    + relativePath(f.file, this.outputDir));
+                        + relativePath(f.file, this.outputDir));
             }
         }
 
         System.out.println("Generated " + generated + " files (" + updated + " updated, "
-            + deleted + " deleted).");
+                + deleted + " deleted).");
     }
 
     /**
@@ -144,27 +144,27 @@ public final class TemplateProcessor
                 }
             }
         }
-        
+
         if (verbose)
             System.out.println(
-                "Velocity: " + timeVelocity + "\n" +
-                "Intrinsics: " + timeIntrinsics + "\n" +
-                "TypeClassRefs: " + timeTypeClassRefs + "\n" +
-                "Comments: " + timeComments + "\n");
+                    "Velocity: " + timeVelocity + "\n" +
+                            "Intrinsics: " + timeIntrinsics + "\n" +
+                            "TypeClassRefs: " + timeTypeClassRefs + "\n" +
+                            "Comments: " + timeComments + "\n");
     }
 
     /**
      * Apply templates.
      */
     private void generate(TemplateFile f, List<OutputFile> outputs,
-        TemplateOptions templateOptions)
+            TemplateOptions templateOptions)
     {
         String targetFileName = targetFileName(relativePath(f.file, templatesDir),
-            templateOptions);
+                templateOptions);
         OutputFile output = findOrCreate(targetFileName, outputs);
 
         if (!incremental || !output.file.exists()
-            || output.file.lastModified() <= f.file.lastModified())
+                || output.file.lastModified() <= f.file.lastModified())
         {
             String input = readFile(f.file);
             long t1, t0 = System.currentTimeMillis();
@@ -181,14 +181,14 @@ public final class TemplateProcessor
             saveFile(output.file, input);
         }
     }
-    
+
     long timeVelocity, timeIntrinsics, timeTypeClassRefs, timeComments;
 
     private String filterIntrinsics(TemplateFile f, String input,
-        TemplateOptions templateOptions)
+            TemplateOptions templateOptions)
     {
         Pattern p = Pattern.compile("(Intrinsics.\\s*)(<[^>]+>\\s*)?([a-zA-Z]+)",
-            Pattern.MULTILINE | Pattern.DOTALL);
+                Pattern.MULTILINE | Pattern.DOTALL);
 
         StringBuffer sb = new StringBuffer();
 
@@ -232,43 +232,103 @@ public final class TemplateProcessor
 
                 if ("defaultKTypeValue".equals(method))
                 {
-                    sb.append(templateOptions.isKTypeGeneric() 
-                        ? "null" 
-                        : getDefaultValue(templateOptions.getKType().getType()));
+                    sb.append(templateOptions.isKTypeGeneric()
+                            ? "null"
+                                    : getDefaultValue(templateOptions.getKType().getType()));
                 }
                 else if ("defaultVTypeValue".equals(method))
                 {
-                    sb.append(templateOptions.isVTypeGeneric() 
-                        ? "null" 
-                        : getDefaultValue(templateOptions.getVType().getType() ));
+                    sb.append(templateOptions.isVTypeGeneric()
+                            ? "null"
+                                    : getDefaultValue(templateOptions.getVType().getType() ));
                 }
                 else if ("newKTypeArray".equals(method))
                 {
                     sb.append(
-                        templateOptions.isKTypeGeneric() 
-                        ? "Internals.<KType[]>newArray(" + params.get(0) + ")"
-                        : "new " + templateOptions.getKType().getType() + " [" + params.get(0) + "]");
+                            templateOptions.isKTypeGeneric()
+                            ? "Internals.<KType[]>newArray(" + params.get(0) + ")"
+                                    : "new " + templateOptions.getKType().getType() + " [" + params.get(0) + "]");
                 }
                 else if ("newVTypeArray".equals(method))
                 {
                     sb.append(
-                        templateOptions.isVTypeGeneric() 
-                        ? "Internals.<VType[]>newArray(" + params.get(0) + ")"
-                        : "new " + templateOptions.getVType().getType() + " [" + params.get(0) + "]");
+                            templateOptions.isVTypeGeneric()
+                            ? "Internals.<VType[]>newArray(" + params.get(0) + ")"
+                                    : "new " + templateOptions.getVType().getType() + " [" + params.get(0) + "]");
                 }
                 else if ("equalsKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(
-                            String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
-                                params.toArray()));
+                                String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
+                                        params.toArray()));
                     }
                     else
                     {
                         sb.append(
-                            String.format("((%1$s) == (%2$s))",
-                                params.toArray()));
+                                String.format("((%1$s) == (%2$s))",
+                                        params.toArray()));
+                    }
+                }
+                else if ("compareKType".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(
+                                String.format("((%1$s).compareTo(%2$s))",
+                                        params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(
+                                String.format("(%1$s - %2$s)",
+                                        params.toArray()));
+                    }
+                }
+                else if ("isCompSupKType".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(
+                                String.format("((%1$s).compareTo(%2$s) > 0)",
+                                        params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(
+                                String.format("(%1$s > %2$s)",
+                                        params.toArray()));
+                    }
+                }
+                else if ("isCompInfKType".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(
+                                String.format("((%1$s).compareTo(%2$s) < 0)",
+                                        params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(
+                                String.format("(%1$s < %2$s)",
+                                        params.toArray()));
+                    }
+                }
+                else if ("isCompEqualKType".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(
+                                String.format("((%1$s).compareTo(%2$s) == 0)",
+                                        params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(
+                                String.format("(%1$s == %2$s)",
+                                        params.toArray()));
                     }
                 }
                 else if ("equalsKTypeHashStrategy".equals(method))
@@ -276,8 +336,8 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(
-                           String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
-                                         params.toArray()));
+                                String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
+                                        params.toArray()));
                     }
                     else
                     {
@@ -289,14 +349,14 @@ public final class TemplateProcessor
                     if (templateOptions.isVTypeGeneric())
                     {
                         sb.append(
-                            String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
-                                params.toArray()));
+                                String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
+                                        params.toArray()));
                     }
                     else
                     {
                         sb.append(
-                            String.format("((%1$s) == (%2$s))",
-                                params.toArray()));
+                                String.format("((%1$s) == (%2$s))",
+                                        params.toArray()));
                     }
                 }
                 else
@@ -315,10 +375,10 @@ public final class TemplateProcessor
     }
 
     private String filterComments(TemplateFile f, String input,
-        TemplateOptions templateOptions)
+            TemplateOptions templateOptions)
     {
         Pattern p = Pattern.compile("(/\\*!)|(!\\*/)", Pattern.MULTILINE
-            | Pattern.DOTALL);
+                | Pattern.DOTALL);
         return p.matcher(input).replaceAll("");
     }
 
@@ -331,20 +391,20 @@ public final class TemplateProcessor
     }
 
     private String unifyTypeWithSignature(TemplateFile f, String input,
-        TemplateOptions options)
+            TemplateOptions options)
     {
         // This is a hack. A better way would be a full source AST and
         // rewrite at the actual typeDecl level.
         // KTypePredicate<? super VType> => VTypePredicate<? super VType>
         return input.replaceAll(
-            "(KType)(?!VType)([A-Za-z]+)(<(?:(\\? super ))?VType>)", "VType$2$3");
+                "(KType)(?!VType)([A-Za-z]+)(<(?:(\\? super ))?VType>)", "VType$2$3");
     }
 
     private String rewriteSignatures(TemplateFile f, String input, TemplateOptions options)
     {
         Pattern p = Pattern.compile("<[\\?A-Z]");
         Matcher m = p.matcher(input);
-        
+
         StringBuilder sb = new StringBuilder();
         int fromIndex = 0;
         while (m.find(fromIndex))
@@ -408,13 +468,13 @@ public final class TemplateProcessor
                     b.append(arg.trim());
                 }
             }
-            
+
             if (b.length() > 0)
             {
                 b.insert(0, '{');
                 b.append('}');
             }
-            
+
             sb.replace(m.start(), m.end(), b.toString());
             m = p.matcher(sb);
         }
@@ -433,22 +493,22 @@ public final class TemplateProcessor
         if (options.hasVType())
         {
             Type v = options.getVType();
-            
+
             input = input.replaceAll("(KTypeVType)([A-Z][a-zA-Z]*)(<.+?>)?",
-                (k.isGeneric() ? "Object" : k.getBoxedType()) +
-                (v.isGeneric() ? "Object" : v.getBoxedType()) +
-                "$2" +
-                (options.isAnyGeneric() ? "$3" : ""));
-            
+                    (k.isGeneric() ? "Object" : k.getBoxedType()) +
+                    (v.isGeneric() ? "Object" : v.getBoxedType()) +
+                    "$2" +
+                    (options.isAnyGeneric() ? "$3" : ""));
+
             input = input.replaceAll("(VType)([A-Z][a-zA-Z]*)",
-                (v.isGeneric() ? "Object" : v.getBoxedType()) +  "$2");
+                    (v.isGeneric() ? "Object" : v.getBoxedType()) +  "$2");
 
             if (!v.isGeneric())
                 input = input.replaceAll("VType", v.getType());
         }
-        
+
         input = input.replaceAll("(KType)([A-Z][a-zA-Z]*)(<.+?>)?",
-            k.isGeneric() ? "Object" + "$2$3": k.getBoxedType() + "$2");
+                k.isGeneric() ? "Object" + "$2$3": k.getBoxedType() + "$2");
 
         if (!k.isGeneric())
             input = input.replaceAll("KType", k.getType());
@@ -494,7 +554,7 @@ public final class TemplateProcessor
         {
             byte [] contents = new byte [(int) file.length()];
             DataInputStream dataInputStream = new DataInputStream(new FileInputStream(
-                file));
+                    file));
             dataInputStream.readFully(contents);
             dataInputStream.close();
             return new String(contents, "UTF-8");
@@ -525,11 +585,11 @@ public final class TemplateProcessor
     private String targetFileName(String relativePath, TemplateOptions templateOptions)
     {
         if (templateOptions.hasVType()) relativePath = relativePath.replace("KTypeVType",
-            templateOptions.getKType().getBoxedType()
+                templateOptions.getKType().getBoxedType()
                 + templateOptions.getVType().getBoxedType());
 
         relativePath = relativePath.replace("KType", templateOptions.getKType()
-            .getBoxedType());
+                .getBoxedType());
         return relativePath;
     }
 
@@ -541,7 +601,7 @@ public final class TemplateProcessor
         try
         {
             return sub.getCanonicalPath().toString()
-                .substring(parent.getCanonicalPath().length());
+                    .substring(parent.getCanonicalPath().length());
         }
         catch (IOException e)
         {
@@ -580,8 +640,8 @@ public final class TemplateProcessor
      * Collect all template files from this and subdirectories.
      */
     private List<TemplateFile> collectTemplateFiles(final List<TemplateFile> list,
-        File dir)
-    {
+            File dir)
+            {
         for (File file : dir.listFiles(new FilenameFilter()
         {
             public boolean accept(File dir, String name)
@@ -600,7 +660,7 @@ public final class TemplateProcessor
             list.add(new TemplateFile(file));
         }
         return list;
-    }
+            }
 
     static File canonicalFile(File target)
     {
@@ -613,13 +673,13 @@ public final class TemplateProcessor
             throw new RuntimeException(e);
         }
     }
-    
+
     private static String getDefaultValue(String typeName) {
-        
+
         String litteral = typeName.trim();
-        
+
         String defaultValue = null;
-        
+
         if (litteral.equals("byte")) {
             defaultValue = "(byte)0";
         } else if (litteral.equals( "char")) {
@@ -639,7 +699,7 @@ public final class TemplateProcessor
         } else {
             defaultValue = "null";
         }
-        
+
         return "(" + defaultValue  + ")";
     }
 

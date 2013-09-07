@@ -130,14 +130,15 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     protected int perturbation;
 
 
-    /* #if ($TemplateOptions.KTypeGeneric) */
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
      * Custom hashing strategy : if != null,
      * comparisons and hash codes of keys will be computed
      * with the strategy methods instead of the native Object equals() and hashCode() methods.
      */
     protected HashingStrategy<KType> hashStrategy = null;
-    /* #end */
+
+    /*! #end !*/
 
     /**
      * Creates a hash set with the default capacity of {@value #DEFAULT_CAPACITY},
