@@ -26,14 +26,14 @@ public final class KTypeSort
      * Sort by  dual-pivot quicksort an array of naturally comparable <code>KType</code>s from [beginIndex, endIndex[
      * <p>
      * <b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
-     * <//b>
+     *  #if ($TemplateOptions.KTypeGeneric) This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable. #end
+     * </b>
      * </p>
      * @param table
      * @param beginIndex
      * @param endIndex
      */
-    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<KType>> /*! #end !*/void quicksort(KType[] table, int beginIndex, int endIndex)
+    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(KType[] table, int beginIndex, int endIndex)
     {
         if (endIndex - beginIndex > 1)
         {
@@ -42,15 +42,15 @@ public final class KTypeSort
     }
 
     /**
-     * Sort by  dual-pivot quicksort a entire array of of naturally comparable <code>KType</code>s
+     * Sort by  dual-pivot quicksort a entire array of of naturally Comparable <code>KType</code>s
      * <p>
      * <b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
-     * <//b>
+     *  #if ($TemplateOptions.KTypeGeneric) This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable. #end
+     * </b>
      * </p>
      * @param table
      */
-    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<KType>> /*! #end !*/void quicksort(KType[] table)
+    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(KType[] table)
     {
         if (table.length > 1)
         {
@@ -69,9 +69,9 @@ public final class KTypeSort
     public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(
             KType[] table, int beginIndex, int endIndex,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<KType>
+            Comparator<? super KType>
             /*! #else
-            KTypeComparator<KType>
+            KTypeComparator<? super KType>
              #end !*/
             comp)
     {
@@ -91,10 +91,10 @@ public final class KTypeSort
      */
     public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(KType[] table,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<KType>
+            Comparator<? super KType>
     /*! #else
-            KTypeComparator<KType>
-             #end !*/
+                    KTypeComparator<? super KType>
+                    #end !*/
     comp)
     {
 
@@ -105,13 +105,13 @@ public final class KTypeSort
     }
 
     /**
-     * Private recursive sort method, [left, right] inclusive for Comparable Generics
+     * Private recursive sort method, [left, right] inclusive for Comparable objects
      * or natural ordering for primitives.
      * @param a
      * @param left
      * @param right
      */
-    private static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<KType>> /*! #end !*/void dualPivotQuicksort(KType[] a, int left, int right)
+    private static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void dualPivotQuicksort(KType[] a, int left, int right)
     {
         int len = right - left;
 
@@ -322,9 +322,9 @@ public final class KTypeSort
             KType[] a,
             int left, int right,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<KType>
+            Comparator<? super KType>
             /*! #else
-            KTypeComparator<KType>
+            KTypeComparator<? super KType>
              #end !*/
             comp)
     {

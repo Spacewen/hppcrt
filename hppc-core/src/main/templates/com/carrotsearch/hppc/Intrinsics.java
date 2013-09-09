@@ -47,7 +47,7 @@ public final class Intrinsics
      */
     public static <T> T defaultKTypeValue()
     {
-        return (T) null;
+        return null;
     }
 
     /**
@@ -58,7 +58,7 @@ public final class Intrinsics
      */
     public static <T> T defaultVTypeValue()
     {
-        return (T) null;
+        return null;
     }
 
     /**
@@ -74,7 +74,7 @@ public final class Intrinsics
      * Compare two keys by Comparable<T>.
      * Primitive types comparison result is <code>e1 - e2</code>.
      */
-    public static <T extends Comparable<T>> int compareKType(T e1, T e2)
+    public static <T extends Comparable<? super T>> int compareKType(T e1, T e2)
     {
         return e1.compareTo(e2);
     }
@@ -83,7 +83,7 @@ public final class Intrinsics
      * Compare two keys by Comparable<T>, returns true if e1.compareTo(e2) > 0
      * Primitive types comparison result is <code>e1 > e2</code>.
      */
-    public static <T extends Comparable<T>> boolean isCompSupKType(T e1, T e2)
+    public static <T extends Comparable<? super T>> boolean isCompSupKType(T e1, T e2)
     {
         return e1.compareTo(e2) > 0;
     }
@@ -92,7 +92,7 @@ public final class Intrinsics
      * Compare two keys by Comparable<T>, returns true if e1.compareTo(e2) < 0
      * Primitive types comparison result is <code>e1 < e2</code>.
      */
-    public static <T extends Comparable<T>> boolean isCompInfKType(T e1, T e2)
+    public static <T extends Comparable<? super T>> boolean isCompInfKType(T e1, T e2)
     {
         return e1.compareTo(e2) < 0;
     }
@@ -101,7 +101,7 @@ public final class Intrinsics
      * Compare two keys by Comparable<T>, returns true if e1.compareTo(e2) == 0
      * Primitive types comparison result is <code>e1 == e2</code>.
      */
-    public static <T extends Comparable<T>> boolean isCompEqualKType(T e1, T e2)
+    public static <T extends Comparable<? super T>> boolean isCompEqualKType(T e1, T e2)
     {
         return e1.compareTo(e2) == 0;
     }

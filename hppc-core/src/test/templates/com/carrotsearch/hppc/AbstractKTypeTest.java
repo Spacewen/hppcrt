@@ -51,7 +51,7 @@ public abstract class AbstractKTypeTest<KType>
      * return a Comparable object, indeed a number
      */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-    public <KType extends Comparable<KType>> KType castComparable(int v)
+    public <KType extends Comparable<? super KType>> KType castComparable(int v)
     /*! #else
     public KType castComparable(int v)
     #end !*/

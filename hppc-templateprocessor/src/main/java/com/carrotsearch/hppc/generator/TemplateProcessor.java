@@ -233,26 +233,22 @@ public final class TemplateProcessor
                 if ("defaultKTypeValue".equals(method))
                 {
                     sb.append(templateOptions.isKTypeGeneric()
-                            ? "null"
-                                    : getDefaultValue(templateOptions.getKType().getType()));
+                            ? "null" : getDefaultValue(templateOptions.getKType().getType()));
                 }
                 else if ("defaultVTypeValue".equals(method))
                 {
                     sb.append(templateOptions.isVTypeGeneric()
-                            ? "null"
-                                    : getDefaultValue(templateOptions.getVType().getType() ));
+                            ? "null" : getDefaultValue(templateOptions.getVType().getType()));
                 }
                 else if ("newKTypeArray".equals(method))
                 {
-                    sb.append(
-                            templateOptions.isKTypeGeneric()
+                    sb.append(templateOptions.isKTypeGeneric()
                             ? "Internals.<KType[]>newArray(" + params.get(0) + ")"
                                     : "new " + templateOptions.getKType().getType() + " [" + params.get(0) + "]");
                 }
                 else if ("newVTypeArray".equals(method))
                 {
-                    sb.append(
-                            templateOptions.isVTypeGeneric()
+                    sb.append(templateOptions.isVTypeGeneric()
                             ? "Internals.<VType[]>newArray(" + params.get(0) + ")"
                                     : "new " + templateOptions.getVType().getType() + " [" + params.get(0) + "]");
                 }
@@ -260,84 +256,64 @@ public final class TemplateProcessor
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
+                                params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("((%1$s) == (%2$s))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s) == (%2$s))", params.toArray()));
                     }
                 }
                 else if ("compareKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s).compareTo(%2$s))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s).compareTo(%2$s))", params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("(%1$s - %2$s)",
-                                        params.toArray()));
+                        sb.append(String.format("(%1$s - %2$s)", params.toArray()));
                     }
                 }
                 else if ("isCompSupKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s).compareTo(%2$s) > 0)",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s).compareTo(%2$s) > 0)", params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("(%1$s > %2$s)",
-                                        params.toArray()));
+                        sb.append(String.format("(%1$s > %2$s)", params.toArray()));
                     }
                 }
                 else if ("isCompInfKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s).compareTo(%2$s) < 0)",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s).compareTo(%2$s) < 0)", params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("(%1$s < %2$s)",
-                                        params.toArray()));
+                        sb.append(String.format("(%1$s < %2$s)", params.toArray()));
                     }
                 }
                 else if ("isCompEqualKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s).compareTo(%2$s) == 0)",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s).compareTo(%2$s) == 0)", params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("(%1$s == %2$s)",
-                                        params.toArray()));
+                        sb.append(String.format("(%1$s == %2$s)", params.toArray()));
                     }
                 }
                 else if ("equalsKTypeHashStrategy".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s) == null ? (%2$s) == null :((%3$s) == null ? (%1$s).equals((%2$s)):(%3$s).equals((%1$s),(%2$s))))",
+                                params.toArray()));
                     }
                     else
                     {
@@ -348,15 +324,12 @@ public final class TemplateProcessor
                 {
                     if (templateOptions.isVTypeGeneric())
                     {
-                        sb.append(
-                                String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
+                                params.toArray()));
                     }
                     else
                     {
-                        sb.append(
-                                String.format("((%1$s) == (%2$s))",
-                                        params.toArray()));
+                        sb.append(String.format("((%1$s) == (%2$s))", params.toArray()));
                     }
                 }
                 else
@@ -396,8 +369,7 @@ public final class TemplateProcessor
         // This is a hack. A better way would be a full source AST and
         // rewrite at the actual typeDecl level.
         // KTypePredicate<? super VType> => VTypePredicate<? super VType>
-        return input.replaceAll(
-                "(KType)(?!VType)([A-Za-z]+)(<(?:(\\? super ))?VType>)", "VType$2$3");
+        return input.replaceAll("(KType)(?!VType)([A-Za-z]+)(<(?:(\\? super ))?VType>)", "VType$2$3");
     }
 
     private String rewriteSignatures(TemplateFile f, String input, TemplateOptions options)
