@@ -124,4 +124,22 @@ public final class Intrinsics
     {
         return e1 == null ? e2 == null : e1.equals(e2);
     }
+
+    /**
+     * Move one index to the left, wrapping around buffer, wrapping around buffer of size modulus
+     * Code is actually inlined in generated code
+     */
+    public static int oneLeft(int index, int modulus)
+    {
+        return (index >= 1) ? index - 1 : modulus - 1;
+    }
+
+    /**
+     * Move one index to the right, wrapping around buffer of size modulus
+     * Code is actually inlined in generated code
+     */
+    public static int oneRight(int index, int modulus)
+    {
+        return (index + 1 == modulus) ? 0 : index + 1;
+    }
 }

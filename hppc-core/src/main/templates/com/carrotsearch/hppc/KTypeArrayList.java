@@ -843,7 +843,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * Sort the list by dual-pivot quicksort, from [beginIndex, endIndex[
+     * Sort the list from [beginIndex, endIndex[
      * by natural ordering (smaller first)
      * @param beginIndex
      * @param endIndex
@@ -861,7 +861,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     #end !*/
 
     /**
-     * Sort the whole list by dual-pivot quicksort by natural ordering (smaller first)
+     * Sort the whole list by natural ordering (smaller first)
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009]
+     * </b></p>
      * @param beginIndex
      * @param endIndex
      */
@@ -877,10 +880,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     ////////////////////////////
     /**
-     * Sort by  dual-pivot quicksort the list of <code>KType</code>s from [beginIndex, endIndex[
+     * Sort the list of <code>KType</code>s from [beginIndex, endIndex[
      * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
      * <p><b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
     public void sort(
@@ -904,7 +907,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * Sort by  dual-pivot quicksort an entire list
      * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
      * <p><b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
     public void sort(

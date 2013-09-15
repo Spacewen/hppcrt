@@ -11,6 +11,7 @@ import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.mutables.IntHolder;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
 import com.carrotsearch.hppc.procedures.KTypeProcedure;
+import com.carrotsearch.hppc.sorting.KTypeComparator;
 
 
 /**
@@ -53,7 +54,8 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     {
         if (deque != null)
         {
-            for (int i = deque.tail; i < deque.head; i = KTypeArrayDeque.oneRight(i, deque.buffer.length)) {
+            for (int i = deque.tail; i < deque.head; i = Intrinsics.oneRight(i, deque.buffer.length))
+            {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 assertTrue(Intrinsics.<KType>defaultKTypeValue() == deque.buffer[i]);
                 /*! #end !*/
@@ -968,6 +970,67 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
+    @Test
+    public void testSort()
+    {
+        //natural ordering comparator
+        KTypeComparator<KType> comp = new KTypeComparator<KType>() {
+
+            @Override
+            public int compare(KType e1, KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = -1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = 1;
+                }
+
+                return res;
+            }
+        };
+
+        int TEST_SIZE = (int) 1e6;
+        //A) Sort a deque of random values of primitive types
+
+        /*! #if ($TemplateOptions.KTypePrimitive)
+        //A-1) full sort
+        KTypeArrayDeque<KType> primitiveDeque = creatDequeWithRandomData(TEST_SIZE, 7882316546154612L);
+        primitiveDeque.sort();
+        assertOrder(primitiveDeque);
+        #end !*/
+
+        //B) Sort with Comparator
+        //B-1) Full sort
+        KTypeArrayDeque<KType> comparatorDeque = creatDequeWithRandomData(TEST_SIZE, 8784163166131549L);
+        comparatorDeque.sort(comp);
+        assertOrder(comparatorDeque);
+    }
+
+    /**
+     * Test natural ordering in the deque
+     * @param expected
+     * @param actual
+     * @param length
+     */
+    private void assertOrder(KTypeArrayDeque<KType> order)
+    {
+        //first, export to an array
+        KType[] export = (KType[]) order.toArray();
+
+        for (int i = 1; i < export.length; i++)
+        {
+            if (castType(export[i - 1]) > castType(export[i]))
+            {
+                Assert.assertTrue(String.format("Not ordered: (previous, next) = (%d, %d) at index %d",
+                        castType(export[i - 1]), castType(export[i]), i), false);
+            }
+        }
+    }
 
     private KTypeArrayDeque<KType> createDequeWithOrderedData(int size)
     {
@@ -979,6 +1042,35 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         }
 
         return newArray;
+    }
+
+    private KTypeArrayDeque<KType> creatDequeWithRandomData(int size, long randomSeed)
+    {
+        Random prng = new Random(randomSeed);
+
+        KTypeArrayDeque<KType> newDeque = KTypeArrayDeque.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
+
+        while (newDeque.size() < size)
+        {
+            KType newValueToInsert = cast(prng.nextInt());
+            boolean insertInTail = prng.nextInt() % 7 == 0;
+            boolean deleteHead = prng.nextInt() % 17 == 0;
+
+            if (deleteHead)
+            {
+                newDeque.removeFirst();
+            }
+            else if (insertInTail)
+            {
+                newDeque.addLast(newValueToInsert);
+            }
+            else
+            {
+                newDeque.addFirst(newValueToInsert);
+            }
+        }
+
+        return newDeque;
     }
 
 }

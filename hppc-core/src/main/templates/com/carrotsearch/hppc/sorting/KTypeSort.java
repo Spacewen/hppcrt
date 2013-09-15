@@ -26,7 +26,7 @@ public final class KTypeSort
      * Sort by  dual-pivot quicksort an array of naturally comparable <code>KType</code>s from [beginIndex, endIndex[
      * <p>
      * <b>
-     *  #if ($TemplateOptions.KTypeGeneric) This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable. #end
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b>
      * </p>
      * @param table
@@ -45,7 +45,7 @@ public final class KTypeSort
      * Sort by  dual-pivot quicksort a entire array of of naturally Comparable <code>KType</code>s
      * <p>
      * <b>
-     *  #if ($TemplateOptions.KTypeGeneric) This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable. #end
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b>
      * </p>
      * @param table
@@ -63,7 +63,7 @@ public final class KTypeSort
      * Sort by  dual-pivot quicksort an array of <code>KType</code>s from [beginIndex, endIndex[
      * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
      * <p><b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
     public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(
@@ -86,7 +86,7 @@ public final class KTypeSort
      * Sort by  dual-pivot quicksort an entire array of <code>KType</code>s
      * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
      * <p><b>
-     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009], so is NOT stable.
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
     public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(KType[] table,

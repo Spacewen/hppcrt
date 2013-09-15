@@ -9,28 +9,24 @@ IMPORTANT: Developers - read INSTALL file for proper Eclipse setup!
 This fork intend to follow the original HPPC as close as possible while 
 adding, tweaking, and even modifiying some features, for the goal of improving HPPC realtime behaviour. 
 Most of the internal modifications intend to reach zero temporaries Objects creation at runtime.
-Another way is to add convenient methods/API that allow filling and reuse pre-existing Objects. 
+A way is also to add convenient methods/API that allow filling and reuse of pre-existing Objects. 
 
-###For now, the additional features are:
+###List of changes:
+1. Tweaked internal implementation to remove dynamic allocation of temporary Objects
 
-1. Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode(). 
-
-2. Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
-especially noticable for big container sizes. 
-
-3. Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
+2. Pooled Iterators: ability to use iterators the usual way, without creating Iterator instances
 dynamically at runtime. 
 That means in particular using the enhanced for loop without any dynamic allocation underneath.
 
+3. Faster clear(), resize() and such, using a memcpy-like technique offering 2x speed gain in clear()-like operations
+especially noticable for big container sizes. 
+
 4. API additions:
    1.  toArray(existing array) for every container, good for array reuse in RealTime environnement
-   2.  In hppc.sorting, primitive and Generics in place array sorts, similar to java.util.Arrays using Comparable and Comparator versions
-   3.  ArrayList has now sorting methods too.
-
-5. Tweaked internal implementation to remove dynamic allocation of temporary Objects
-
-6. TODO:
-Creating examples for the new methods/API. 
+   2.  In hppc.sorting, primitive and Generics in place array sorts, similar to java.util.Arrays with Comparable and Comparator versions
+   3.  sort methods for ArrayLists
+   4.  sort methods for ArrayDeques
+   5.  Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode().   
 
 All these new features are Unit tested, so should work reasonably well.
 Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6x-RT' branch for convenience.

@@ -332,6 +332,18 @@ public final class TemplateProcessor
                         sb.append(String.format("((%1$s) == (%2$s))", params.toArray()));
                     }
                 }
+                else if ("oneLeft".equals(method))
+                {
+                    // (index >= 1) ? index - 1 : modulus - 1;
+                    sb.append(String.format("((%1$s >= 1) ? (%1$s - 1): (%2$s - 1))",
+                            params.toArray()));
+                }
+                else if ("oneRight".equals(method))
+                {
+                    // (index + 1 == modulus) ? 0 : index + 1;
+                    sb.append(String.format("((%1$s + 1 == %2$s) ? 0: (%1$s + 1))",
+                            params.toArray()));
+                }
                 else
                 {
                     throw new RuntimeException("Unrecognized Intrinsic call: " + method);
