@@ -40,6 +40,7 @@ public class XorShiftRandom extends Random
         return (int) (nextLong() & ((1L << bits) - 1));
     }
 
+    @SuppressWarnings("sync-override")
     @Override
     public void setSeed(long seed)
     {

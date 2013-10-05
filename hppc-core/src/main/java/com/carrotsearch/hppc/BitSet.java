@@ -697,7 +697,8 @@ public class BitSet implements Cloneable
             System.arraycopy(array, 0, newArray, 0, array.length);
             return newArray;
         }
-        else return array;
+
+        return array;
     }
 
     public static int getNextSize(int targetSize)

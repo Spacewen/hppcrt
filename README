@@ -26,7 +26,8 @@ especially noticable for big container sizes.
    2.  In hppc.sorting, primitive and Generics in place array sorts, similar to java.util.Arrays with Comparable and Comparator versions
    3.  sort methods for ArrayLists
    4.  sort methods for ArrayDeques
-   5.  Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode().   
+   5.  Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode().
+   6.  Priority queues, and Indexed priority queues 	  
 
 All these new features are Unit tested, so should work reasonably well.
 Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6x-RT' branch for convenience.

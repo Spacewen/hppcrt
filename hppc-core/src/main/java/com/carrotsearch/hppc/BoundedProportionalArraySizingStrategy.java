@@ -11,13 +11,13 @@ import java.util.ArrayList;
  * growRatio = 1.5f
  * </pre>
  */
-public final class BoundedProportionalArraySizingStrategy 
-    implements ArraySizingStrategy
-{   
-    /** 
-     * Used by {@link ArrayList} internally to account for reference sizes. 
+public final class BoundedProportionalArraySizingStrategy
+implements ArraySizingStrategy
+{
+    /**
+     * Used by {@link ArrayList} internally to account for reference sizes.
      */
-    public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE; 
+    public static final int MAX_ARRAY_SIZE = Integer.MAX_VALUE;
 
     /** Minimum grow count. */
     public final static int DEFAULT_MIN_GROW_COUNT = 10;
@@ -34,13 +34,13 @@ public final class BoundedProportionalArraySizingStrategy
     /** Maximum number of elements to grow, if capacity exceeded. */
     public final int maxGrowCount;
 
-    /** 
+    /**
      * The current buffer length is multiplied by this ratio to get the
      * first estimate for the new size. To double the size of the current
-     * buffer, for example, set to <code>2</code>. 
+     * buffer, for example, set to <code>2</code>.
      */
     public final float growRatio;
-    
+
     /**
      * Create the default sizing strategy.
      */
@@ -68,17 +68,17 @@ public final class BoundedProportionalArraySizingStrategy
      */
     public int grow(int currentBufferLength, int elementsCount, int expectedAdditions)
     {
-        long growBy = (long) ((long) currentBufferLength * growRatio);
+        long growBy = (long) (currentBufferLength * growRatio);
         growBy = Math.max(growBy, minGrowCount);
         growBy = Math.min(growBy, maxGrowCount);
         long growTo = Math.min(MAX_ARRAY_SIZE, growBy + currentBufferLength);
-        
-        long newSize = Math.max((long) elementsCount + expectedAdditions, growTo); 
+
+        long newSize = Math.max((long) elementsCount + expectedAdditions, growTo);
 
         if (newSize > MAX_ARRAY_SIZE) {
             throw new AssertionError(
-                "Cannot resize beyond " + MAX_ARRAY_SIZE + 
-                " (" + (elementsCount + expectedAdditions) + ")");
+                    "Cannot resize beyond " + MAX_ARRAY_SIZE +
+                    " (" + (elementsCount + expectedAdditions) + ")");
         }
 
         return (int) newSize;

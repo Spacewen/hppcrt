@@ -534,8 +534,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * Clone this object. The returned clone will reuse the same hash function
-     * and array resizing strategy.
+     * Clone this object. The returned clone will  resizing strategy.
      */
     @Override
     public KTypeArrayList<KType> clone()
