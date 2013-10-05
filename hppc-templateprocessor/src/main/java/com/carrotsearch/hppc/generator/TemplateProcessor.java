@@ -275,11 +275,33 @@ public final class TemplateProcessor
                         sb.append(String.format("(%1$s - %2$s)", params.toArray()));
                     }
                 }
+                else if ("compareKTypeUnchecked".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s))", params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(String.format("(%1$s - %2$s)", params.toArray()));
+                    }
+                }
                 else if ("isCompSupKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) > 0)", params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(String.format("(%1$s > %2$s)", params.toArray()));
+                    }
+                }
+                else if ("isCompSupKTypeUnchecked".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) > 0)", params.toArray()));
                     }
                     else
                     {
@@ -297,11 +319,33 @@ public final class TemplateProcessor
                         sb.append(String.format("(%1$s < %2$s)", params.toArray()));
                     }
                 }
+                else if ("isCompInfKTypeUnchecked".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) < 0)", params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(String.format("(%1$s < %2$s)", params.toArray()));
+                    }
+                }
                 else if ("isCompEqualKType".equals(method))
                 {
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) == 0)", params.toArray()));
+                    }
+                    else
+                    {
+                        sb.append(String.format("(%1$s == %2$s)", params.toArray()));
+                    }
+                }
+                else if ("isCompEqualKTypeUnchecked".equals(method))
+                {
+                    if (templateOptions.isKTypeGeneric())
+                    {
+                        sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) == 0)", params.toArray()));
                     }
                     else
                     {

@@ -2,6 +2,7 @@ package com.carrotsearch.hppc;
 
 import org.junit.Rule;
 import org.junit.rules.MethodRule;
+import static org.junit.Assert.assertEquals;
 
 
 /**
@@ -33,7 +34,7 @@ public abstract class AbstractKTypeTest<KType>
     protected KType key9 = cast(9), k9 = key9;
 
     /**
-     * Convert to target type from an integer used to test stuff.
+     * Convert int to target KType type.
      */
     public KType cast(int v)
     {

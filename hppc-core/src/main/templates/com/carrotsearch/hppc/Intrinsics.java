@@ -80,12 +80,32 @@ public final class Intrinsics
     }
 
     /**
+     * Compare two keys by Comparable<T>, unchecked without Comparable signature
+     * Primitive types comparison result is <code>e1 - e2</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> int compareKTypeUnchecked(T e1, T e2)
+    {
+        return ((Comparable<? super T>) e1).compareTo(e2);
+    }
+
+    /**
      * Compare two keys by Comparable<T>, returns true if e1.compareTo(e2) > 0
      * Primitive types comparison result is <code>e1 > e2</code>.
      */
     public static <T extends Comparable<? super T>> boolean isCompSupKType(T e1, T e2)
     {
         return e1.compareTo(e2) > 0;
+    }
+
+    /**
+     * Compare two keys by Comparable<T>, unchecked without signature. returns true if e1.compareTo(e2) > 0
+     * Primitive types comparison result is <code>e1 > e2</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> boolean isCompSupKTypeUnchecked(T e1, T e2)
+    {
+        return ((Comparable<? super T>) e1).compareTo(e2) > 0;
     }
 
     /**
@@ -98,12 +118,32 @@ public final class Intrinsics
     }
 
     /**
+     * Compare two keys by Comparable<T>, unchecked without signature. returns true if e1.compareTo(e2) < 0
+     * Primitive types comparison result is <code>e1 < e2</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> boolean isCompInfKTypeUnchecked(T e1, T e2)
+    {
+        return ((Comparable<? super T>) e1).compareTo(e2) < 0;
+    }
+
+    /**
      * Compare two keys by Comparable<T>, returns true if e1.compareTo(e2) == 0
      * Primitive types comparison result is <code>e1 == e2</code>.
      */
     public static <T extends Comparable<? super T>> boolean isCompEqualKType(T e1, T e2)
     {
         return e1.compareTo(e2) == 0;
+    }
+
+    /**
+     * Compare two keys by Comparable<T>, unchecked without signature. returns true if e1.compareTo(e2) == 0
+     * Primitive types comparison result is <code>e1 == e2</code>.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> boolean isCompEqualKTypeUnchecked(T e1, T e2)
+    {
+        return ((Comparable<? super T>) e1).compareTo(e2) == 0;
     }
 
     /**

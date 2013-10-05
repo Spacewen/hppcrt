@@ -532,9 +532,11 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     public int size()
     {
         if (head <= tail)
+        {
             return tail - head;
-        else
-            return (tail - head + buffer.length);
+        }
+
+        return (tail - head + buffer.length);
     }
 
     /**
@@ -728,8 +730,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             return cursor;
         }
     }
-
-
 
     /**
      * Returns a cursor over the values of this deque (in head to tail order). The
