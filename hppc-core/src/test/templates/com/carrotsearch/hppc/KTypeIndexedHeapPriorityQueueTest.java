@@ -52,7 +52,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
     public void checkTrailingSpaceUninitialized()
     {
         assertTrue(prioq.isMinHeap());
-        checkConsistency(prioq);
+        assertTrue(prioq.isConsistent());
 
         if (prioq != null)
         {
@@ -322,6 +322,57 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
 
     /* */
     @Test
+    public void testRemoveAllEverything()
+    {
+        insertElements(prioq, 0, 0, 1, 1, 2, 2, 11, 1, 44, 4);
+
+        assertEquals(5, prioq.removeAll(new KTypePredicate<KType>()
+                {
+            public boolean apply(KType v)
+            {
+                return true;
+            };
+                }));
+
+        assertEquals(0, prioq.size());
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllWithIndexedPredicate()
+    {
+        insertElements(prioq, 0, 0, 1, 1, 2, 2, 3, 4, 8, 12, 11, 1, 44, 4, 12, 13);
+
+        assertEquals(3, prioq.removeAll(new KTypeIndexedPredicate<KType>()
+                {
+            public boolean apply(int index, KType v)
+            {
+                return index == 1 || index == 11 || index == 12;
+            };
+                }));
+
+        assertPrioQueueEquals(prioq, 0, 0, 2, 2, 3, 4, 8, 12, 44, 4);
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllWithIndexedPredicateEverything()
+    {
+        insertElements(prioq, 0, 0, 1, 1, 2, 2, 3, 4, 8, 12, 11, 1, 44, 4, 12, 13);
+
+        assertEquals(8, prioq.removeAll(new KTypeIndexedPredicate<KType>()
+                {
+            public boolean apply(int index, KType v)
+            {
+                return true;
+            };
+                }));
+
+        assertEquals(0, prioq.size());
+    }
+
+    /* */
+    @Test
     public void testRetainAllWithPredicate()
     {
         insertElements(prioq, 10, 0, 11, 1, 12, 2, 13, 1, 14, 0);
@@ -335,6 +386,23 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
                 }));
 
         assertPrioQueueEquals(prioq, 11, 1, 13, 1, 12, 2);
+    }
+
+    /* */
+    @Test
+    public void testRetainAllWithIndexedPredicate()
+    {
+        insertElements(prioq, 10, 0, 11, 1, 12, 2, 13, 1, 14, 0);
+
+        assertEquals(3, prioq.retainAll(new KTypeIndexedPredicate<KType>()
+                {
+            public boolean apply(int index, KType v)
+            {
+                return index == 11 || index == 13;
+            };
+                }));
+
+        assertPrioQueueEquals(prioq, 11, 1, 13, 1);
     }
 
     /* */
@@ -543,7 +611,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         assertPrioQueueEquals(prioq, 1, 1, 2, 2, 3, 3);
         assertPrioQueueEquals(cloned, 2,2, 3,3);
     }
-
+    
     @Test
     public void testSyntheticComparable()
     {
@@ -950,7 +1018,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
-    //@Test
+    @Test
     public void testPooledIteratorExceptionIteratorLoop()
     {
         int TEST_SIZE = 100;

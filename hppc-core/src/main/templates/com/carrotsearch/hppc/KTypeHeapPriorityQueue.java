@@ -11,7 +11,7 @@ import com.carrotsearch.hppc.sorting.*;
 
 /**
  * A Heap-based, min-priority queue of <code>KType</code>s.
- * (top() is the smallest element)
+ * i.e. top() is the smallest element,
  * as defined by Sedgewick: Algorithms 4th Edition (2011)
  * It assure O(log2(N)) complexity for insertion, deletion of min element,
  * and constant time to examine the first element.
@@ -24,7 +24,6 @@ implements KTypePriorityQueue<KType>, Cloneable
      * Default capacity if no other capacity is given in the constructor.
      */
     public final static int DEFAULT_CAPACITY = 16;
-
 
     /**
      * Internal array for storing the priority queue
@@ -420,6 +419,7 @@ implements KTypePriorityQueue<KType>, Cloneable
             {
                 //at least 2 elements
                 //put the last element in first position
+
                 buffer[1] = buffer[elementsCount];
 
                 //for GC
@@ -485,27 +485,6 @@ implements KTypePriorityQueue<KType>, Cloneable
     }
 
     /**
-     * Clone this object. The returned clone will resizing strategy.
-     */
-    @Override
-    public KTypeHeapPriorityQueue<KType> clone()
-    {
-        try
-        {
-            /* #if ($TemplateOptions.KTypeGeneric) */
-            @SuppressWarnings("unchecked")
-            /* #end */
-            final KTypeHeapPriorityQueue<KType> cloned = (KTypeHeapPriorityQueue<KType>) super.clone();
-            cloned.buffer = buffer.clone();
-            return cloned;
-        }
-        catch (CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * {@inheritDoc}
      */
     @Override
@@ -543,12 +522,26 @@ implements KTypePriorityQueue<KType>, Cloneable
     }
 
     /**
+     * Clone this object. The returned clone will use the same resizing strategy and comparator.
+     */
+    @Override
+    public KTypeHeapPriorityQueue<KType> clone()
+    {
+        //real constructor call
+        KTypeHeapPriorityQueue<KType> cloned = new KTypeHeapPriorityQueue<KType>(this.comparator, this.buffer.length + 1, this.resizer);
+
+        cloned.addAll(this);
+
+        return cloned;
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
-    /* #if ($TemplateOptions.KTypeGeneric) */
+/* #if ($TemplateOptions.KTypeGeneric) */
     @SuppressWarnings("unchecked")
-    /* #end */
+/* #end */
     public boolean equals(Object obj)
     {
         if (obj != null)
@@ -565,7 +558,8 @@ implements KTypePriorityQueue<KType>, Cloneable
 
                 if (other.size() == this.size() && sameComp)
                 {
-                    for (int i = 1; i <= elementsCount; i++)
+                    final int size = this.elementsCount;
+                    for (int i = 1; i <= size; i++)
                     {
                         if (!Intrinsics.equalsKType(this.buffer[i], other.buffer[i]))
                         {
@@ -759,12 +753,10 @@ implements KTypePriorityQueue<KType>, Cloneable
         }
     }
 
-
-
     /**
      * method to test invariant in assert
      */
-    // is pq[1..N] a min heap?
+// is pq[1..N] a min heap?
     protected boolean isMinHeap()
     {
         if (this.comparator == null)
@@ -775,7 +767,7 @@ implements KTypePriorityQueue<KType>, Cloneable
         return isMinHeapComparator(1);
     }
 
-    // is subtree of pq[1..N] rooted at k a min heap?
+// is subtree of pq[1..N] rooted at k a min heap?
     private boolean isMinHeapComparable(int k)
     {
         int N = elementsCount;
@@ -792,7 +784,7 @@ implements KTypePriorityQueue<KType>, Cloneable
         return isMinHeapComparable(left) && isMinHeapComparable(right);
     }
 
-    // is subtree of pq[1..N] rooted at k a min heap?
+// is subtree of pq[1..N] rooted at k a min heap?
     private boolean isMinHeapComparator(int k)
     {
         int N = elementsCount;

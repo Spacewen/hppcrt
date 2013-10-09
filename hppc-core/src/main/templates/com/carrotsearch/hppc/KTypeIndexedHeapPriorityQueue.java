@@ -16,7 +16,7 @@ import com.carrotsearch.hppc.sorting.*;
  * as defined by Sedgewick: Algorithms 4th Edition (2011)
  * It assure O(log2(N)) complexity for insertion, deletion of min element,
  * and constant time to examine the first element.
- * As it is indexed, it also supports contains() in constant time, delete()
+ * As it is indexed, it also supports containsIndex() in constant time, deleteIndex()
  * and change priority in O(log2(N)) time.
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -74,31 +74,44 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     #end !*/
 
     /**
-     * Buffer resizing strategy.
-     */
-    protected final ArraySizingStrategy resizer;
-
-    /**
      * internal pool of ValueIterator (must be created in constructor)
      */
     protected final IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
 
+    protected KTypeIndexedPredicate<? super KType> testIndexedPredicate;
+    protected KType testContainsPredicate;
+
+    protected final  KTypeIndexedPredicate<KType> negateIndexedPredicate = new KTypeIndexedPredicate<KType>() {
+
+        public boolean apply(int index, KType k)
+        {
+            return !testIndexedPredicate.apply(index, k);
+        }
+    };
+
+    protected final  KTypePredicate<KType> containsPredicate = new KTypePredicate<KType>() {
+
+        public boolean apply(KType k)
+        {
+            return Intrinsics.equalsKType(testContainsPredicate, k);
+        }
+    };
+
     /**
-     * Create with a Comparator, an initial capacity, and a custom buffer resizing strategy.
+     * Create with a given initial capacity, using a
+     * Comparator for ordering.
      */
     public KTypeIndexedHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/Comparator<KType> comp,
             /*! #else
             KTypeComparator<KType> comp,
-            #end !*/int initialCapacity, ArraySizingStrategy resizer)
+            #end !*/int initialCapacity)
     {
         this.comparator = comp;
 
         assert initialCapacity >= 0 : "initialCapacity must be >= 0: " + initialCapacity;
-        assert resizer != null;
 
-        this.resizer = resizer;
         //1-based index buffer, assure allocation
-        ensureBufferSpace(resizer.round(initialCapacity + 1));
+        ensureBufferSpace(initialCapacity + 1);
 
         this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator<KType>>(
                 new ObjectFactory<ValueIterator<KType>>() {
@@ -106,7 +119,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                     @Override
                     public ValueIterator<KType> create()
                     {
-                        return new ValueIterator<KType>(KTypeIndexedHeapPriorityQueue.this.buffer, pq);
+                        return new ValueIterator<KType>(KTypeIndexedHeapPriorityQueue.this.buffer,
+                                KTypeIndexedHeapPriorityQueue.this.elementsCount,
+                                KTypeIndexedHeapPriorityQueue.this.qp);
                     }
 
                     @Override
@@ -114,8 +129,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                     {
                         obj.cursor.index = 0;
                         obj.buffer = KTypeIndexedHeapPriorityQueue.this.buffer;
-                        obj.currentpqposition = 0;
-                        obj.pq = KTypeIndexedHeapPriorityQueue.this.pq;
+                        obj.size = KTypeIndexedHeapPriorityQueue.this.elementsCount;
+                        obj.currentPosition = 0;
+                        obj.qp = KTypeIndexedHeapPriorityQueue.this.qp;
                     }
                 });
     }
@@ -147,21 +163,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     /*! #end !*/
     public KTypeIndexedHeapPriorityQueue(int initialCapacity)
     {
-        this(null, initialCapacity, new BoundedProportionalArraySizingStrategy());
-    }
-
-    /**
-     * Create with a given initial capacity, using a
-     * Comparator for ordering.
-     * 
-     * @see BoundedProportionalArraySizingStrategy
-     */
-    public KTypeIndexedHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/Comparator<KType> comp,
-            /*! #else
-            KTypeComparator<KType> comp,
-            #end !*/int initialCapacity)
-    {
-        this(comp, initialCapacity, new BoundedProportionalArraySizingStrategy());
+        this(null, initialCapacity);
     }
 
     /**
@@ -170,25 +172,8 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public int removeAllOccurrences(KType e1)
     {
-        //remove by index
-        int deleted = 0;
-        final int size = this.pq.length;
-        int pos = 0;
-
-        for (int i = 0; i < size; i++)
-        {
-            pos = pq[i];
-
-            if (pos > 0 && Intrinsics.equalsKType(e1, buffer[pos]))
-            {
-                this.deleteIndex(i);
-                deleted++;
-            }
-        }
-
-        assert isMinHeap();
-
-        return deleted;
+        this.testContainsPredicate = e1;
+        return this.removeAllInternal(this.containsPredicate, null);
     }
 
     /**
@@ -197,23 +182,82 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public int removeAll(KTypePredicate<? super KType> predicate)
     {
-        //remove by index
+        return removeAllInternal(predicate, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int removeAll(KTypeIndexedPredicate<? super KType> indexedPredicate)
+    {
+        return removeAllInternal(null, indexedPredicate);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int retainAll(KTypeIndexedPredicate<? super KType> indexedPredicate)
+    {
+        this.testIndexedPredicate = indexedPredicate;
+        return this.removeAllInternal(null, this.negateIndexedPredicate);
+    }
+
+    private int removeAllInternal(KTypePredicate<? super KType> predicate, KTypeIndexedPredicate<? super KType> indexedPredicate)
+    {
+        //remove by position
         int deleted = 0;
-        final int size = this.pq.length;
-        int pos = 0;
+        final KType[] buffer = this.buffer;
+        int lastElementIndex = -1;
 
-        for (int i = 0; i < size; i++)
+        //1-based index
+        int pos = 1;
+
+        while (pos <= elementsCount)
         {
-            pos = pq[i];
-
-            if (pos > 0 && predicate.apply(buffer[pos]))
+            //delete it
+            if (predicate == null ? indexedPredicate.apply(qp[pos], buffer[pos]) : predicate.apply(buffer[pos]))
             {
-                this.deleteIndex(i);
+                lastElementIndex = qp[elementsCount];
+
+                //put the last element at position pos, like in deleteIndex()
+                //not needed, overwritten below :
+                //qp[pos] = -1;
+
+                buffer[pos] = buffer[elementsCount];
+                //last element is now at deleted position pos
+                pq[lastElementIndex] = pos;
+
+                //mark the index element to be removed
+                //we must reset with 0 so that qp[pq[index]] is always valid !
+                pq[qp[pos]] = 0;
+
+                qp[pos] = lastElementIndex;
+
+                //Not really needed
+                //qp[elementsCount] = -1;
+
+                //for GC
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
+                /*! #end !*/
+
+                //diminuish size
+                elementsCount--;
                 deleted++;
+            } //end if to delete
+            else
+            {
+                pos++;
             }
-        }
+        } //end while
+
+        //reestablish heap
+        refreshPriorities();
 
         assert isMinHeap();
+        assert isConsistent();
 
         return deleted;
     }
@@ -229,10 +273,11 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         Internals.blankObjectArray(buffer, 1, elementsCount + 1);
         /*! #end !*/
 
-        //need to init to zero, not -1 !!!
+        //we need to init to zero, not -1 !!!
         Arrays.fill(pq, 0);
 
-        //TODO : needed ?
+        //This is not really needed to reset this,
+        //but is useful to catch inconsistencies in assertions
         Arrays.fill(qp, -1);
 
         this.elementsCount = 0;
@@ -246,48 +291,33 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         final KTypeCursor<KType> cursor;
 
         KType[] buffer;
-        int[] pq;
+        int size;
+        int[] qp;
+        int currentPosition = 0;
 
-        int currentpqposition = 0;
-
-        public ValueIterator(KType[] buffer, int[] pq)
+        public ValueIterator(KType[] buffer, int size, int[] qp)
         {
             this.cursor = new KTypeCursor<KType>();
             //index 0 is not used in Priority queue
             this.cursor.index = 0;
-
             this.buffer = buffer;
-            this.pq = pq;
-            currentpqposition = 0;
+            this.size = size;
+            this.qp = qp;
+            currentPosition = 0;
         }
 
         @Override
         protected KTypeCursor<KType> fetch()
         {
-            //advance to the first non-empty slot
-            //1-based indexing
-            int pqsize = pq.length;
-
-            while (currentpqposition < pqsize)
-            {
-                if (pq[currentpqposition] <= 0)
-                {
-                    currentpqposition++;
-                }
-                else
-                {
-                    break;
-                }
-            }
-
-            if (currentpqposition >= pqsize)
+            //priority is 1-based index
+            if (currentPosition == size)
                 return done();
 
-            cursor.index = currentpqposition;
-            cursor.value = buffer[pq[currentpqposition]];
-            currentpqposition++;
+            cursor.value = buffer[++currentPosition];
+            cursor.index = qp[currentPosition];
 
             return cursor;
+
         }
     }
 
@@ -297,7 +327,6 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public ValueIterator<KType> iterator()
     {
-        //return new ValueIterator<KType>(buffer, size());
         return this.valueIteratorPool.borrow();
     }
 
@@ -311,9 +340,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         final int size = elementsCount;
         final KType[] buffer = this.buffer;
 
-        for (int i = 1; i <= size; i++)
+        for (int pos = 1; pos <= size; pos++)
         {
-            if (Intrinsics.equalsKType(element, buffer[i]))
+            if (Intrinsics.equalsKType(element, buffer[pos]))
             {
                 return true;
             }
@@ -340,9 +369,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         final KType[] buffer = this.buffer;
         final int size = elementsCount;
 
-        for (int i = 1; i <= size; i++)
+        for (int pos = 1; pos <= size; pos++)
         {
-            procedure.apply(buffer[i]);
+            procedure.apply(buffer[pos]);
         }
 
         return procedure;
@@ -354,17 +383,13 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public <T extends KTypeIndexedProcedure<? super KType>> T indexedForEach(T procedure)
     {
-        final int size = this.pq.length;
-        final KType[] buffer = this.buffer;
-        int pos;
 
-        for (int i = 0; i < size; i++)
+        final KType[] buffer = this.buffer;
+        final int size = elementsCount;
+
+        for (int pos = 1; pos <= size; pos++)
         {
-            pos = pq[i];
-            if (pos > 0)
-            {
-                procedure.apply(i, buffer[pos]);
-            }
+            procedure.apply(qp[pos], buffer[pos]);
         }
 
         return procedure;
@@ -394,21 +419,13 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public <T extends KTypeIndexedPredicate<? super KType>> T indexedForEach(T predicate)
     {
-        final int size = this.pq.length;
         final KType[] buffer = this.buffer;
-        int pos;
+        final int size = elementsCount;
 
-        for (int i = 0; i < size; i++)
+        for (int pos = 1; pos <= size; pos++)
         {
-            pos = pq[i];
-
-            if (pos > 0)
-            {
-                if (!predicate.apply(i, buffer[pos]))
-                {
-                    break;
-                }
-            }
+            if (!predicate.apply(qp[pos], buffer[pos]))
+                break;
         }
 
         return predicate;
@@ -481,50 +498,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         {
             elem = buffer[1];
 
-            if (elementsCount == 1)
-            {
-                //this is the only element to be removed
-                pq[qp[1]] = -1;
-
-                //TODO: needed ?
-                qp[1] = -1;
-
-                //for GC
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[1] = Intrinsics.<KType> defaultKTypeValue();
-                /*! #end !*/
-
-                //diminuish size
-                elementsCount = 0;
-            }
-            else
-            {
-                //at least 2 elements
-                //put the last element in first position
-
-                //the first element index is removed
-                pq[qp[1]] = -1;
-
-                final int lastElementIndex = qp[elementsCount];
-
-                buffer[1] = buffer[elementsCount];
-                qp[1] = lastElementIndex;
-                pq[lastElementIndex] = 1;
-
-                //TODO : needed ?
-                qp[elementsCount] = -1;
-
-                //for GC
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
-                /*! #end !*/
-
-                //diminuish size
-                elementsCount--;
-
-                //percolate down the first element
-                sink(1);
-            }
+            deleteIndex(qp[1]);
         }
 
         return elem;
@@ -547,31 +521,6 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         }
 
         return elem;
-    }
-
-    /**
-     * Clone this object. The returned clone will resizing strategy.
-     */
-    @Override
-    public KTypeIndexedHeapPriorityQueue<KType> clone()
-    {
-        try
-        {
-            /* #if ($TemplateOptions.KTypeGeneric) */
-            @SuppressWarnings("unchecked")
-            /* #end */
-            final KTypeIndexedHeapPriorityQueue<KType> cloned = (KTypeIndexedHeapPriorityQueue<KType>) super.clone();
-
-            cloned.buffer = buffer.clone();
-            cloned.pq = pq.clone();
-            cloned.qp = qp.clone();
-
-            return cloned;
-        }
-        catch (CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -618,7 +567,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 buffer[deletedPos] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
 
-                //TODO : needed ?
+                //Not really needed, but usefull to catch inconsistencies
                 qp[deletedPos] = -1;
 
                 //diminuish size
@@ -647,7 +596,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 //we must reset with 0 so that qp[pq[index]] is always valid !
                 pq[index] = 0;
 
-                //TODO: needed ?
+                //Not really needed, but usefull to catch inconsistencies
                 qp[elementsCount] = -1;
 
                 //for GC
@@ -672,6 +621,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                     swim(pq[lastElementIndex]);
                 }
             }
+
             return true;
         }
 
@@ -757,23 +707,60 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     }
 
     /**
+     * Clone this object. The returned clone will use the same comparator.
+     */
+    @Override
+    public KTypeIndexedHeapPriorityQueue<KType> clone()
+    {
+        final KTypeIndexedHeapPriorityQueue<KType> cloned = new KTypeIndexedHeapPriorityQueue<KType>(this.comparator, this.buffer.length + 1);
+
+        for (KTypeCursor<KType> cursor : this)
+        {
+            cloned.insert(cursor.index, cursor.value);
+        }
+
+        return cloned;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void refreshPriorities()
+    {
+        if (this.comparator == null)
+        {
+            for (int k = elementsCount >> 1; k >= 1; k--)
+            {
+                sinkComparable(k);
+            }
+        }
+        else
+        {
+            for (int k = elementsCount >> 1; k >= 1; k--)
+            {
+                sinkComparator(k);
+            }
+        }
+    }
+
+    /**
      * Ensures the internal buffer has enough free slots to accomodate the index
      * <code>index</code>. Increases internal buffer size if needed.
      */
     protected void ensureBufferSpace(int index)
     {
-        final int bufferLen = (buffer == null ? 0 : buffer.length - 1);
-        if (index + 1 >= bufferLen)
+        final int pqLen = (pq == null ? 0 : pq.length);
+        if (index > pqLen - 1)
         {
-            final int newSize = resizer.grow(bufferLen, bufferLen, index + 1 - bufferLen);
+            //resize to acomodate this index.
+            final int newPQSize = index + DEFAULT_CAPACITY;
 
-            assert index < newSize;
+            final int[] newPQIndex = new int[newPQSize];
+            final KType[] newBuffer = Intrinsics.newKTypeArray(newPQSize + 1);
+            final int[] newQPIndex = new int[newPQSize + 1];
 
-            final KType[] newBuffer = Intrinsics.newKTypeArray(newSize);
-            final int[] newPQIndex = new int[newSize];
-            final int[] newQPIndex = new int[newSize];
-
-            if (bufferLen > 0)
+            if (pqLen > 0)
             {
                 System.arraycopy(buffer, 0, newBuffer, 0, buffer.length);
                 System.arraycopy(pq, 0, newPQIndex, 0, pq.length);
@@ -1019,7 +1006,43 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     }
 
     /**
-     * method to test invariant in assert
+     * method to test pq[]/qp[]/buffer[] consistency in assert expressions
+     */
+    protected boolean isConsistent()
+    {
+        if (elementsCount > 0)
+        {
+            //A) For each valid index, (in pq), there is match in position in qp
+            for (int index = 0; index < pq.length; index++)
+            {
+                if (pq[index] > 0)
+                {
+                    if (index != qp[pq[index]])
+                    {
+                        assert false : String.format("Inconsistent Index: index=%d, size=%d , pq[index] = %d, ==> qp[pq[index]] = %d",
+                                index, size(), pq[index], qp[pq[index]]);
+                    }
+                }
+            }
+
+            //B) Reverse check : for each element of position pos in buffer, there is a match in pq
+            for (int pos = 1; pos <= elementsCount; pos++)
+            {
+
+                if (pos != pq[qp[pos]])
+                {
+                    assert false : String.format("Inconsistent position: pos=%d, size=%d , qp[pos] = %d, ==> pq[qp[pos]] = %d",
+                            pos, size(), qp[pos], pq[qp[pos]]);
+
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * method to test heap invariant in assert expressions
      */
     // is buffer[1..N] a min heap?
     protected boolean isMinHeap()
@@ -1071,4 +1094,5 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         //recursively test
         return isMinHeapComparator(left) && isMinHeapComparator(right);
     }
+
 }

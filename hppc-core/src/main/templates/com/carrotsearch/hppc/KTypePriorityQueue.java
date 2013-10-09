@@ -47,7 +47,7 @@ public interface KTypePriorityQueue<KType> extends KTypeCollection<KType>
 
     /**
      * Update priorities to re-establish the priority queue state,
-     * whatever the previous elements where.
+     * whatever the previous elements state.
      */
     void refreshPriorities();
 }

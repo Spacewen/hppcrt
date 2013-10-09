@@ -13,14 +13,14 @@ import com.carrotsearch.hppc.cursors.KTypeCursor;
  * <thead>
  *     <tr class="odd">
  *         <th scope="col">{@linkplain java.util.Stack java.util.Stack}</th>
- *         <th scope="col">{@link ObjectStack}</th>  
+ *         <th scope="col">{@link ObjectStack}</th>
  *     </tr>
  * </thead>
  * <tbody>
  * <tr            ><td>push           </td><td>push           </td></tr>
  * <tr class="odd"><td>pop            </td><td>pop, discard   </td></tr>
  * <tr            ><td>peek           </td><td>peek           </td></tr>
- * <tr class="odd"><td>removeRange, 
+ * <tr class="odd"><td>removeRange,
  *                     removeElementAt</td><td>removeRange, remove, discard</td></tr>
  * <tr            ><td>size           </td><td>size           </td></tr>
  * <tr class="odd"><td>clear          </td><td>clear, release </td></tr>
@@ -30,7 +30,7 @@ import com.carrotsearch.hppc.cursors.KTypeCursor;
 #else
  * <p>See {@link ObjectArrayList} class for API similarities and differences against Java
  * Collections.
-#end 
+#end
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeStack<KType> extends KTypeArrayList<KType>
@@ -127,7 +127,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
 
     /**
      * Vararg-signature method for pushing elements at the top of the stack.
-     * <p><b>This method is handy, but costly if used in tight loops (anonymous 
+     * <p><b>This method is handy, but costly if used in tight loops (anonymous
      * array passing)</b></p>
      */
     public void push(KType... elements)
@@ -173,7 +173,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
 
         elementsCount--;
         /* #if ($TemplateOptions.KTypeGeneric) */
-        buffer[elementsCount] = null; 
+        buffer[elementsCount] = null;
         /* #end */
     }
 
@@ -186,7 +186,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
 
         final KType v = buffer[--elementsCount];
         /* #if ($TemplateOptions.KTypeGeneric) */
-        buffer[elementsCount] = null; 
+        buffer[elementsCount] = null;
         /* #end */
         return v;
     }
@@ -236,13 +236,18 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     {
         return new KTypeStack<KType>(container);
     }
-    
+
     /**
      * {@inheritDoc}
      */
     @Override
     public KTypeStack<KType> clone()
     {
-        return (KTypeStack<KType>) super.clone();
+        KTypeStack<KType> cloned = new KTypeStack<KType>(this.buffer.length, this.resizer);
+
+        //in order by construction
+        cloned.addAll(this);
+
+        return cloned;
     }
 }

@@ -410,7 +410,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(prioq.hashCode(), list2.hashCode());
 
     }
-
+    
     /* */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     @SuppressWarnings("unchecked")
@@ -426,6 +426,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         assertPrioQueueEquals(prioq, 1, 2, 3);
         assertPrioQueueEquals(cloned, 2, 3);
     }
+
 
     /* */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/

@@ -534,24 +534,20 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * Clone this object. The returned clone will  resizing strategy.
+     * Clone this object. The returned clone will use the same resizing strategy.
      */
     @Override
     public KTypeArrayList<KType> clone()
     {
-        try
-        {
-            /* #if ($TemplateOptions.KTypeGeneric) */
-            @SuppressWarnings("unchecked")
-            /* #end */
-            final KTypeArrayList<KType> cloned = (KTypeArrayList<KType>) super.clone();
-            cloned.buffer = buffer.clone();
-            return cloned;
-        }
-        catch (CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        /* #if ($TemplateOptions.KTypeGeneric) */
+        @SuppressWarnings("unchecked")
+        /* #end */
+        final KTypeArrayList<KType> cloned = new KTypeArrayList<KType>(this.buffer.length, this.resizer);
+
+        //add all in order, by construction.
+        cloned.addAll(this);
+
+        return cloned;
     }
 
     /**

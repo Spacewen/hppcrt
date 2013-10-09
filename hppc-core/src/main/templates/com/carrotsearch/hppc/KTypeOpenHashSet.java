@@ -47,15 +47,15 @@ import com.carrotsearch.hppc.procedures.KTypeProcedure;
  * </table>
  * 
  * <p>This implementation supports <code>null</code> keys.</p>
+ * <p><b>Important node.</b> The implementation uses power-of-two tables and linear
+ * probing, which may cause poor performance (many collisions) if hash values are
+ * not properly distributed. To counter this, use {@link HashingStrategy} to override equals() and hashCode().
+ * This implementation uses rehashing
+ * using {@link MurmurHash3}.</p>
 #else
  * <p>See {@link ObjectOpenHashSet} class for API similarities and differences against Java
  * Collections.
 #end
- * 
- * <p><b>Important node.</b> The implementation uses power-of-two tables and linear
- * probing, which may cause poor performance (many collisions) if hash values are
- * not properly distributed.
- * This implementation uses {@link MurmurHash3} for rehashing keys.</p>
  * 
  * @author This code is inspired by the collaboration and implementation in the <a
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
@@ -745,30 +745,25 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     }
 
     /**
-     * {@inheritDoc}
+     * Clone this object.
+     * #if ($TemplateOptions.KTypeGeneric)
+     * The returned clone will use the same HashingStrategy strategy.
+     * #end
      */
     @Override
     public KTypeOpenHashSet<KType> clone()
     {
-        try
-        {
-            /* #if ($TemplateOptions.KTypeGeneric) */
-            @SuppressWarnings("unchecked")
-            /* #end */
-            KTypeOpenHashSet<KType> cloned = (KTypeOpenHashSet<KType>) super.clone();
-            cloned.keys = keys.clone();
-            cloned.allocated = allocated.clone();
+        /* #if ($TemplateOptions.KTypeGeneric) */
+        @SuppressWarnings("unchecked")
+        /* #end */
+        final KTypeOpenHashSet<KType> cloned = new KTypeOpenHashSet<KType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
+                /* #if ($TemplateOptions.KTypeGeneric) */
+                , this.hashStrategy
+                /* #end */);
 
-            /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            cloned.hashStrategy = this.hashStrategy;
-            /*! #end !*/
+        cloned.addAll(this);
 
-            return cloned;
-        }
-        catch (CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        return cloned;
     }
 
     /**

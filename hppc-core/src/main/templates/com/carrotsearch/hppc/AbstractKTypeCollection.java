@@ -53,7 +53,7 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     }
 
     /**
-     * Default implementation uses a predicate for retaining.
+     * {@inheritDoc}
      */
     /* #if ($TemplateOptions.KTypeGeneric) */
     @SuppressWarnings("unchecked")
@@ -67,8 +67,7 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     }
 
     /**
-     * Default implementation redirects to {@link #removeAll(KTypePredicate)}
-     * and negates the predicate.
+     * {@inheritDoc}
      */
     @Override
     public int retainAll(final KTypePredicate<? super KType> predicate)
@@ -140,5 +139,4 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     {
         return size() == 0;
     }
-
 }

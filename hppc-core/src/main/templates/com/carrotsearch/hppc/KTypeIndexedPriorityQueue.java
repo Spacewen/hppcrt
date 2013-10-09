@@ -1,11 +1,12 @@
 package com.carrotsearch.hppc;
 
 import com.carrotsearch.hppc.predicates.KTypeIndexedPredicate;
+import com.carrotsearch.hppc.predicates.KTypePredicate;
 import com.carrotsearch.hppc.procedures.KTypeIndexedProcedure;
 
 /**
- * A Indexed Priority queue of <code>KType</code>s.
- * similar to a simplified map (K,V) = (index, element K)
+ * An Indexed Priority queue of <code>KType</code>s.
+ * similar to a simplified map (K,V) = (index, element V)
  * with priority queue capabilities.
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -86,8 +87,28 @@ public interface KTypeIndexedPriorityQueue<KType> extends KTypeCollection<KType>
     public <T extends KTypeIndexedProcedure<? super KType>> T indexedForEach(T procedure);
 
     /**
-     * Applies a <code>predicate</code> to indexed container elements as long, as the predicate
+     * Applies a <code>predicate</code> to indexed container elements as long as the predicate
      * returns <code>true</code>. The iteration is interrupted otherwise.
      */
     public <T extends KTypeIndexedPredicate<? super KType>> T indexedForEach(T predicate);
+
+    /**
+     * Removes all elements in this collection for which the
+     * given indexed predicate returns <code>true</code>.
+     * @return Returns the number of removed elements.
+     */
+    public int removeAll(KTypeIndexedPredicate<? super KType> indexedPredicate);
+
+    /**
+     * Keeps all elements in this collection for which the
+     * given indexed predicate returns <code>true</code>.
+     * @return Returns the number of removed elements.
+     */
+    public int retainAll(KTypeIndexedPredicate<? super KType> indexedPredicate);
+
+    /**
+     * Update priorities to re-establish the priority queue state,
+     * whatever the previous elements state.
+     */
+    void refreshPriorities();
 }

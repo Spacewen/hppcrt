@@ -103,7 +103,7 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
     public <T extends KTypeProcedure<? super KType>> T forEach(T procedure);
 
     /**
-     * Applies a <code>predicate</code> to container elements as long, as the predicate
+     * Applies a <code>predicate</code> to container elements, as long as the predicate
      * returns <code>true</code>. The iteration is interrupted otherwise.
      */
     public <T extends KTypePredicate<? super KType>> T forEach(T predicate);

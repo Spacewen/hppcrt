@@ -3,7 +3,7 @@ package com.carrotsearch.hppc;
 import com.carrotsearch.hppc.predicates.KTypePredicate;
 
 /**
- * A collection allows basic, efficient operations on sets of elements 
+ * A collection allows basic, efficient operations on sets of elements
  * (difference and intersection).
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -29,6 +29,8 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
     /**
      * Removes all elements in this collection for which the
      * given predicate returns <code>true</code>.
+     * 
+     * @return Returns the number of removed elements.
      */
     public int removeAll(KTypePredicate<? super KType> predicate);
 
@@ -44,6 +46,8 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
     /**
      * Keeps all elements in this collection for which the
      * given predicate returns <code>true</code>.
+     * 
+     * @return Returns the number of removed elements.
      */
     public int retainAll(KTypePredicate<? super KType> predicate);
 

@@ -10,7 +10,7 @@ import com.carrotsearch.hppc.sorting.*;
 import static com.carrotsearch.hppc.Internals.*;
 
 /**
- * An array-backed deque (doubly linked queue) of KTypes. A single array is used to store and
+ * An array-backed deque (double-ended queue)  of KTypes. A single array is used to store and
  * manipulate all elements. Reallocations are governed by a {@link ArraySizingStrategy}
  * and may be expensive if they move around really large chunks of memory.
  *
@@ -655,25 +655,22 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     }
 
     /**
-     * Clone this object. The returned clone will reuse the same hash function
-     * and array resizing strategy.
+     * Clone this object. The returned clone will reuse the same array resizing strategy.
      */
     @Override
     public KTypeArrayDeque<KType> clone()
     {
-        try
-        {
-            /* #if ($TemplateOptions.KTypeGeneric) */
-            @SuppressWarnings("unchecked")
-            /* #end */
-            KTypeArrayDeque<KType> cloned = (KTypeArrayDeque<KType>) super.clone();
-            cloned.buffer = buffer.clone();
-            return cloned;
-        }
-        catch (CloneNotSupportedException e)
-        {
-            throw new RuntimeException(e);
-        }
+        /* #if ($TemplateOptions.KTypeGeneric) */
+        @SuppressWarnings("unchecked")
+        /* #end */
+        //real constructor call
+        final KTypeArrayDeque<KType> cloned = new KTypeArrayDeque<KType>(this.buffer.length, this.resizer);
+
+        //copied in-order by construction.
+        cloned.addLast(this);
+
+        return cloned;
+
     }
 
     /**
