@@ -656,7 +656,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      */
     public final class EntryIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
         public EntryIterator()
         {
@@ -762,6 +762,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
                 /* #end */);
 
         cloned.addAll(this);
+
+        cloned.defaultValue = this.defaultValue;
 
         return cloned;
     }

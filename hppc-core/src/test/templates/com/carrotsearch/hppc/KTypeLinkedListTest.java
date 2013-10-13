@@ -1331,6 +1331,52 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testIteratorRemove()
+    {
+        list.addLast(asArray(0, 1, 2, 3,4,5,6,7,8,9,10,11,12,13,14,15,16));
+
+        KTypeLinkedList<KType>.ValueIterator iterator = list.iterator();
+
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            //remove the even numbers
+            if (castType(iterator.cursor.value) % 2 == 0)
+            {
+                iterator.remove();
+            }
+        }
+
+        assertListEquals(list.toArray(), 1, 3, 5, 7, 9, 11, 13, 15);
+    }
+
+    /* */
+    @Test
+    public void testDescendingIteratorRemove()
+    {
+        list.addLast(asArray(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16));
+
+        KTypeLinkedList<KType>.DescendingValueIterator iterator = list.descendingIterator();
+
+        while (iterator.hasNext())
+        {
+            iterator.next();
+            //since we are removing backwards, index are not modified by removal
+            assertEquals(castType(iterator.cursor.value), iterator.cursor.index);
+            //remove the even numbers
+            if (castType(iterator.cursor.value) % 2 != 0)
+            {
+                iterator.remove();
+                //since we are removing backwards, index are not modified by removal
+                assertEquals(castType(iterator.cursor.value), iterator.cursor.index);
+            }
+        }
+
+        assertListEquals(list.toArray(), 0, 2, 4, 6, 8, 10, 12, 14, 16);
+    }
+
+    /* */
+    @Test
     public void testDescendingIterator()
     {
         list.addLast(sequence);

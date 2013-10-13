@@ -89,6 +89,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     public final static float DEFAULT_LOAD_FACTOR = HashContainerUtils.DEFAULT_LOAD_FACTOR;
 
+    protected VType defaultValue = Intrinsics.<VType> defaultVTypeValue();
+
     /**
      * Hash-indexed array holding all keys.
      * <p>
@@ -286,7 +288,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             keys[slot] = key;
             values[slot] = value;
         }
-        return Intrinsics.<VType> defaultVTypeValue();
+        return this.defaultValue;
     }
 
     /**
@@ -577,7 +579,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             if (slot == wrappedAround) break;
         }
 
-        return Intrinsics.<VType> defaultVTypeValue();
+        return this.defaultValue;
     }
 
     /**
@@ -718,7 +720,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             slot = (slot + 1) & mask;
             if (slot == wrappedAround) break;
         }
-        return Intrinsics.<VType> defaultVTypeValue();
+        return this.defaultValue;
     }
 
     /* #if ($TemplateOptions.KTypeGeneric) */
@@ -968,7 +970,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     public final class EntryIterator extends AbstractIterator<KTypeVTypeCursor<KType, VType>>
     {
-        private final KTypeVTypeCursor<KType, VType> cursor;
+        public final KTypeVTypeCursor<KType, VType> cursor;
 
         public EntryIterator()
         {
@@ -1181,7 +1183,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     public final class KeysIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
         public KeysIterator()
         {
@@ -1348,7 +1350,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     public final class ValuesIterator extends AbstractIterator<KTypeCursor<VType>>
     {
-        private final KTypeCursor<VType> cursor;
+        public final KTypeCursor<VType> cursor;
 
         public ValuesIterator()
         {
@@ -1395,6 +1397,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 /* #end */);
 
         cloned.putAll(this);
+
+        cloned.defaultValue = this.defaultValue;
 
         return cloned;
 
@@ -1530,6 +1534,26 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     public HashingStrategy<KType> strategy()
     {
         return this.hashStrategy;
+    }
+
+    /**
+     * Returns the "default value" value used
+     * in containers methods returning "default value"
+     * @return
+     */
+    public VType getDefaultValue()
+    {
+        return defaultValue;
+    }
+
+    /**
+     * Set the "default value" value to be used
+     * in containers methods returning "default value"
+     * @return
+     */
+    public void setDefaultValue(VType defaultValue)
+    {
+        this.defaultValue = defaultValue;
     }
 
     /* #end */

@@ -301,10 +301,13 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     public void testIterator()
     {
         insertElements(prioq, 0, 1, 2, 3);
-        Iterator<KTypeCursor<KType>> iterator = prioq.iterator();
+
+        KTypeHeapPriorityQueue<KType>.ValueIterator iterator = prioq.iterator();
+
         int count = 0;
         while (iterator.hasNext())
         {
+
             iterator.hasNext();
             iterator.hasNext();
             iterator.hasNext();
@@ -410,7 +413,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(prioq.hashCode(), list2.hashCode());
 
     }
-    
+
     /* */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     @SuppressWarnings("unchecked")
@@ -739,7 +742,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeHeapPriorityQueue<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -786,7 +789,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeHeapPriorityQueue<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -848,7 +851,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeHeapPriorityQueue<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
@@ -932,7 +935,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(initialPoolSize - 3, startingTestPoolSize);
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeHeapPriorityQueue<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {

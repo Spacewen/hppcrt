@@ -756,7 +756,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -794,7 +794,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -848,7 +848,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeArrayList<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
@@ -924,7 +924,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(initialPoolSize - 3, startingTestPoolSize);
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeArrayList<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {

@@ -14,6 +14,8 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     protected KTypeContainer<KType> testContainer;
     protected KTypePredicate<? super KType> testPredicate;
 
+    protected KType defaultValue = Intrinsics.<KType> defaultKTypeValue();
+
     protected KTypePredicate<KType> containsTestPredicate = new KTypePredicate<KType>() {
 
         public boolean apply(KType k)
@@ -138,5 +140,25 @@ abstract class AbstractKTypeCollection<KType> implements KTypeCollection<KType>
     public boolean isEmpty()
     {
         return size() == 0;
+    }
+
+    /**
+     * Returns the "default value" value used
+     * in containers methods returning "default value"
+     * @return
+     */
+    public KType getDefaultValue()
+    {
+        return defaultValue;
+    }
+
+    /**
+     * Set the "default value" value to be used
+     * in containers methods returning "default value"
+     * @return
+     */
+    public void setDefaultValue(KType defaultValue)
+    {
+        this.defaultValue = defaultValue;
     }
 }

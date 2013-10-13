@@ -611,7 +611,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         assertPrioQueueEquals(prioq, 1, 1, 2, 2, 3, 3);
         assertPrioQueueEquals(cloned, 2,2, 3,3);
     }
-    
+
     @Test
     public void testSyntheticComparable()
     {
@@ -939,7 +939,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
             //Classical iterator loop, with manually allocated Iterator
             int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeIndexedHeapPriorityQueue<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -986,7 +986,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
             //Classical iterator loop, with manually allocated Iterator
             long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            ValueIterator<KType> loopIterator = testContainer.iterator();
+            KTypeIndexedHeapPriorityQueue<KType>.ValueIterator loopIterator = testContainer.iterator();
 
             assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
@@ -1048,7 +1048,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeIndexedHeapPriorityQueue<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
@@ -1132,7 +1132,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         assertEquals(initialPoolSize - 3, startingTestPoolSize);
 
         int count = 0;
-        ValueIterator<KType> loopIterator = null;
+        KTypeIndexedHeapPriorityQueue<KType>.ValueIterator loopIterator = null;
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {

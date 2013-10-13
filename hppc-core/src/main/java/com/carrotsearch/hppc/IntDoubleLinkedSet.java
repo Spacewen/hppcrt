@@ -48,6 +48,9 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
+
+    protected final IntArrayList arrayListWrapper;
+
     protected final  IteratorPool<IntCursor, IntArrayList.ValueIterator> valueIteratorPool;
 
     /**
@@ -82,6 +85,11 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
         assert resizer != null;
 
         this.resizer = resizer;
+
+        //this is not really used, it is just there to provide a
+        //IntArrayList iterator-like interface to IntDoubleLinkedSet
+        arrayListWrapper = new IntArrayList(DEFAULT_CAPACITY);
+
         ensureDenseCapacity(resizer.round(denseCapacity));
         ensureSparseCapacity(sparseCapacity);
 
@@ -91,15 +99,16 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                     @Override
                     public IntArrayList.ValueIterator create() {
 
-                        return new IntArrayList.ValueIterator(dense, size());
+                        return arrayListWrapper.new ValueIterator();
                     }
 
                     @Override
                     public void initialize( IntArrayList.ValueIterator obj) {
 
+                        //Make the buffer points on the one of the IntDoubleLinkedSet
                         obj.cursor.index = -1;
-                        obj.size = size();
-                        obj.buffer = dense;
+                        obj.size = IntDoubleLinkedSet.this.size();
+                        obj.buffer = IntDoubleLinkedSet.this.dense;
                     }
                 });
     }

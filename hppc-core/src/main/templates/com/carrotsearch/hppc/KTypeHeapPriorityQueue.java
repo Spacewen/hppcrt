@@ -58,7 +58,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    protected final IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
 
     /**
      * Create with a Comparator, an initial capacity, and a custom buffer resizing strategy.
@@ -77,20 +77,20 @@ implements KTypePriorityQueue<KType>, Cloneable
         //1-based index buffer, assure allocation
         ensureBufferSpace(resizer.round(initialCapacity + 1));
 
-        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator<KType>>(
-                new ObjectFactory<ValueIterator<KType>>() {
+        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
+                new ObjectFactory<ValueIterator>() {
 
                     @Override
-                    public ValueIterator<KType> create()
+                    public ValueIterator create()
                     {
-                        return new ValueIterator<KType>(KTypeHeapPriorityQueue.this.buffer, size());
+                        return new ValueIterator();
                     }
 
                     @Override
-                    public void initialize(ValueIterator<KType> obj)
+                    public void initialize(ValueIterator obj)
                     {
                         obj.cursor.index = 0;
-                        obj.size = size();
+                        obj.size = KTypeHeapPriorityQueue.this.size();
                         obj.buffer = KTypeHeapPriorityQueue.this.buffer;
                     }
                 });
@@ -255,20 +255,20 @@ implements KTypePriorityQueue<KType>, Cloneable
     /**
      * An iterator implementation for {@link HeapPriorityQueue#iterator}.
      */
-    public final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
+    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
         KType[] buffer;
         int size;
 
-        public ValueIterator(KType[] buffer, int size)
+        public ValueIterator()
         {
             this.cursor = new KTypeCursor<KType>();
             //index 0 is not used in Priority queue
             this.cursor.index = 0;
-            this.size = size;
-            this.buffer = buffer;
+            this.size = KTypeHeapPriorityQueue.this.size();
+            this.buffer = KTypeHeapPriorityQueue.this.buffer;
         }
 
         @Override
@@ -287,7 +287,7 @@ implements KTypePriorityQueue<KType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public ValueIterator<KType> iterator()
+    public ValueIterator iterator()
     {
         //return new ValueIterator<KType>(buffer, size());
         return this.valueIteratorPool.borrow();
@@ -383,7 +383,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     @Override
     public KType top()
     {
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
+        KType elem = this.defaultValue;
 
         if (elementsCount > 0)
         {
@@ -400,7 +400,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     @Override
     public KType popTop()
     {
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
+        KType elem = this.defaultValue;
 
         if (elementsCount > 0)
         {
@@ -531,6 +531,8 @@ implements KTypePriorityQueue<KType>, Cloneable
         KTypeHeapPriorityQueue<KType> cloned = new KTypeHeapPriorityQueue<KType>(this.comparator, this.buffer.length + 1, this.resizer);
 
         cloned.addAll(this);
+
+        cloned.defaultValue = this.defaultValue;
 
         return cloned;
     }

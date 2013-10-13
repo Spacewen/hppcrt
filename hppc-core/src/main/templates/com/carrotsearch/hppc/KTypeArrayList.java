@@ -98,7 +98,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    protected final IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
 
     /**
      * Create with default sizing strategy and initial capacity for storing
@@ -132,20 +132,22 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         this.resizer = resizer;
         ensureBufferSpace(resizer.round(initialCapacity));
 
-        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator<KType>>(
-                new ObjectFactory<ValueIterator<KType>>() {
+        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
+                new ObjectFactory<ValueIterator>() {
 
                     @Override
-                    public ValueIterator<KType> create() {
+                    public ValueIterator create()
+                    {
 
-                        return new ValueIterator<KType>(KTypeArrayList.this.buffer, size());
+                        return new ValueIterator();
                     }
 
                     @Override
-                    public void initialize( ValueIterator<KType> obj) {
+                    public void initialize(ValueIterator obj)
+                    {
 
                         obj.cursor.index = -1;
-                        obj.size = size();
+                        obj.size = KTypeArrayList.this.size();
                         obj.buffer = KTypeArrayList.this.buffer;
                     }
                 });
@@ -544,6 +546,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         /* #end */
         final KTypeArrayList<KType> cloned = new KTypeArrayList<KType>(this.buffer.length, this.resizer);
 
+        cloned.defaultValue = this.defaultValue;
         //add all in order, by construction.
         cloned.addAll(this);
 
@@ -635,19 +638,19 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * An iterator implementation for {@link ObjectArrayList#iterator}.
      */
-    public final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
+    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
         KType [] buffer;
         int size;
 
-        public ValueIterator(KType [] buffer, int size)
+        public ValueIterator()
         {
             this.cursor = new KTypeCursor<KType>();
             this.cursor.index = -1;
-            this.size = size;
-            this.buffer = buffer;
+            this.size = KTypeArrayList.this.size();
+            this.buffer = KTypeArrayList.this.buffer;
         }
 
         @Override
@@ -667,7 +670,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      * @return
      */
-    public ValueIterator<KType> iterator()
+    public ValueIterator iterator()
     {
         //return new ValueIterator<KType>(buffer, size());
         return this.valueIteratorPool.borrow();

@@ -147,8 +147,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                     @Override
                     public void initialize(ValueIterator obj) {
 
-                        obj.cursor.index = Intrinsics.oneLeft(head, buffer.length);
-                        obj.remaining = size();
+                        obj.cursor.index = Intrinsics.oneLeft(KTypeArrayDeque.this.head, KTypeArrayDeque.this.buffer.length);
+                        obj.remaining = KTypeArrayDeque.this.size();
                     }
                 });
 
@@ -164,8 +164,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                     @Override
                     public void initialize(DescendingValueIterator obj) {
 
-                        obj.cursor.index = tail;
-                        obj.remaining = size();
+                        obj.cursor.index = KTypeArrayDeque.this.tail;
+                        obj.remaining = KTypeArrayDeque.this.size();
                     }
                 });
     }
@@ -666,6 +666,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         //real constructor call
         final KTypeArrayDeque<KType> cloned = new KTypeArrayDeque<KType>(this.buffer.length, this.resizer);
 
+        cloned.defaultValue = this.defaultValue;
+
         //copied in-order by construction.
         cloned.addLast(this);
 
@@ -678,14 +680,14 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      */
     public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
         private int remaining;
 
         public ValueIterator()
         {
             cursor = new KTypeCursor<KType>();
-            cursor.index = Intrinsics.oneLeft(head, buffer.length);
-            this.remaining = size();
+            cursor.index = Intrinsics.oneLeft(KTypeArrayDeque.this.head, KTypeArrayDeque.this.buffer.length);
+            this.remaining = KTypeArrayDeque.this.size();
         }
 
         @Override
@@ -706,14 +708,14 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      */
     public final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        private final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
         private int remaining;
 
         public DescendingValueIterator()
         {
             cursor = new KTypeCursor<KType>();
-            cursor.index = tail;
-            this.remaining = size();
+            cursor.index = KTypeArrayDeque.this.tail;
+            this.remaining = KTypeArrayDeque.this.size();
         }
 
         @Override

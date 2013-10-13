@@ -76,7 +76,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     /**
      * internal pool of ValueIterator (must be created in constructor)
      */
-    protected final IteratorPool<KTypeCursor<KType>, ValueIterator<KType>> valueIteratorPool;
+    protected final IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
 
     protected KTypeIndexedPredicate<? super KType> testIndexedPredicate;
     protected KType testContainsPredicate;
@@ -113,19 +113,17 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         //1-based index buffer, assure allocation
         ensureBufferSpace(initialCapacity + 1);
 
-        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator<KType>>(
-                new ObjectFactory<ValueIterator<KType>>() {
+        this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
+                new ObjectFactory<ValueIterator>() {
 
                     @Override
-                    public ValueIterator<KType> create()
+                    public ValueIterator create()
                     {
-                        return new ValueIterator<KType>(KTypeIndexedHeapPriorityQueue.this.buffer,
-                                KTypeIndexedHeapPriorityQueue.this.elementsCount,
-                                KTypeIndexedHeapPriorityQueue.this.qp);
+                        return new ValueIterator();
                     }
 
                     @Override
-                    public void initialize(ValueIterator<KType> obj)
+                    public void initialize(ValueIterator obj)
                     {
                         obj.cursor.index = 0;
                         obj.buffer = KTypeIndexedHeapPriorityQueue.this.buffer;
@@ -278,7 +276,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
 
         //This is not really needed to reset this,
         //but is useful to catch inconsistencies in assertions
-        Arrays.fill(qp, -1);
+        //Arrays.fill(qp, -1);
 
         this.elementsCount = 0;
     }
@@ -286,23 +284,23 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     /**
      * An iterator implementation for {@link HeapPriorityQueue#iterator}.
      */
-    public final static class ValueIterator<KType> extends AbstractIterator<KTypeCursor<KType>>
+    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        final KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
         KType[] buffer;
         int size;
         int[] qp;
         int currentPosition = 0;
 
-        public ValueIterator(KType[] buffer, int size, int[] qp)
+        public ValueIterator()
         {
             this.cursor = new KTypeCursor<KType>();
             //index 0 is not used in Priority queue
             this.cursor.index = 0;
-            this.buffer = buffer;
-            this.size = size;
-            this.qp = qp;
+            this.buffer = KTypeIndexedHeapPriorityQueue.this.buffer;
+            this.size = KTypeIndexedHeapPriorityQueue.this.size();
+            this.qp = KTypeIndexedHeapPriorityQueue.this.qp;
             currentPosition = 0;
         }
 
@@ -325,7 +323,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public ValueIterator<KType> iterator()
+    public ValueIterator iterator()
     {
         return this.valueIteratorPool.borrow();
     }
@@ -492,7 +490,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public KType popTop()
     {
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
+        KType elem = this.defaultValue;
 
         if (elementsCount > 0)
         {
@@ -511,9 +509,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public KType getIndex(int index)
     {
-        assert index >= pq.length || pq[index] > 0 : "Element of index " + " doesn't exist !";
+        // assert index >= pq.length || pq[index] > 0 : "Element of index " + " doesn't exist !";
 
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
+        KType elem = this.defaultValue;
 
         if (index < pq.length && pq[index] > 0)
         {
@@ -576,13 +574,13 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
             else
             {
                 //We are not removing the last element
-                assert (deletedPos > 0 && qp[deletedPos] == index) : String.format("pq[index] = %d, qp[pq[index]] = %d (index = %d)",
-                        deletedPos, qp[deletedPos], index);
+                // assert (deletedPos > 0 && qp[deletedPos] == index) : String.format("pq[index] = %d, qp[pq[index]] = %d (index = %d)",
+                //         deletedPos, qp[deletedPos], index);
 
                 int lastElementIndex = qp[elementsCount];
 
-                assert (lastElementIndex >= 0 && pq[lastElementIndex] == elementsCount) : String.format("lastElementIndex = qp[elementsCount] = %d, pq[lastElementIndex] = %d, elementsCount = %d",
-                        lastElementIndex, pq[lastElementIndex], elementsCount);
+                //    assert (lastElementIndex >= 0 && pq[lastElementIndex] == elementsCount) : String.format("lastElementIndex = qp[elementsCount] = %d, pq[lastElementIndex] = %d, elementsCount = %d",
+                //            lastElementIndex, pq[lastElementIndex], elementsCount);
 
                 //not needed, overwritten below :
                 //qp[deletedPos] = -1;
@@ -597,7 +595,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 pq[index] = 0;
 
                 //Not really needed, but usefull to catch inconsistencies
-                qp[elementsCount] = -1;
+                //qp[elementsCount] = -1;
 
                 //for GC
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -608,11 +606,11 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 elementsCount--;
 
                 //after swapping positions
-                assert (pq[lastElementIndex] == deletedPos) : String.format("pq[lastElementIndex = %d] = %d, while deletedPos = %d, (index = %d)",
-                        lastElementIndex, pq[lastElementIndex], deletedPos, index);
+                //   assert (pq[lastElementIndex] == deletedPos) : String.format("pq[lastElementIndex = %d] = %d, while deletedPos = %d, (index = %d)",
+                //           lastElementIndex, pq[lastElementIndex], deletedPos, index);
 
-                assert (qp[deletedPos] == lastElementIndex) : String.format("qp[deletedPos = %d] = %d, while lastElementIndex = %d, (index = %d)",
-                        deletedPos, qp[deletedPos], lastElementIndex, index);
+                //   assert (qp[deletedPos] == lastElementIndex) : String.format("qp[deletedPos = %d] = %d, while lastElementIndex = %d, (index = %d)",
+                //           deletedPos, qp[deletedPos], lastElementIndex, index);
 
                 if (elementsCount > 1)
                 {
@@ -718,6 +716,8 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         {
             cloned.insert(cursor.index, cursor.value);
         }
+
+        cloned.defaultValue = this.defaultValue;
 
         return cloned;
     }
