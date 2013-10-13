@@ -388,6 +388,31 @@ public final class TemplateProcessor
                     sb.append(String.format("((%1$s + 1 == %2$s) ? 0: (%1$s + 1))",
                             params.toArray()));
                 }
+                else if ("getLinkNodeValue".equals(method))
+                {
+                    sb.append(String.format("(((long) (%1$s) << 32) | (%2$s))",
+                            params.toArray()));
+                }
+                else if ("getLinkBefore".equals(method))
+                {
+                    sb.append(String.format("((int) ((%1$s) >> 32))",
+                            params.toArray()));
+                }
+                else if ("getLinkAfter".equals(method))
+                {
+                    sb.append(String.format("((int) ((%1$s) & 0x00000000FFFFFFFFL))",
+                            params.toArray()));
+                }
+                else if ("setLinkBeforeNodeValue".equals(method))
+                {
+                    sb.append(String.format("(((long) (%2$s) << 32) | ((%1$s) & 0x00000000FFFFFFFFL))",
+                            params.toArray()));
+                }
+                else if ("setLinkAfterNodeValue".equals(method))
+                {
+                    sb.append(String.format("((%2$s) | ((%1$s) & 0xFFFFFFFF00000000L))",
+                            params.toArray()));
+                }
                 else
                 {
                     throw new RuntimeException("Unrecognized Intrinsic call: " + method);

@@ -182,4 +182,36 @@ public final class Intrinsics
     {
         return (index + 1 == modulus) ? 0 : index + 1;
     }
+
+    /**
+     * Buils a LinkList node value from its before an after links
+     * Code is actually inlined in generated code
+     * @param beforeIndex
+     * @param afterIndex
+     * @return long
+     */
+    public static long getLinkNodeValue(int beforeIndex, int afterIndex)
+    {
+        return ((long) beforeIndex << 32) | afterIndex;
+    }
+
+    public static int getLinkBefore(long nodeValue)
+    {
+        return (int) (nodeValue >> 32);
+    }
+
+    public static int getLinkAfter(long nodeValue)
+    {
+        return (int) (nodeValue & 0x00000000FFFFFFFFL);
+    }
+
+    public static long setLinkBeforeNodeValue(long nodeValue, int newBefore)
+    {
+        return ((long) newBefore << 32) | (nodeValue & 0x00000000FFFFFFFFL);
+    }
+
+    public static long setLinkAfterNodeValue(long nodeValue, int newAfter)
+    {
+        return newAfter | (nodeValue & 0xFFFFFFFF00000000L);
+    }
 }
