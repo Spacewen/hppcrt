@@ -20,7 +20,7 @@ public abstract class AbstractIterator<E> implements Iterator<E>
      * true if the iterator is in the pool (i.e free)
      * else it means it is in use, somewhere outside the pool
      */
-    private boolean isFree = true;
+    protected boolean isFree = true;
 
     /**
      * The next element to be returned from {@link #next()} if
@@ -32,7 +32,7 @@ public abstract class AbstractIterator<E> implements Iterator<E>
     /**
      * The {@link IteratorPool} the iterator comes from, if any. (if != null).
      */
-    private IteratorPool<E, AbstractIterator<E>> iteratorPool = null;
+    protected IteratorPool<E, AbstractIterator<E>> iteratorPool = null;
 
     /**
      * {@inheritDoc}
