@@ -17,10 +17,15 @@ import static com.carrotsearch.hppc.Internals.*;
  * In addition, elements could by pushed or removed from the middle of the list without moving
  * big amounts of memory, contrary to {@link KTypeArrayList}s. Like {@link KTypeDeque}s, the double-linked list
  * can also be iterated in reverse.
- * Plus, the Iterator or reversed-Iterator remove() operation is supported, contrary to the other containers.
+ * Plus, the Iterator or reversed-Iterator supports powerful methods to modify/delete/set the neighbours,
+ * in replacement of the error-prone java.util.Iterator ones.
  * A compact representation is used to store and manipulate
  * all elements, without creating Objects for links. Reallocations are governed by a {@link ArraySizingStrategy}
  * and may be expensive if they move around really large chunks of memory.
+ * <b>
+ * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax. Use
+ * the specialized methods of  {@link #ValueIterator} or {@link #DescendingValueIterator} instead !
+ * </b>
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeLinkedList<KType>
@@ -45,7 +50,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * may result in exceptions at runtime. A workaround is to cast directly to
      * <code>Object[]</code> before accessing the buffer's elements.#end
      * <p>
-     * Direct list iteration: iterate buffer[i] for i in [2; size()[, but out of order, and read-only !
+     * Direct list iteration: iterate buffer[i] for i in [2; size()+2[, but out of order !
      * </p>
      */
     public KType[] buffer;
@@ -426,26 +431,30 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     @Override
     public int removeAllOccurrences(KType e1)
     {
-        long[] pointers = this.beforeAfterPointers;
-        KType[] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
 
-        int currentPos = Intrinsics.getLinkAfter(pointers[HEAD_POSITION]);
-        int count = 0;
+        int deleted = 0;
 
-        while (currentPos != TAIL_POSITION)
+        //real elements starts in postion 2.
+        int pos = 2;
+
+        //directly iterate the buffer, so out of order.
+        while (pos < elementsCount)
         {
-            if (Intrinsics.equalsKType(e1, buffer[currentPos]))
+            if (Intrinsics.equalsKType(e1, buffer[pos]))
             {
-                currentPos = removeAtPosNoCheck(currentPos);
-                count++;
+                //each time a pos is removed, pos is patched with the last element,
+                //so continue to test the same position
+                removeAtPosNoCheck(pos);
+                deleted++;
             }
             else
             {
-                currentPos = Intrinsics.getLinkAfter(pointers[currentPos]);
+                pos++;
             }
-        }
+        } //end while
 
-        return count;
+        return deleted;
     }
 
     /**
@@ -847,6 +856,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * An iterator implementation for {@link ObjectLinkedList#iterator}.
+     * <b>
+     * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax and compatibility. Use
+     * the specialized methods instead !
+     * </b>
      */
     public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
@@ -896,6 +909,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * An iterator implementation for {@link ObjectLinkedList#descendingIterator()}.
+     * <b>
+     * Important note: DO NOT USE java.util.Iterator methods ! They are here only for compatibility. Use
+     * the specialized methods instead !
+     * </b>
      */
     public final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
@@ -943,8 +960,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * {@inheritDoc}
-     * @return
+     * <b>
+     * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax. Use
+     * the specialized methods of  {@link ValueIterator} or {@link DescendingValueIterator} instead !
+     * </b>
      */
     public ValueIterator iterator()
     {
@@ -1072,21 +1091,26 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     @Override
     public int removeAll(KTypePredicate<? super KType> predicate)
     {
-        final long[] pointers = this.beforeAfterPointers;
+        final KType[] buffer = this.buffer;
 
-        int currentPos = Intrinsics.getLinkAfter(pointers[HEAD_POSITION]);
         int deleted = 0;
 
-        while (currentPos != TAIL_POSITION)
+        //real elements starts in postion 2.
+        int pos = 2;
+
+        //directly iterate the buffer, so out of order.
+        while (pos < elementsCount)
         {
-            if (predicate.apply(buffer[currentPos]))
+            if (predicate.apply(buffer[pos]))
             {
-                currentPos = removeAtPosNoCheck(currentPos);
+                //each time a pos is removed, pos is patched with the last element,
+                //so continue to test the same position
+                removeAtPosNoCheck(pos);
                 deleted++;
             }
             else
             {
-                currentPos = Intrinsics.getLinkAfter(pointers[currentPos]);
+                pos++;
             }
         } //end while
 
