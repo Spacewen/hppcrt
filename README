@@ -28,7 +28,7 @@ especially noticable for big container sizes.
    4.  sort methods for ArrayDeques
    5.  Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode().
    6.  Priority queues, and Indexed priority queues
-   7.  Double linked-lists, supporting all operations common to lists and dequeues, with working iterators.remove() operations
+   7.  Double linked-lists, supporting all operations common to lists and dequeues, with rich bi-derectional iterating methods.
    8.  Custom default values for methods returning default values in some circonstances (see Javadoc)
 
 All these new features are Unit tested, so should work reasonably well.

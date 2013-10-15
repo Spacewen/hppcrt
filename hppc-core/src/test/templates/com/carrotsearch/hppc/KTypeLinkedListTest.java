@@ -1368,6 +1368,582 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(count.value, list.size());
     }
 
+    ///////////////////////////////// iteration special methods ////////////////////////////////////
+
+    /* */
+    @Test
+    public void testIterationHeadTail()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        KTypeLinkedList<KType>.ValueIterator it = list.iterator();
+
+        assertEquals(-1, it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(0, castType(it.getNext().value));
+        assertEquals(0, it.getNext().index);
+
+        //Try to move backwards, we stay in head
+        it.gotoPrevious();
+        assertEquals(-1, it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(0, castType(it.getNext().value));
+        assertEquals(0, it.getNext().index);
+
+        //iteration 0
+        it.gotoNext();
+        assertEquals(0, castType(it.cursor.value));
+        assertEquals(0, it.cursor.index);
+        assertFalse(it.isHead());
+        assertTrue(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(null, it.getPrevious());
+        assertEquals(11, castType(it.getNext().value));
+        assertEquals(1, it.getNext().index);
+
+        //iteration 1
+        it.gotoNext();
+        assertEquals(11, castType(it.cursor.value));
+        assertEquals(1, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(0, castType(it.getPrevious().value));
+        assertEquals(0, it.getPrevious().index);
+        assertEquals(22, castType(it.getNext().value));
+        assertEquals(2, it.getNext().index);
+
+        //iteration 2
+        it.gotoNext();
+        assertEquals(22, castType(it.cursor.value));
+        assertEquals(2, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(11, castType(it.getPrevious().value));
+        assertEquals(1, it.getPrevious().index);
+        assertEquals(33, castType(it.getNext().value));
+        assertEquals(3, it.getNext().index);
+
+        //iteration 3
+        it.gotoNext();
+        assertEquals(33, castType(it.cursor.value));
+        assertEquals(3, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(22, castType(it.getPrevious().value));
+        assertEquals(2, it.getPrevious().index);
+        assertEquals(44, castType(it.getNext().value));
+        assertEquals(4, it.getNext().index);
+
+        //iteration 4
+        it.gotoNext();
+        assertEquals(44, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(33, castType(it.getPrevious().value));
+        assertEquals(3, it.getPrevious().index);
+        assertEquals(55, castType(it.getNext().value));
+        assertEquals(5, it.getNext().index);
+
+        //iteration 5
+        it.gotoNext();
+        assertEquals(55, castType(it.cursor.value));
+        assertEquals(5, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertTrue(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(44, castType(it.getPrevious().value));
+        assertEquals(4, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //iteration 6
+        it.gotoNext();
+        assertEquals(list.size(), it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(55, castType(it.getPrevious().value));
+        assertEquals(5, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //iteration 7 : we are already at tail, we don't move further
+        it.gotoNext();
+        assertEquals(list.size(), it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(55, castType(it.getPrevious().value));
+        assertEquals(5, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //Goes back to head
+        it.gotoHead();
+        assertEquals(-1, it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(0, castType(it.getNext().value));
+        assertEquals(0, it.getNext().index);
+
+        //Goes again to tail:
+        it.gotoTail();
+        assertEquals(list.size(), it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(55, castType(it.getPrevious().value));
+        assertEquals(5, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+    }
+
+    /* */
+    @Test
+    public void testIterationHeadTailReversed()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        //this is a reversed iteration
+        KTypeLinkedList<KType>.DescendingValueIterator it = list.descendingIterator();
+
+        assertEquals(list.size(), it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(55, castType(it.getNext().value));
+        assertEquals(5, it.getNext().index);
+
+        //Try to move backwards, we stay in head
+        it.gotoPrevious();
+        assertEquals(list.size(), it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(55, castType(it.getNext().value));
+        assertEquals(5, it.getNext().index);
+
+        //iteration 0
+        it.gotoNext();
+        assertEquals(55, castType(it.cursor.value));
+        assertEquals(5, it.cursor.index);
+        assertFalse(it.isHead());
+        assertTrue(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(null, it.getPrevious());
+        assertEquals(44, castType(it.getNext().value));
+        assertEquals(4, it.getNext().index);
+
+        //iteration 1
+        it.gotoNext();
+        assertEquals(44, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(55, castType(it.getPrevious().value));
+        assertEquals(5, it.getPrevious().index);
+        assertEquals(33, castType(it.getNext().value));
+        assertEquals(3, it.getNext().index);
+
+        //iteration 2
+        it.gotoNext();
+        assertEquals(33, castType(it.cursor.value));
+        assertEquals(3, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(44, castType(it.getPrevious().value));
+        assertEquals(4, it.getPrevious().index);
+        assertEquals(22, castType(it.getNext().value));
+        assertEquals(2, it.getNext().index);
+
+        //iteration 3
+        it.gotoNext();
+        assertEquals(22, castType(it.cursor.value));
+        assertEquals(2, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(33, castType(it.getPrevious().value));
+        assertEquals(3, it.getPrevious().index);
+        assertEquals(11, castType(it.getNext().value));
+        assertEquals(1, it.getNext().index);
+
+        //iteration 4
+        it.gotoNext();
+        assertEquals(11, castType(it.cursor.value));
+        assertEquals(1, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(22, castType(it.getPrevious().value));
+        assertEquals(2, it.getPrevious().index);
+        assertEquals(0, castType(it.getNext().value));
+        assertEquals(0, it.getNext().index);
+
+        //iteration 5
+        it.gotoNext();
+        assertEquals(0, castType(it.cursor.value));
+        assertEquals(0, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertTrue(it.isLast());
+        assertFalse(it.isTail());
+        //obtain previous / next
+        assertEquals(11, castType(it.getPrevious().value));
+        assertEquals(1, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //iteration 6
+        it.gotoNext();
+        assertEquals(-1, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(0, castType(it.getPrevious().value));
+        assertEquals(0, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //iteration 7 : we are already at tail, we don't move further
+        it.gotoNext();
+        assertEquals(-1, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(0, castType(it.getPrevious().value));
+        assertEquals(0, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+
+        //Goes back to head
+        it.gotoHead();
+        assertEquals(list.size(), it.cursor.index);
+        assertTrue(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertFalse(it.isTail());
+        //obtain next
+        assertEquals(null, it.getPrevious());
+        assertEquals(55, castType(it.getNext().value));
+        assertEquals(5, it.getNext().index);
+
+        //Goes again to tail:
+        it.gotoTail();
+        assertEquals(-1, it.cursor.index);
+        assertFalse(it.isHead());
+        assertFalse(it.isFirst());
+        assertFalse(it.isLast());
+        assertTrue(it.isTail());
+        //obtain previous / next
+        assertEquals(0, castType(it.getPrevious().value));
+        assertEquals(0, it.getPrevious().index);
+        assertEquals(null, it.getNext());
+    }
+
+    /* */
+    @Test
+    public void testIterationBackAndForth()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        KTypeLinkedList<KType>.ValueIterator it = list.iterator();
+
+        //goes 3 steps ==> , 1 step <==
+        it.gotoNext().gotoNext().gotoNext().gotoPrevious();
+        assertEquals(11, castType(it.cursor.value));
+        assertEquals(1, it.cursor.index);
+
+        //goes 2 steps ==> , 2 step <==
+        it.gotoNext().gotoNext().gotoPrevious().gotoPrevious();
+        assertEquals(11, castType(it.cursor.value));
+        assertEquals(1, it.cursor.index);
+
+        //goes 3 steps <== , 5 step ==> (back is clamped at head, in fact)
+        it.gotoPrevious().gotoPrevious().gotoPrevious();
+        it.gotoNext().gotoNext().gotoNext().gotoNext().gotoNext();
+        assertEquals(44, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+    }
+
+    /* */
+    @Test
+    public void testIterationBackAndForthReversed()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        KTypeLinkedList<KType>.DescendingValueIterator it = list.descendingIterator();
+
+        //goes 3 steps ==> , 1 step <==
+        it.gotoNext().gotoNext().gotoNext().gotoPrevious();
+        assertEquals(44, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+
+        //goes 2 steps ==> , 2 step <==
+        it.gotoNext().gotoNext().gotoPrevious().gotoPrevious();
+        assertEquals(44, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+
+        //goes 3 steps <== , 5 step ==> (back is clamped at head, in fact)
+        it.gotoPrevious().gotoPrevious().gotoPrevious();
+        it.gotoNext().gotoNext().gotoNext().gotoNext().gotoNext();
+        assertEquals(11, castType(it.cursor.value));
+        assertEquals(1, it.cursor.index);
+    }
+
+    /* */
+    @Test
+    public void testIterationWithInsertionRemoveSetDelete()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        KTypeLinkedList<KType>.ValueIterator it = list.iterator();
+
+        //goes to 11
+        it.gotoNext().gotoNext();
+        //list.add(asArray(0, 11, 22, 33, 44, 55));
+        it.insertAfter(cast(111));
+        it.insertAfter(cast(100));
+        it.insertAfter(cast(99));
+        //==> list.add(asArray(0, 11, 99, 100, 111, 22, 33, 44, 55));
+        assertListEquals(list.toArray(), 0, 11, 99, 100, 111, 22, 33, 44, 55);
+        it.insertBefore(cast(3));
+        it.insertBefore(cast(33));
+        it.insertBefore(cast(20));
+        //==> list.add(asArray(0, 3,33,20, 11, 99, 100, 111, 22, 33, 44, 55));
+        assertListEquals(list.toArray(), 0, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55);
+        it.gotoPrevious();
+        assertEquals(20, castType(it.cursor.value));
+
+        //insert at head
+        it.gotoHead();
+        it.insertAfter(cast(111));
+        it.insertAfter(cast(112));
+        // ==> list.add(asArray(112,111,0, 3,33,20, 11, 99, 100, 111, 22, 33, 44, 55));
+        assertListEquals(list.toArray(), 112, 111, 0, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55);
+
+        //insert at tail
+        it.gotoTail();
+        it.insertBefore(cast(7));
+        it.insertBefore(cast(9));
+        // ==> list.add(asArray(112,111,0, 3,33,20, 11, 99, 100, 111, 22, 33, 44, 55,7, 9));
+        assertListEquals(list.toArray(), 112, 111, 0, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9);
+
+        //////// remove / set / delete /////////////////////
+
+        //rewind to first
+        it.gotoHead().gotoNext();
+        //set -88 at 0 value
+        it.gotoNext().gotoNext();
+        it.set(cast(88));
+        // ==> list.add(asArray(112,111,88, 3,33,20, 11, 99, 100, 111, 22, 33, 44, 55,7, 9));
+        assertListEquals(list.toArray(), 112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9);
+
+        //move forward by 2 elements : 33
+        it.gotoNext().gotoNext();
+        //remove next = 20
+        it.removeNext();
+        // ==> list.add(asArray(112, 111,88, 3, 33, 11, 99, 100, 111, 22, 33, 44, 55,7, 9));
+        //it still points to 33
+        assertListEquals(list.toArray(), 112, 111, 88, 3, 33, /*20 */11, 99, 100, 111, 22, 33, 44, 55, 7, 9);
+        assertEquals(33, castType(it.cursor.value));
+        assertEquals(4, it.cursor.index);
+
+        //move again of 3 : 100
+        it.gotoNext().gotoNext().gotoNext();
+        //remove the previous = 99
+        it.removePrevious();
+
+        assertListEquals(list.toArray(), 112, 111, 88, 3, 33, /*20 */11, /*99 */100, 111, 22, 33, 44, 55, 7, 9);
+        //the iterator still points to 100
+        assertEquals(100, castType(it.cursor.value));
+        assertEquals(6, it.cursor.index);
+
+        //move again of 4 : 44
+        it.gotoNext().gotoNext().gotoNext().gotoNext();
+        //remove itself
+        it.delete();
+        //the iterator now points to 55
+        assertListEquals(list.toArray(), 112, 111, 88, 3, 33, /*20 */11, /*99 */100, 111, 22, 33, /* 44 */55, 7, 9);
+        assertEquals(55, castType(it.cursor.value));
+        assertEquals(10, it.cursor.index);
+    }
+
+    /* */
+    @Test
+    public void testIterationLoopWithDelete()
+    {
+        list.add(asArray(112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9));
+
+        for (KTypeLinkedList<KType>.ValueIterator it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+        {
+
+            if (castType(it.cursor.value) == 88 ||
+                    castType(it.cursor.value) == 99 ||
+                    castType(it.cursor.value) == 55)
+            {
+
+                it.delete();
+            }
+        }
+
+        assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+    }
+
+    /* */
+    @Test
+    public void testIterationLoopWithDeleteReversed()
+    {
+        list.add(asArray(112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9));
+
+        for (KTypeLinkedList<KType>.DescendingValueIterator it = list.descendingIterator().gotoNext(); !it.isTail(); it.gotoNext())
+        {
+
+            if (castType(it.cursor.value) == 88 ||
+                    castType(it.cursor.value) == 99 ||
+                    castType(it.cursor.value) == 55)
+            {
+
+                it.delete();
+            }
+        }
+
+        assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+    }
+
+    /* */
+    @Test
+    public void testIterationWithInsertionRemoveSetDeleteReversed()
+    {
+        list.add(asArray(0, 11, 22, 33, 44, 55));
+
+        KTypeLinkedList<KType>.DescendingValueIterator it = list.descendingIterator();
+
+        //goes to 44
+        it.gotoNext().gotoNext();
+        //list.add(asArray(0, 11, 22, 33, 44, 55));
+        it.insertAfter(cast(111));
+        it.insertAfter(cast(100));
+        it.insertAfter(cast(99));
+        //==> list.add(asArray(0, 11, 22, 33, 111, 100, 99, 44, 55));
+        assertListEquals(list.toArray(), 0, 11, 22, 33, 111, 100, 99, 44, 55);
+        it.insertBefore(cast(3));
+        it.insertBefore(cast(33));
+        it.insertBefore(cast(20));
+        //==> list.add(asArray(0, 11, 22, 33, 111, 100, 99, 44, 20, 33,3,55));
+        assertListEquals(list.toArray(), 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3, 55);
+        it.gotoPrevious();
+        assertEquals(20, castType(it.cursor.value));
+
+        //insert at head
+        it.gotoHead();
+        it.insertAfter(cast(111));
+        it.insertAfter(cast(112));
+        // ==> list.add(asArray(0, 11, 22, 33, 111, 100, 99, 44, 20, 33,3,55,111,112));
+        assertListEquals(list.toArray(), 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3, 55, 111, 112);
+
+        //insert at tail
+        it.gotoTail();
+        it.insertBefore(cast(7));
+        it.insertBefore(cast(9));
+        // ==> list.add(asArray(9,7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33,3,55,111,112));
+        assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3, 55, 111, 112);
+
+        //////// remove / set / delete /////////////////////
+
+        //rewind to first
+        it.gotoHead().gotoNext();
+        //set -88 at 55 value
+        it.gotoNext().gotoNext();
+        it.set(cast(88));
+        // ==> list.add(asArray( 9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33,3,-88,111,112));
+        assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3, 88, 111, 112);
+
+        //move forward by 2 elements : 33
+        it.gotoNext().gotoNext();
+        //remove next = 20
+        it.removeNext();
+        // ==> list.add(asArray(9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3,88,111,112));
+        //it still points to 33
+        assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, 99, 44 /*20 */, 33, 3, 88, 111, 112);
+        assertEquals(33, castType(it.cursor.value));
+        assertEquals(10, it.cursor.index);
+
+        //move again of 3 : 100
+        it.gotoNext().gotoNext().gotoNext();
+        //remove the previous = 99
+        it.removePrevious();
+
+        assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, /*99*/44 /*20 */, 33, 3, 88, 111, 112);
+        //the iterator still points to 100
+        assertEquals(100, castType(it.cursor.value));
+        assertEquals(7, it.cursor.index);
+
+        //move again of 4 : 11
+        it.gotoNext().gotoNext().gotoNext().gotoNext();
+        //remove itself
+        it.delete();
+        //the iterator now points to 0
+        assertListEquals(list.toArray(), 9, 7, 0 /*11 */, 22, 33, 111, 100, /*99*/44 /*20 */, 33, 3, 88, 111, 112);
+        assertEquals(0, castType(it.cursor.value));
+        assertEquals(2, it.cursor.index);
+    }
+
+    ////////////////////////////////// END iteration special methods  ////////////////////////////////////
+
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     @Test
     public void testAgainstArrayDeque()

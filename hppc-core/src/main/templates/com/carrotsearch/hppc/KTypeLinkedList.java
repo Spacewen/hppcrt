@@ -72,9 +72,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * and occupy buffer[0] and buffer[1] virtually.
      * So real buffer elements starts at index 2.
      */
-    protected static final int HEAD_POSITION = 1;
-    //yeah, tail is in first pos. not a bug, see sort()
-    protected static final int TAIL_POSITION = 0;
+    protected static final int HEAD_POSITION = 0;
+    protected static final int TAIL_POSITION = HEAD_POSITION + 1;
 
     /**
      * Current number of elements stored in {@link #buffer}.
@@ -149,10 +148,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
                     public void initialize(ValueIterator obj)
                     {
                         obj.internalIndex = -1;
-
+                        obj.cursor.index = -1;
+                        obj.cursor.value = KTypeLinkedList.this.defaultValue;
                         obj.buffer = KTypeLinkedList.this.buffer;
                         obj.pointers = KTypeLinkedList.this.beforeAfterPointers;
-                        obj.headPos = HEAD_POSITION;
+                        obj.internalPos = HEAD_POSITION;
                     }
                 });
 
@@ -169,10 +169,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
                     public void initialize(DescendingValueIterator obj)
                     {
                         obj.internalIndex = KTypeLinkedList.this.size();
-
+                        obj.cursor.index = KTypeLinkedList.this.size();
+                        obj.cursor.value = KTypeLinkedList.this.defaultValue;
                         obj.buffer = KTypeLinkedList.this.buffer;
                         obj.pointers = KTypeLinkedList.this.beforeAfterPointers;
-                        obj.tailPos = TAIL_POSITION;
+                        obj.internalPos = TAIL_POSITION;
                     }
                 });
     }
@@ -203,8 +204,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     public void add(KType e1, KType e2)
     {
         ensureBufferSpace(2);
-        addLast(e1);
-        addLast(e2);
+        insertAfterPosNoCheck(e1, Intrinsics.getLinkBefore(this.beforeAfterPointers[TAIL_POSITION]));;
+        insertAfterPosNoCheck(e2, Intrinsics.getLinkBefore(this.beforeAfterPointers[TAIL_POSITION]));;
     }
 
     public void addLast(KType... elements)
@@ -223,7 +224,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         for (int i = 0; i < length; i++)
         {
-            addLast(elements[start + i]);
+            insertAfterPosNoCheck(elements[start + i], Intrinsics.getLinkBefore(this.beforeAfterPointers[TAIL_POSITION]));
         }
     }
 
@@ -861,23 +862,29 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * the specialized methods instead !
      * </b>
      */
-    public final class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    public class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        public final KTypeCursor<KType> cursor;
+        public KTypeCursor<KType> cursor;
+
+        protected KTypeCursor<KType> tmpCursor;
 
         KType[] buffer;
-        int headPos;
+        int internalPos;
         long[] pointers;
         int internalIndex = -1;
 
         public ValueIterator()
         {
             this.cursor = new KTypeCursor<KType>();
+            this.tmpCursor = new KTypeCursor<KType>();
+
             internalIndex = -1;
+            this.cursor.index = -1;
+            this.cursor.value = KTypeLinkedList.this.defaultValue;
 
             this.buffer = KTypeLinkedList.this.buffer;
             this.pointers = KTypeLinkedList.this.beforeAfterPointers;
-            this.headPos = HEAD_POSITION;
+            this.internalPos = HEAD_POSITION;
         }
 
         /**
@@ -887,7 +894,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         protected KTypeCursor<KType> fetch()
         {
             //do nothing.
-
             return null;
         }
 
@@ -900,12 +906,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         @Override
         public boolean hasNext()
         {
-            int nextPos = Intrinsics.getLinkAfter(this.pointers[headPos]);
+            int nextPos = Intrinsics.getLinkAfter(this.pointers[internalPos]);
 
             //auto-release when hasNext() returns false;
             if (nextPos == TAIL_POSITION && this.iteratorPool != null && !this.isFree)
             {
-
                 this.iteratorPool.release(this);
                 this.isFree = true;
             }
@@ -923,17 +928,16 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         public KTypeCursor<KType> next()
         {
             //search for the next position
-            int nextPos = Intrinsics.getLinkAfter(this.pointers[headPos]);
+            int nextPos = Intrinsics.getLinkAfter(this.pointers[internalPos]);
 
             //we are at tail already.
             if (nextPos == TAIL_POSITION)
             {
-
                 throw new NoSuchElementException();
             }
 
             //point to next
-            this.headPos = nextPos;
+            this.internalPos = nextPos;
             this.internalIndex++;
 
             cursor.index = internalIndex;
@@ -941,6 +945,279 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
             return cursor;
         }
+
+        ///////////////////////// Forward iteration methods //////////////////////////////////////
+        /**
+         * True is iterator points to the "head", i.e such as gotoNext() point to the first
+         * element with respect to the forward iteration.
+         * @return
+         */
+        public boolean isHead()
+        {
+            return this.internalPos == HEAD_POSITION;
+        }
+
+        /**
+         * True is iterator points to the "tail", i.e such as gotoPrevious() point to the last
+         * element with respect to the forward iteration.
+         * @return
+         */
+        public boolean isTail()
+        {
+            return this.internalPos == TAIL_POSITION;
+        }
+
+        /**
+         * True if the iterator points to the first element
+         * with respect to the forward iteration.Always true if the list is empty.
+         */
+        public boolean isFirst()
+        {
+            int nextPos = Intrinsics.getLinkAfter(pointers[HEAD_POSITION]);
+
+            return (nextPos == TAIL_POSITION) ? true : (nextPos == this.internalPos);
+        }
+
+        /**
+         * True if the iterator points to the last element
+         * with respect to the forward iteration.Always true if the list is empty.
+         */
+        public boolean isLast()
+        {
+            int nextPos = Intrinsics.getLinkBefore(pointers[TAIL_POSITION]);
+
+            return (nextPos == HEAD_POSITION) ? true : (nextPos == this.internalPos);
+        }
+
+        /**
+         * Move the iterator to the "head", returning itself for chaining.
+         */
+        public ValueIterator gotoHead()
+        {
+            this.internalIndex = -1;
+            this.internalPos = HEAD_POSITION;
+
+            //update cursor
+            this.cursor.index = -1;
+            this.cursor.value = KTypeLinkedList.this.defaultValue;
+
+            return this;
+        }
+
+        /**
+         * Move the iterator to the "tail", returning itself for chaining.
+         */
+        public ValueIterator gotoTail()
+        {
+            this.internalIndex = KTypeLinkedList.this.size();
+            this.internalPos = TAIL_POSITION;
+
+            //update cursor
+            this.cursor.index = this.internalIndex;
+            this.cursor.value = KTypeLinkedList.this.defaultValue;
+
+            return this;
+        }
+
+        /**
+         * Move the iterator to the next element, with respect to the forward iteration,
+         * returning itself for chaining. When "tail" is reached, gotoNext() stays in place, at tail.
+         */
+        public ValueIterator gotoNext()
+        {
+            this.internalPos = Intrinsics.getLinkAfter(this.pointers[this.internalPos]);
+
+            if (this.internalPos == TAIL_POSITION)
+            {
+                this.internalIndex = KTypeLinkedList.this.size();
+                //update cursor
+                this.cursor.index = this.internalIndex;
+                this.cursor.value = KTypeLinkedList.this.defaultValue;
+            }
+            else
+            {
+                this.internalIndex++;
+
+                //update cursor
+                this.cursor.index = this.internalIndex;
+                this.cursor.value = buffer[this.internalPos];
+            }
+
+            return this;
+        }
+
+        /**
+         * Move the iterator to the previous element, with respect to the forward iteration,
+         * returning itself for chaining. When "head" is reached, gotoPrevious() stays in place, at head.
+         */
+        public ValueIterator gotoPrevious()
+        {
+            this.internalPos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
+
+            if (this.internalPos == HEAD_POSITION)
+            {
+                this.internalIndex = -1;
+                this.cursor.index = this.internalIndex;
+                this.cursor.value = KTypeLinkedList.this.defaultValue;
+            }
+            else
+            {
+                this.internalIndex--;
+                this.cursor.index = this.internalIndex;
+                this.cursor.value = buffer[this.internalPos];
+            }
+
+            return this;
+        }
+
+        /**
+         * Get the next element value with respect to the forward iteration,
+         * without moving the iterator.
+         * Returns null if no such element exists.
+         */
+        public KTypeCursor<KType> getNext()
+        {
+            int nextPos = Intrinsics.getLinkAfter(this.pointers[this.internalPos]);
+
+            if (nextPos == TAIL_POSITION)
+            {
+                return null;
+            }
+            //use the temporary Cursor in order to protect the iterator cursor
+            this.tmpCursor.index = this.internalIndex + 1;
+            this.tmpCursor.value = buffer[nextPos];
+
+            return this.tmpCursor;
+        }
+
+        /**
+         * Get the previous element value with respect to the forward iteration,
+         * Returns null if no such element exists.
+         */
+        public KTypeCursor<KType> getPrevious()
+        {
+            int beforePos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
+
+            if (beforePos == HEAD_POSITION)
+            {
+                return null;
+            }
+
+            //use the temporary Cursor in order to protect the iterator cursor
+            this.tmpCursor.index = this.internalIndex - 1;
+            this.tmpCursor.value = buffer[beforePos];
+
+            return this.tmpCursor;
+        }
+
+        /**
+         * Removes the next element, without moving the iterator.
+         * Returns false if no such element exists.
+         */
+        public boolean removeNext()
+        {
+            int nextPos = Intrinsics.getLinkAfter(this.pointers[this.internalPos]);
+
+            if (nextPos == TAIL_POSITION)
+            {
+                return false;
+            }
+
+            // the current position is unaffected.
+            removeAtPosNoCheck(nextPos);
+
+            return true;
+        }
+
+        /**
+         * Removes the previous element, without moving the iterator.
+         * Returns false if no such element exists.
+         */
+        public boolean removePrevious()
+        {
+            int previousPos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
+
+            if (previousPos == HEAD_POSITION)
+            {
+                return false;
+            }
+
+            //update the new current position
+            this.internalPos = removeAtPosNoCheck(previousPos);
+
+            //the internal index changed, update the cursor index, the buffer stays unchanged.
+            this.internalIndex--;
+            this.cursor.index = this.internalIndex;
+
+            return true;
+        }
+
+        /**
+         * Insert e1 before the iterator position, without moving the iterator.
+         */
+        public void insertBefore(KType e1)
+        {
+            //protect the head
+            if (this.internalPos != HEAD_POSITION)
+            {
+                int beforePos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
+
+                //we insert after the previous
+                insertAfterPosNoCheck(e1, beforePos);
+
+                //the internal index changed, update the cursor index, the buffer stays unchanged.
+                this.internalIndex++;
+                this.cursor.index = this.internalIndex;
+            }
+        }
+
+        /**
+         * Insert e1 after the iterator position, without moving the iterator.
+         */
+        public void insertAfter(KType e1)
+        {
+            //protect the tail
+            if (this.internalPos != TAIL_POSITION)
+            {
+                //we insert after us
+                insertAfterPosNoCheck(e1, this.internalPos);
+            }
+
+            //the internal index doesn't change...
+        }
+
+        /**
+         * Set e1 to the current iterator position, without moving the iterator,
+         * and returns the previous value
+         */
+        public void set(KType e1)
+        {
+            //protect the heads/tails
+            if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
+            {
+                this.buffer[this.internalPos] = e1;
+            }
+        }
+
+        /**
+         * Delete the current iterator position, and returns the next valid
+         * iterator located after this removal, with respect to the forward iteration.
+         */
+        ValueIterator delete()
+        {
+            //protect the heads/tails
+            if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
+            {
+                this.internalPos = removeAtPosNoCheck(this.internalPos);
+
+                //update cursor returned by iterator
+                cursor.value = buffer[this.internalPos];
+                //internal index doesn't change
+            }
+
+            return this;
+        }
+
     }
 
     /**
@@ -950,23 +1227,21 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * the specialized methods instead !
      * </b>
      */
-    public final class DescendingValueIterator extends AbstractIterator<KTypeCursor<KType>>
+    public final class DescendingValueIterator extends ValueIterator
     {
-        public final KTypeCursor<KType> cursor;
-
-        KType[] buffer;
-        int tailPos;
-        long[] pointers;
-        int internalIndex = KTypeLinkedList.this.size();
-
         public DescendingValueIterator()
         {
+            super();
+
             this.cursor = new KTypeCursor<KType>();
             internalIndex = KTypeLinkedList.this.size();
 
+            this.cursor.index = KTypeLinkedList.this.size();
+            this.cursor.value = KTypeLinkedList.this.defaultValue;
+
             this.buffer = KTypeLinkedList.this.buffer;
             this.pointers = KTypeLinkedList.this.beforeAfterPointers;
-            this.tailPos = TAIL_POSITION;
+            this.internalPos = TAIL_POSITION;
         }
 
         /**
@@ -988,7 +1263,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         @Override
         public boolean hasNext()
         {
-            int nextPos = Intrinsics.getLinkBefore(this.pointers[tailPos]);
+            int nextPos = Intrinsics.getLinkBefore(this.pointers[internalPos]);
 
             //auto-release when hasNext() returns false;
             if (nextPos == HEAD_POSITION && this.iteratorPool != null && !this.isFree)
@@ -1010,7 +1285,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         public KTypeCursor<KType> next()
         {
             //search for the next position
-            int nextPos = Intrinsics.getLinkBefore(this.pointers[tailPos]);
+            int nextPos = Intrinsics.getLinkBefore(this.pointers[internalPos]);
 
             //we are at tail already.
             if (nextPos == HEAD_POSITION)
@@ -1019,7 +1294,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
             }
 
             //point to next
-            this.tailPos = nextPos;
+            this.internalPos = nextPos;
             this.internalIndex--;
 
             cursor.index = internalIndex;
@@ -1027,13 +1302,162 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
             return cursor;
         }
+
+        ///////////////////////// Descending iteration methods //////////////////////////////////////
+        /**
+         * {@inheritDoc}
+         */
+        public boolean isHead()
+        {
+            return super.isTail();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean isTail()
+        {
+            return super.isHead();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean isFirst()
+        {
+            return super.isLast();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean isLast()
+        {
+            return super.isFirst();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public ValueIterator gotoHead()
+        {
+            return super.gotoTail();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @SuppressWarnings("unchecked")
+        public DescendingValueIterator gotoTail()
+        {
+            return (DescendingValueIterator) super.gotoHead();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @SuppressWarnings("unchecked")
+        public DescendingValueIterator gotoNext()
+        {
+            return (DescendingValueIterator) super.gotoPrevious();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @SuppressWarnings("unchecked")
+        public DescendingValueIterator gotoPrevious()
+        {
+            return (DescendingValueIterator) super.gotoNext();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public KTypeCursor<KType> getNext()
+        {
+            return super.getPrevious();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public KTypeCursor<KType> getPrevious()
+        {
+            return super.getNext();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean removeNext()
+        {
+            return super.removePrevious();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public boolean removePrevious()
+        {
+            return super.removeNext();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void insertBefore(KType e1)
+        {
+            super.insertAfter(e1);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void insertAfter(KType e1)
+        {
+            super.insertBefore(e1);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        public void set(KType e1)
+        {
+            super.set(e1);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        DescendingValueIterator delete()
+        {
+            if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
+            {
+                //this is the next position in the normal iteration direction, so we must go back one step
+                int nextPos = removeAtPosNoCheck(this.internalPos);
+
+                this.internalPos = Intrinsics.getLinkBefore(this.pointers[nextPos]);
+
+                this.internalIndex--;
+                //update cursor
+                cursor.value = buffer[this.internalPos];
+                //index is decremented
+                cursor.index = this.internalIndex;
+            }
+
+            return this;
+        }
     }
 
     /**
+     * 
+     * Request a new iterator. The iterator points to "head", also equivalent to call iterator.head()
      * <b>
      * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax. Use
-     * the specialized methods of  {@link ValueIterator} or {@link DescendingValueIterator} instead !
+     * the specialized methods of  {@link ValueIterator} instead !
      * </b>
+     * @see ValueIterator#isHead()
      */
     public ValueIterator iterator()
     {
@@ -1042,8 +1466,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     }
 
     /**
-     * Returns a cursor over the values of this deque (in tail to head order). The
-     * iterator is implemented as a cursor and it returns <b>the same cursor instance</b>
+     * Returns a cursor over the values of this list (in tail to head order).
+     * The iterator points to the "head", such as DescendingValueIterator.gotoNext()
+     * is the last element of the list (since it is a "reversed" iteration). Also equivalent
+     * to call DescendingValueIterator.head()
+     * The iterator is implemented as a cursor and it returns <b>the same cursor instance</b>
      * on every call to {@link Iterator#next()} (to avoid boxing of primitive types). To
      * read the current value (or index in the deque's buffer) use the cursor's public
      * fields. An example is shown below.
@@ -1056,7 +1483,20 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      *         + c.index + &quot; value=&quot; + c.value);
      * }
      * </pre>
-     * @return
+     * <b>
+     * Important note: java.util.Iterator methods are error-prone, and only there for compatibility. Use
+     * the specialized methods instead :
+     * * <pre>
+     * DescendingValueIterator it = list.descendingIterator();
+     * while (!it.isTail())
+     * {
+     *     final KTypeCursor c = it.gotoNext();
+     *     System.out.println(&quot;buffer index=&quot;
+     *         + c.index + &quot; value=&quot; + c.value);
+     * }
+     * </pre>
+     * </b>
+     * @see ValueIterator#isHead()
      */
     public DescendingValueIterator descendingIterator()
     {
@@ -1292,10 +1732,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
             //rebuild nodes, in order
             //a) rebuild head/tail
 
-            //ties HEAD to the first element
+            //ties HEAD to the first element, and first element to HEAD
             pointers[HEAD_POSITION] = Intrinsics.getLinkNodeValue(HEAD_POSITION, 2);
+            pointers[2] = Intrinsics.getLinkNodeValue(HEAD_POSITION, 3);
 
-            for (int pos = 2; pos < elementsCount - 1; pos++)
+            for (int pos = 3; pos < elementsCount - 1; pos++)
             {
                 pointers[pos] = Intrinsics.getLinkNodeValue(pos - 1, pos + 1);
             }
@@ -1344,7 +1785,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         // For now, naive loop.
         for (int i = 0; i < elements.length; i++)
         {
-
             insertAfterPosNoCheck(elements[i], HEAD_POSITION);
         }
     }
@@ -1357,6 +1797,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     public int addFirst(Iterable<? extends KTypeCursor<? extends KType>> iterable)
     {
         int size = 0;
+
         for (KTypeCursor<? extends KType> cursor : iterable)
         {
             ensureBufferSpace(1);
