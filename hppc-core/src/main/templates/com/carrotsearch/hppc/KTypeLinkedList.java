@@ -857,16 +857,34 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * An iterator implementation for {@link ObjectLinkedList#iterator}.
+     * <pre>
      * <b>
      * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax and compatibility. Use
      * the specialized methods instead !
-     * </b>
+     * Iteration example:
+     * </b></pre>
+     * <pre>
+     *   KTypeLinkedList<KType>.ValueIterator it = null;
+     *   try
+     *   {
+     *       for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+     *       {
+     *
+     *          // do something
+     *       }
+     *   }
+     *   finally
+     *   {
+     *       //do not forget to release the iterator !
+     *       it.release();
+     *   }
+     * </pre>
      */
     public class ValueIterator extends AbstractIterator<KTypeCursor<KType>>
     {
-        public KTypeCursor<KType> cursor;
+        public final KTypeCursor<KType> cursor;
 
-        protected KTypeCursor<KType> tmpCursor;
+        protected final KTypeCursor<KType> tmpCursor;
 
         KType[] buffer;
         int internalPos;
@@ -888,7 +906,9 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         }
 
         /**
-         * Unused !
+         * <b>
+         * DO NOT USE
+         * </b>
          */
         @Override
         protected KTypeCursor<KType> fetch()
@@ -1112,35 +1132,45 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * Removes the next element, without moving the iterator.
-         * Returns false if no such element exists.
+         * Returns the removed element cursor, or null if the removal failed.
+         * (because there is no element left after)
          */
-        public boolean removeNext()
+        public KTypeCursor<KType> removeNext()
         {
             int nextPos = Intrinsics.getLinkAfter(this.pointers[this.internalPos]);
 
             if (nextPos == TAIL_POSITION)
             {
-                return false;
+                return null;
             }
+
+            //store the next positions in returned cursor
+            this.tmpCursor.index = this.internalIndex + 1;
+            this.tmpCursor.value = this.buffer[nextPos];
 
             // the current position is unaffected.
             removeAtPosNoCheck(nextPos);
 
-            return true;
+            return this.tmpCursor;
         }
 
         /**
          * Removes the previous element, without moving the iterator.
-         * Returns false if no such element exists.
+         * Returns the removed element cursor, or null if the removal failed.
+         * (because there is no element left before)
          */
-        public boolean removePrevious()
+        public KTypeCursor<KType> removePrevious()
         {
             int previousPos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
 
             if (previousPos == HEAD_POSITION)
             {
-                return false;
+                return null;
             }
+
+            //store the next positions in returned cursor
+            this.tmpCursor.index = this.internalIndex - 1;
+            this.tmpCursor.value = this.buffer[previousPos];
 
             //update the new current position
             this.internalPos = removeAtPosNoCheck(previousPos);
@@ -1149,7 +1179,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
             this.internalIndex--;
             this.cursor.index = this.internalIndex;
 
-            return true;
+            return this.tmpCursor;
         }
 
         /**
@@ -1200,10 +1230,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         }
 
         /**
-         * Delete the current iterator position, and returns the next valid
-         * iterator located after this removal, with respect to the forward iteration.
+         * Delete the current iterator position, and moves to the next valid
+         * element after this removal, with respect to the forward iteration.
+         * Returns the iterator itself for chaining.
          */
-        ValueIterator delete()
+        public ValueIterator delete()
         {
             //protect the heads/tails
             if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
@@ -1222,10 +1253,28 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * An iterator implementation for {@link ObjectLinkedList#descendingIterator()}.
-     * <b>
+     * <pre><b>
      * Important note: DO NOT USE java.util.Iterator methods ! They are here only for compatibility. Use
      * the specialized methods instead !
+     * </b></pre>
+     * Iteration example:
      * </b>
+     * <pre>
+     *   KTypeLinkedList<KType>.ValueIterator it = null;
+     *   try
+     *   {
+     *       for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+     *       {
+     *
+     *          // do something
+     *       }
+     *   }
+     *   finally
+     *   {
+     *       //do not forget to release the iterator !
+     *       it.release();
+     *   }
+     * </pre>
      */
     public final class DescendingValueIterator extends ValueIterator
     {
@@ -1233,7 +1282,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         {
             super();
 
-            this.cursor = new KTypeCursor<KType>();
             internalIndex = KTypeLinkedList.this.size();
 
             this.cursor.index = KTypeLinkedList.this.size();
@@ -1242,16 +1290,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
             this.buffer = KTypeLinkedList.this.buffer;
             this.pointers = KTypeLinkedList.this.beforeAfterPointers;
             this.internalPos = TAIL_POSITION;
-        }
-
-        /**
-         * Unused !!
-         */
-        @Override
-        protected KTypeCursor<KType> fetch()
-        {
-            // unused
-            return null;
         }
 
         /**
@@ -1390,7 +1428,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         /**
          * {@inheritDoc}
          */
-        public boolean removeNext()
+        public KTypeCursor<KType> removeNext()
         {
             return super.removePrevious();
         }
@@ -1398,7 +1436,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         /**
          * {@inheritDoc}
          */
-        public boolean removePrevious()
+        public KTypeCursor<KType> removePrevious()
         {
             return super.removeNext();
         }
@@ -1430,7 +1468,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         /**
          * {@inheritDoc}
          */
-        DescendingValueIterator delete()
+        public DescendingValueIterator delete()
         {
             if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
             {

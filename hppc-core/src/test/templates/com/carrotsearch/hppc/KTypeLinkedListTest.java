@@ -283,6 +283,20 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testRemoveAllEverything()
+    {
+        list.add(asArray(1, 1, 1, 1, 1));
+
+        assertEquals(5, list.removeAllOccurrences(k1));
+        assertEquals(0, list.size());
+
+        //remove all a void
+        assertEquals(0, list.removeAllOccurrences(k1));
+        assertEquals(0, list.size());
+    }
+
+    /* */
+    @Test
     public void testRemoveAllFromLookupContainer()
     {
         list.add(asArray(0, 1, 2, 1, 0));
@@ -294,6 +308,20 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         assertEquals(0, list.removeAll(list2));
 
         assertListEquals(list.toArray(), 1, 1);
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllFromLookupContainerEverything()
+    {
+        list.add(asArray(0, 1, 2, 1, 0));
+
+        KTypeOpenHashSet<KType> list2 = KTypeOpenHashSet.newInstance();
+        list2.add(asArray(0, 1, 2));
+
+        assertEquals(5, list.removeAll(list2));
+        assertEquals(0, list.size());
+        assertEquals(0, list.removeAll(list2));
     }
 
     /* */
@@ -311,6 +339,34 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
                 }));
 
         assertListEquals(list.toArray(), 0, 4);
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllWithPredicateEverything()
+    {
+        list.add(newArray(k0, k1, k2, k1, k4));
+
+        assertEquals(5, list.removeAll(new KTypePredicate<KType>()
+        {
+            public boolean apply(KType v)
+            {
+                return true;
+            };
+        }));
+
+        assertEquals(0, list.size());
+
+        //try again
+        assertEquals(0, list.removeAll(new KTypePredicate<KType>()
+        {
+            public boolean apply(KType v)
+            {
+                return true;
+            };
+        }));
+
+        assertEquals(0, list.size());
     }
 
     /* */
@@ -1795,7 +1851,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         //move forward by 2 elements : 33
         it.gotoNext().gotoNext();
         //remove next = 20
-        it.removeNext();
+        KTypeCursor<KType> removed = it.removeNext();
+        assertEquals(5, removed.index);
+        assertEquals(20, castType(removed.value));
         // ==> list.add(asArray(112, 111,88, 3, 33, 11, 99, 100, 111, 22, 33, 44, 55,7, 9));
         //it still points to 33
         assertListEquals(list.toArray(), 112, 111, 88, 3, 33, /*20 */11, 99, 100, 111, 22, 33, 44, 55, 7, 9);
@@ -1805,7 +1863,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         //move again of 3 : 100
         it.gotoNext().gotoNext().gotoNext();
         //remove the previous = 99
-        it.removePrevious();
+        removed = it.removePrevious();
+        assertEquals(6, removed.index);
+        assertEquals(99, castType(removed.value));
 
         assertListEquals(list.toArray(), 112, 111, 88, 3, 33, /*20 */11, /*99 */100, 111, 22, 33, 44, 55, 7, 9);
         //the iterator still points to 100
@@ -1828,19 +1888,51 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9));
 
-        for (KTypeLinkedList<KType>.ValueIterator it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+        int poolSize = list.valueIteratorPool.size();
+
+        KTypeLinkedList<KType>.ValueIterator it = null;
+        try
         {
-
-            if (castType(it.cursor.value) == 88 ||
-                    castType(it.cursor.value) == 99 ||
-                    castType(it.cursor.value) == 55)
+            for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
             {
+                if (it.getNext() != null && castType(it.getNext().value) == 88 ||
+                        it.getNext() != null && castType(it.getNext().value) == 99 ||
+                        it.getNext() != null && castType(it.getNext().value) == 55)
+                {
 
-                it.delete();
+                    it.removeNext();
+                }
             }
+
+            assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+            it.release();
+            //empty all
+            for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+            {
+                it.delete();
+                //the for advanced itself, so go back one position
+                it.gotoPrevious();
+            }
+
+            assertEquals(0, list.size());
+            it.release();
+            //try to iterate an empty list
+            for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
+            {
+                it.delete();
+                //the for advanced itself, so go back one position
+                it.gotoPrevious();
+            }
+
+            assertEquals(0, list.size());
+        }
+        finally
+        {
+            it.release();
         }
 
-        assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+        assertEquals(poolSize, list.valueIteratorPool.size());
+
     }
 
     /* */
@@ -1849,19 +1941,50 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9));
 
-        for (KTypeLinkedList<KType>.DescendingValueIterator it = list.descendingIterator().gotoNext(); !it.isTail(); it.gotoNext())
+        int poolSize = list.valueIteratorPool.size();
+
+        KTypeLinkedList<KType>.DescendingValueIterator it = null;
+        try
         {
-
-            if (castType(it.cursor.value) == 88 ||
-                    castType(it.cursor.value) == 99 ||
-                    castType(it.cursor.value) == 55)
+            for (it = list.descendingIterator().gotoNext(); !it.isTail(); it.gotoNext())
             {
+                if (it.getNext() != null && castType(it.getNext().value) == 88 ||
+                        it.getNext() != null && castType(it.getNext().value) == 99 ||
+                        it.getNext() != null && castType(it.getNext().value) == 55)
+                {
 
-                it.delete();
+                    it.removeNext();
+                }
             }
+
+            assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+            it.release();
+            //empty all
+            for (it = list.descendingIterator().gotoNext(); !it.isTail(); it.gotoNext())
+            {
+                it.delete();
+                //the for advanced itself, so go back one position
+                it.gotoPrevious();
+            }
+
+            assertEquals(0, list.size());
+            it.release();
+            //try to iterate an empty list
+            for (it = list.descendingIterator().gotoNext(); !it.isTail(); it.gotoNext())
+            {
+                it.delete();
+                //the for advanced itself, so go back one position
+                it.gotoPrevious();
+            }
+
+            assertEquals(0, list.size());
+        }
+        finally
+        {
+            it.release();
         }
 
-        assertListEquals(list.toArray(), 112, 111, 3, 33, 20, 11, 100, 111, 22, 33, 44, 7, 9);
+        assertEquals(poolSize, list.valueIteratorPool.size());
     }
 
     /* */
@@ -1915,7 +2038,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         //move forward by 2 elements : 33
         it.gotoNext().gotoNext();
         //remove next = 20
-        it.removeNext();
+        KTypeCursor<KType> removed = it.removeNext();
+        assertEquals(10, removed.index);
+        assertEquals(20, castType(removed.value));
         // ==> list.add(asArray(9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3,88,111,112));
         //it still points to 33
         assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, 99, 44 /*20 */, 33, 3, 88, 111, 112);
@@ -1925,7 +2050,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         //move again of 3 : 100
         it.gotoNext().gotoNext().gotoNext();
         //remove the previous = 99
-        it.removePrevious();
+        removed = it.removePrevious();
+        assertEquals(8, removed.index);
+        assertEquals(99, castType(removed.value));
 
         assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, /*99*/44 /*20 */, 33, 3, 88, 111, 112);
         //the iterator still points to 100
