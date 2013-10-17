@@ -1728,10 +1728,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
             //rebuild nodes, in order
             //a) rebuild head/tail
 
-            //ties HEAD to the first element
+            //ties HEAD to the first element, and first element to HEAD
             pointers[HEAD_POSITION] = Intrinsics.getLinkNodeValue(HEAD_POSITION, 2);
+            pointers[2] = Intrinsics.getLinkNodeValue(HEAD_POSITION, 3);
 
-            for (int pos = 2; pos < elementsCount - 1; pos++)
+            for (int pos = 3; pos < elementsCount - 1; pos++)
             {
                 pointers[pos] = Intrinsics.getLinkNodeValue(pos - 1, pos + 1);
             }
