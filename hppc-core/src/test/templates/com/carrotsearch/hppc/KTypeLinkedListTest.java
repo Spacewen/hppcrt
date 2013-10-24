@@ -348,23 +348,23 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k4));
 
         assertEquals(5, list.removeAll(new KTypePredicate<KType>()
-        {
+                {
             public boolean apply(KType v)
             {
                 return true;
             };
-        }));
+                }));
 
         assertEquals(0, list.size());
 
         //try again
         assertEquals(0, list.removeAll(new KTypePredicate<KType>()
-        {
+                {
             public boolean apply(KType v)
             {
                 return true;
             };
-        }));
+                }));
 
         assertEquals(0, list.size());
     }
@@ -1844,7 +1844,7 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         it.gotoHead().gotoNext();
         //set -88 at 0 value
         it.gotoNext().gotoNext();
-        it.set(cast(88));
+        assertEquals(0, castType(it.set(cast(88))));
         // ==> list.add(asArray(112,111,88, 3,33,20, 11, 99, 100, 111, 22, 33, 44, 55,7, 9));
         assertListEquals(list.toArray(), 112, 111, 88, 3, 33, 20, 11, 99, 100, 111, 22, 33, 44, 55, 7, 9);
 
@@ -2029,9 +2029,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
         //rewind to first
         it.gotoHead().gotoNext();
-        //set -88 at 55 value
+        //set 88 at 55 value
         it.gotoNext().gotoNext();
-        it.set(cast(88));
+        assertEquals(55, castType(it.set(cast(88))));
         // ==> list.add(asArray( 9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33,3,-88,111,112));
         assertListEquals(list.toArray(), 9, 7, 0, 11, 22, 33, 111, 100, 99, 44, 20, 33, 3, 88, 111, 112);
 

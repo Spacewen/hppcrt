@@ -17,14 +17,14 @@ import static com.carrotsearch.hppc.Internals.*;
  * In addition, elements could by pushed or removed from the middle of the list without moving
  * big amounts of memory, contrary to {@link KTypeArrayList}s. Like {@link KTypeDeque}s, the double-linked list
  * can also be iterated in reverse.
- * Plus, the Iterator or reversed-Iterator supports powerful methods to modify/delete/set the neighbours,
+ * Plus, the Iterator or reversed-iterator supports powerful methods to modify/delete/set the neighbors,
  * in replacement of the error-prone java.util.Iterator ones.
  * A compact representation is used to store and manipulate
  * all elements, without creating Objects for links. Reallocations are governed by a {@link ArraySizingStrategy}
  * and may be expensive if they move around really large chunks of memory.
  * <b>
  * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax. Use
- * the specialized methods of  {@link #ValueIterator} or {@link #DescendingValueIterator} instead !
+ * the specialized methods of  {@link ValueIterator} or {@link DescendingValueIterator} instead !
  * </b>
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -50,7 +50,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * may result in exceptions at runtime. A workaround is to cast directly to
      * <code>Object[]</code> before accessing the buffer's elements.#end
      * <p>
-     * Direct list iteration: iterate buffer[i] for i in [2; size()+2[, but out of order !
+     * Direct list iteration: iterate buffer[i] for i in [2; size()+2[, but is out of order !
      * </p>
      */
     public KType[] buffer;
@@ -282,8 +282,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         }
     }
 
-
-
     /**
      * {@inheritDoc}
      */
@@ -292,12 +290,9 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         assert (index >= 0 && index < size()) : "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
 
-        KType elem = this.defaultValue;
-
         //get object at pos currentPos in buffer
-        elem = buffer[gotoIndex(index)];
+        return buffer[gotoIndex(index)];
 
-        return elem;
     }
 
     /**
@@ -308,13 +303,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         assert (index >= 0 && index < size()) : "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
 
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
-
         //get object at pos currentPos in buffer
         int pos = gotoIndex(index);
 
         //keep the previous value
-        elem = buffer[pos];
+        KType elem = buffer[pos];
 
         //new value
         buffer[pos] = e1;
@@ -330,12 +323,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         assert (index >= 0 && index < size()) : "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
 
-        KType elem = this.defaultValue;
-
         //get object at pos currentPos in buffer
         int currentPos = gotoIndex(index);
 
-        elem = buffer[currentPos];
+        KType elem = buffer[currentPos];
 
         //remove
         removeAtPosNoCheck(currentPos);
@@ -359,7 +350,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         //goto pos
         int currentPos = gotoIndex(fromIndex);
 
-        //start removing
+        //start removing size elements...
         int size = toIndex - fromIndex;
         int count = 0;
 
@@ -907,21 +898,19 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * <b>
-         * DO NOT USE
+         * DO NOT USE, unsupported operation.
          * </b>
          */
         @Override
         protected KTypeCursor<KType> fetch()
         {
-            //do nothing.
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         /**
          * <b>
-         * DO NOT USE. It is here only for the enhanced for loop syntax.
+         * DO NOT USE directly, It is here only for the enhanced for loop syntax support.
          * </b>
-         * {@inheritDoc}
          */
         @Override
         public boolean hasNext()
@@ -940,9 +929,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * <b>
-         * DO NOT USE. It is here only for the enhanced for loop syntax.
+         * DO NOT USE directly, It is here only for the enhanced for loop syntax support.
          * </b>
-         * {@inheritDoc}
          */
         @Override
         public KTypeCursor<KType> next()
@@ -969,7 +957,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         ///////////////////////// Forward iteration methods //////////////////////////////////////
         /**
          * True is iterator points to the "head", i.e such as gotoNext() point to the first
-         * element with respect to the forward iteration.
+         * element, with respect to the forward iteration.
          * @return
          */
         public boolean isHead()
@@ -979,7 +967,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * True is iterator points to the "tail", i.e such as gotoPrevious() point to the last
-         * element with respect to the forward iteration.
+         * element, with respect to the forward iteration.
          * @return
          */
         public boolean isTail()
@@ -989,7 +977,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * True if the iterator points to the first element
-         * with respect to the forward iteration.Always true if the list is empty.
+         * with respect to the forward iteration. Always true if the list is empty.
          */
         public boolean isFirst()
         {
@@ -1000,7 +988,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * True if the iterator points to the last element
-         * with respect to the forward iteration.Always true if the list is empty.
+         * with respect to the forward iteration. Always true if the list is empty.
          */
         public boolean isLast()
         {
@@ -1218,15 +1206,21 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * Set e1 to the current iterator position, without moving the iterator,
-         * and returns the previous value
+         * while returning the previous value. If no such previous value exists, returns the default value.
          */
-        public void set(KType e1)
+        public KType set(KType e1)
         {
+            KType elem = KTypeLinkedList.this.defaultValue;
+
             //protect the heads/tails
             if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
             {
+                elem = this.buffer[this.internalPos];
+
                 this.buffer[this.internalPos] = e1;
             }
+
+            return elem;
         }
 
         /**
@@ -1265,7 +1259,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      *   {
      *       for (it = list.iterator().gotoNext(); !it.isTail(); it.gotoNext())
      *       {
-     *
      *          // do something
      *       }
      *   }
@@ -1294,9 +1287,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * <b>
-         * DO NOT USE. It is here only for the enhanced for loop syntax.
+         * DO NOT USE.
          * </b>
-         * {@inheritDoc}
          */
         @Override
         public boolean hasNext()
@@ -1315,9 +1307,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         /**
          * <b>
-         * DO NOT USE. It is here only for the enhanced for loop syntax.
+         * DO NOT USE directly, It is here only for the enhanced for loop syntax support.
          * </b>
-         * {@inheritDoc}
          */
         @Override
         public KTypeCursor<KType> next()
@@ -1460,14 +1451,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         /**
          * {@inheritDoc}
          */
-        public void set(KType e1)
-        {
-            super.set(e1);
-        }
-
-        /**
-         * {@inheritDoc}
-         */
         public DescendingValueIterator delete()
         {
             if (this.internalPos != HEAD_POSITION && this.internalPos != TAIL_POSITION)
@@ -1490,10 +1473,28 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
     /**
      * 
-     * Request a new iterator. The iterator points to "head", also equivalent to call iterator.head()
+     * Request a new iterator. The iterator points to "head", such as ValueIterator.gotoNext()
+     * is the first element of the list.
      * <b>
-     * Important note: DO NOT USE java.util.Iterator methods ! They are here only for enhanced-loop syntax. Use
-     * the specialized methods of  {@link ValueIterator} instead !
+     * Important note: java.util.Iterator methods are error-prone, and only there for compatibility and enhanced for loop usage:
+     * <pre>
+     * for (KTypeCursor<KType> c : container) {
+     *      System.out.println("index=" + c.index + " value=" + c.value);
+     *    }
+     * </pre>
+     * Prefer the specialized methods instead :
+     * <pre>
+     * ValueIterator it = list.iterator();
+     * while (!it.isTail())
+     * {
+     *     final KTypeCursor c = it.gotoNext();
+     *     System.out.println(&quot;buffer index=&quot;
+     *         + c.index + &quot; value=&quot; + c.value);
+     * }
+     * 
+     * // release the iterator at the end !
+     * it.release()
+     * </pre>
      * </b>
      * @see ValueIterator#isHead()
      */
@@ -1506,21 +1507,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Returns a cursor over the values of this list (in tail to head order).
      * The iterator points to the "head", such as DescendingValueIterator.gotoNext()
-     * is the last element of the list (since it is a "reversed" iteration). Also equivalent
-     * to call DescendingValueIterator.head()
+     * is the last element of the list (since it is a "reversed" iteration).
      * The iterator is implemented as a cursor and it returns <b>the same cursor instance</b>
      * on every call to {@link Iterator#next()} (to avoid boxing of primitive types). To
      * read the current value (or index in the deque's buffer) use the cursor's public
      * fields. An example is shown below.
-     * 
-     * <pre>
-     * for (Iterator<IntCursor> i = intDeque.descendingIterator(); i.hasNext(); )
-     * {
-     *     final IntCursor c = i.next();
-     *     System.out.println(&quot;buffer index=&quot;
-     *         + c.index + &quot; value=&quot; + c.value);
-     * }
-     * </pre>
      * <b>
      * Important note: java.util.Iterator methods are error-prone, and only there for compatibility. Use
      * the specialized methods instead :
@@ -1532,6 +1523,9 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      *     System.out.println(&quot;buffer index=&quot;
      *         + c.index + &quot; value=&quot; + c.value);
      * }
+     * 
+     * // release the iterator at the end !
+     * it.release()
      * </pre>
      * </b>
      * @see ValueIterator#isHead()

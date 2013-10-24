@@ -47,7 +47,7 @@ import com.carrotsearch.hppc.procedures.KTypeProcedure;
  * </table>
  * 
  * <p>This implementation supports <code>null</code> keys.</p>
- * <p><b>Important node.</b> The implementation uses power-of-two tables and linear
+ * <p><b>Important note.</b> The implementation uses power-of-two tables and linear
  * probing, which may cause poor performance (many collisions) if hash values are
  * not properly distributed. To counter this, use {@link HashingStrategy} to override equals() and hashCode().
  * This implementation uses rehashing
@@ -483,7 +483,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /* #if ($TemplateOptions.KTypeGeneric) */
     /**
      * Returns the last key saved in a call to {@link #contains} if it returned <code>true</code>.
-     * 
+     * Precondition : {@link #contains} must have been called previously !
      * @see #contains
      */
     public KType lkey()
@@ -498,7 +498,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * @return Returns the slot of the last key looked up in a call to {@link #contains} if
      * it returned <code>true</code>.
-     * 
+     * Precondition : {@link #contains} must have been called previously !
      * @see #contains
      */
     public int lslot()

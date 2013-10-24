@@ -11,10 +11,10 @@ import com.carrotsearch.hppc.procedures.*;
 import com.carrotsearch.hppc.sorting.*;
 
 /**
- * A Heap-based, Indexed min-priority queue of <code>KType</code>s.
- * (top() is the smallest element)
+ * A Heap-based, indexed min-priority queue of <code>KType</code>s.
+ * i.e. top() is the smallest element of the queue.
  * as defined by Sedgewick: Algorithms 4th Edition (2011)
- * It assure O(log2(N)) complexity for insertion, deletion of min element,
+ * It assure O(log2(N)) complexity for insertion, deletion of the first element,
  * and constant time to examine the first element.
  * As it is indexed, it also supports containsIndex() in constant time, deleteIndex()
  * and change priority in O(log2(N)) time.
@@ -381,7 +381,6 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public <T extends KTypeIndexedProcedure<? super KType>> T indexedForEach(T procedure)
     {
-
         final KType[] buffer = this.buffer;
         final int size = elementsCount;
 
@@ -473,7 +472,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public KType top()
     {
-        KType elem = Intrinsics.<KType> defaultKTypeValue();
+        KType elem = this.defaultValue;
 
         if (elementsCount > 0)
         {
@@ -549,11 +548,14 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
      * cost: O(log2(N))
      */
     @Override
-    public boolean deleteIndex(int index)
+    public KType deleteIndex(int index)
     {
+        KType deletedElement = this.defaultValue;
+
         if (index < pq.length && pq[index] > 0)
         {
             int deletedPos = pq[index];
+            deletedElement = buffer[deletedPos];
 
             if (deletedPos == elementsCount)
             {
@@ -619,13 +621,12 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                     swim(pq[lastElementIndex]);
                 }
             }
-
-            return true;
         }
 
-        return false;
+        return deletedElement;
     }
 
+    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
      * {@inheritDoc}
      * cost: O(log2(N))
@@ -639,6 +640,8 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
             sink(pq[index]);
         }
     }
+
+    /*! #end !*/
 
     /**
      * {@inheritDoc}
@@ -791,6 +794,7 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
 
         boolean first = true;
 
+        //Indices are displayed in ascending order, for easier reading.
         for (int i = 0; i < pq.length; i++)
         {
             if (pq[i] > 0)

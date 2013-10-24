@@ -8,28 +8,28 @@ import java.util.RandomAccess;
  * <code>index</code>. Indexes are zero-based.
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
-public interface KTypeIndexedContainer<KType> extends KTypeCollection<KType>, RandomAccess 
+public interface KTypeIndexedContainer<KType> extends KTypeCollection<KType>, RandomAccess
 {
     /**
-     * Removes the first element that equals <code>e1</code>, returning its 
-     * deleted position or <code>-1</code> if the element was not found.   
+     * Removes the first element that equals <code>e1</code>, returning its
+     * deleted position or <code>-1</code> if the element was not found.
      */
     public int removeFirstOccurrence(KType e1);
-    
+
     /**
-     * Removes the last element that equals <code>e1</code>, returning its 
-     * deleted position or <code>-1</code> if the element was not found.   
+     * Removes the last element that equals <code>e1</code>, returning its
+     * deleted position or <code>-1</code> if the element was not found.
      */
     public int removeLastOccurrence(KType e1);
-    
+
     /**
-     * Returns the index of the first occurrence of the specified element in this list, 
+     * Returns the index of the first occurrence of the specified element in this list,
      * or -1 if this list does not contain the element.
      */
     public int indexOf(KType e1);
-    
+
     /**
-     * Returns the index of the last occurrence of the specified element in this list, 
+     * Returns the index of the last occurrence of the specified element in this list,
      * or -1 if this list does not contain the element.
      */
     public int lastIndexOf(KType e1);
@@ -38,41 +38,44 @@ public interface KTypeIndexedContainer<KType> extends KTypeCollection<KType>, Ra
      * Adds an element to the end of this container (the last index is incremented by one).
      */
     public void add(KType e1);
-    
+
     /**
      * Inserts the specified element at the specified position in this list.
      * 
      * @param index The index at which the element should be inserted, shifting
      * any existing and subsequent elements to the right.
+     * Precondition : index must be valid !
      */
     public void insert(int index, KType e1);
 
     /**
-     * Replaces the element at the specified position in this list 
-     * with the specified element. 
-     * 
+     * Replaces the element at the specified position in this list
+     * with the specified element.
+     * Precondition : index must be valid !
      * @return Returns the previous value in the list.
      */
     public KType set(int index, KType e1);
 
     /**
      * @return Returns the element at index <code>index</code> from the list.
+     * Precondition : index must be valid !
      */
     public KType get(int index);
-    
+
     /**
      * Removes the element at the specified position in this list and returns it.
-     * 
+     * Precondition : index must be valid !
      * <p><b>Careful.</b> Do not confuse this method with the overridden signature in
      * Java Collections ({@link List#remove(Object)}). Use: {@link #removeAll},
-     * {@link #removeFirstOccurrence} or {@link #removeLastOccurrence} depending 
-     * on the actual need.</p> 
+     * {@link #removeFirstOccurrence} or {@link #removeLastOccurrence} depending
+     * on the actual need.</p>
      */
     public KType remove(int index);
 
     /**
-     * Removes from this list all of the elements whose index is between 
+     * Removes from this list all of the elements whose index is between
      * <code>fromIndex</code>, inclusive, and <code>toIndex</code>, exclusive.
+     * Precondition : both indices must be valid !
      */
     public void removeRange(int fromIndex, int toIndex);
 
@@ -86,8 +89,8 @@ public interface KTypeIndexedContainer<KType> extends KTypeCollection<KType>, Ra
      * <p>
      * Note that, unlike in {@link List}, containers may be of different types and still
      * return <code>true</code> from {@link #equals}. This may be dangerous if you use
-     * different hash functions in two containers, but don't override the default 
-     * implementation of {@link #equals}. It is the programmer's responsibility to 
+     * different hash functions in two containers, but don't override the default
+     * implementation of {@link #equals}. It is the programmer's responsibility to
      * enforcing these contracts properly.
      * </p>
      */

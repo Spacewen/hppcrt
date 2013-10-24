@@ -21,62 +21,50 @@ public interface KTypeIndexedPriorityQueue<KType> extends KTypeCollection<KType>
     boolean insert(int index, KType k);
 
     /**
-     * Delete the element <code>k</code> designed with its index
-     * it was previously insert() before. Returns true if deletion was successful,
-     * false if the element doesn't exists.
+     * Delete the element designated with its index from the priority queue
+     * Returns the deleted element if deletion was successful, or else the default value
+     * if the element doesn't exists.
      */
-    boolean deleteIndex(int index);
+    KType deleteIndex(int index);
 
     /**
-     * Return the element <code>k</code> designed with its index
-     * it was previously insert() before. For generics version, returns null if
-     * no such element exists, else return the default value.
+     * Return the element designated with its index,
+     * or returns the default value if
+     * no such element exists.
      */
     KType getIndex(int index);
 
+/*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
-     * Change priority of the element <code>k</code> designed with its index
-     * it was previously insert() before.
+     * Call this to re-establish the correct
+     * priority of the Object indexed by index, if present in priority queue, in case its
+     * internal state has changed such that its priority has indeed also changed,
+     * towards the comparison criteria.
      */
     void changePriority(int index);
+/*! #end !*/
 
     /**
-     * Returns true if the element <code>k</code> designed with its index
-     * it was previously insert() before, exists in the queue.
+     * Returns true if the element designated with its index
+     *  exists in the queue.
      */
     boolean containsIndex(int index);
 
-    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+
     /**
-     * Retreive, but not remove, the top element of the queue,
+     * Retrieve, but not remove, the top element of the queue,
      * i.e. the min/max element with respect to the comparison criteria
      * (implementation defined)
-     * of the queue. Returns null if the queue is empty.
+     * of the queue. Returns the default value if empty.
      */
-    /*! #else !*/
-    /**
-     * Retreive, but not remove, the top element of the queue,
-     * i.e. the min/max element with respect to the comparison criteria
-     * (implementation defined)
-     * of the queue. Returns KType default value if empty
-     */
-    /*! #end !*/
     KType top();
 
-    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+
     /**
-     * Retreive, and remove the top element of the queue,
+     * Retrieve, and remove the top element of the queue,
      * i.e. the min/max element with respect to the comparison criteria
-     * (implementation defined)
-     * of the queue. Returns the removed element. Returns null if the queue is empty.
+     * (implementation defined) Returns the default value if empty.
      */
-    /*! #else !*/
-    /**
-     * Retreive, and remove the top element of the queue,
-     * i.e. the min/max element with respect to the comparison criteria
-     * (implementation defined)
-     */
-    /*! #end !*/
     KType popTop();
 
     /**
@@ -107,8 +95,8 @@ public interface KTypeIndexedPriorityQueue<KType> extends KTypeCollection<KType>
     public int retainAll(KTypeIndexedPredicate<? super KType> indexedPredicate);
 
     /**
-     * Update priorities to re-establish the priority queue state,
-     * whatever the previous elements state.
+     * Update priorities of all the elements of the queue, to re-establish the correct priorities
+     * towards the comparison criteria.
      */
     void refreshPriorities();
 }

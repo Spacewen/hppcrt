@@ -104,16 +104,19 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         prioq.insert(3, key3);
         prioq.insert(4, key4);
 
-        prioq.deleteIndex(0);
+        assertEquals(0, castType(prioq.deleteIndex(0)));
         assertFalse(prioq.containsIndex(0));
-        prioq.deleteIndex(4);
+        assertEquals(4, castType(prioq.deleteIndex(4)));
         assertFalse(prioq.containsIndex(4));
-        prioq.deleteIndex(3);
+        assertEquals(3, castType(prioq.deleteIndex(3)));
         assertFalse(prioq.containsIndex(3));
-        prioq.deleteIndex(2);
+        assertEquals(2, castType(prioq.deleteIndex(2)));
         assertFalse(prioq.containsIndex(2));
-        prioq.deleteIndex(1);
+        assertEquals(1, castType(prioq.deleteIndex(1)));
         assertFalse(prioq.containsIndex(1));
+
+        //try to delete a non-existent element index
+        assertEquals(castType(prioq.getDefaultValue()), castType(prioq.deleteIndex(10)));
     }
 
     /* */
@@ -167,7 +170,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
                 //remove also in the prio queue
                 prioq.deleteIndex(i);
                 assertFalse("" + i, prioq.containsIndex(i));
-                assertFalse("" + i, prioq.deleteIndex(i));
+                assertEquals("" + i, castType(prioq.getDefaultValue()), castType(prioq.deleteIndex(i)));
             }
 
             if (i % 87450 == 0)
@@ -186,9 +189,9 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
             if (reference[index] != -1)
             {
                 assertTrue(prioq.containsIndex(index));
-                assertTrue(prioq.deleteIndex(index));
+                prioq.deleteIndex(index);
                 assertFalse("" + index, prioq.containsIndex(index));
-                assertFalse("" + index, prioq.deleteIndex(index));
+                assertEquals("" + index, castType(prioq.getDefaultValue()), castType(prioq.deleteIndex(index)));
 
                 if (index % 55587 == 0)
                 {

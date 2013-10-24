@@ -52,7 +52,7 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  * 
  * </tbody>
  * </table>
- * <p><b>Important node.</b> The implementation uses power-of-two tables and linear
+ * <p><b>Important note.</b> The implementation uses power-of-two tables and linear
  * probing, which may cause poor performance (many collisions) if hash values are
  * not properly distributed. To counter this, use {@link HashingStrategy} to override equals() and hashCode().
  * This implementation uses rehashing
@@ -62,10 +62,6 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  * <p>This implementation supports <code>null</code> values.</p>
 #end
  * 
- * <p><b>Important node.</b> The implementation uses power-of-two tables and linear
- * probing, which may cause poor performance (many collisions) if hash values are
- * not properly distributed. This implementation uses rehashing
- * using {@link MurmurHash3}.</p>
  * 
  * @author This code is inspired by the collaboration and implementation in the <a
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
@@ -727,7 +723,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Returns the last key stored in this has map for the corresponding
      * most recent call to {@link #containsKey}.
-     * 
+     * Precondition : {@link #containsKey} must have been called previously !
      * <p>Use the following snippet of code to check for key existence
      * first and then retrieve the key value if it exists.</p>
      * <pre>
@@ -749,7 +745,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
     /**
      * Returns the last value saved in a call to {@link #containsKey}.
-     * 
+     * Precondition : {@link #containsKey} must have been called previously !
      * @see #containsKey
      */
     public VType lget()
@@ -764,7 +760,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * Sets the value corresponding to the key saved in the last
      * call to {@link #containsKey}, if and only if the key exists
      * in the map already.
-     * 
+     * Precondition : {@link #containsKey} must have been called previously !
      * @see #containsKey
      * @return Returns the previous value stored under the given key.
      */
