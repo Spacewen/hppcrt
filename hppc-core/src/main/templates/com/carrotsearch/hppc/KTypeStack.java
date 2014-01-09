@@ -50,7 +50,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * 
      * @see BoundedProportionalArraySizingStrategy
      */
-    public KTypeStack(int initialCapacity)
+    public KTypeStack(final int initialCapacity)
     {
         super(initialCapacity);
     }
@@ -58,7 +58,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Create with a custom buffer resizing strategy.
      */
-    public KTypeStack(int initialCapacity, ArraySizingStrategy resizer)
+    public KTypeStack(final int initialCapacity, final ArraySizingStrategy resizer)
     {
         super(initialCapacity, resizer);
     }
@@ -66,7 +66,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Create a stack by pushing all elements of another container to it.
      */
-    public KTypeStack(KTypeContainer<KType> container)
+    public KTypeStack(final KTypeContainer<KType> container)
     {
         super(container);
     }
@@ -74,7 +74,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Adds one KType to the stack.
      */
-    public void push(KType e1)
+    public void push(final KType e1)
     {
         ensureBufferSpace(1);
         buffer[elementsCount++] = e1;
@@ -83,7 +83,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Adds two KTypes to the stack.
      */
-    public void push(KType e1, KType e2)
+    public void push(final KType e1, final KType e2)
     {
         ensureBufferSpace(2);
         buffer[elementsCount++] = e1;
@@ -93,7 +93,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Adds three KTypes to the stack.
      */
-    public void push(KType e1, KType e2, KType e3)
+    public void push(final KType e1, final KType e2, final KType e3)
     {
         ensureBufferSpace(3);
         buffer[elementsCount++] = e1;
@@ -104,7 +104,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Adds four KTypes to the stack.
      */
-    public void push(KType e1, KType e2, KType e3, KType e4)
+    public void push(final KType e1, final KType e2, final KType e3, final KType e4)
     {
         ensureBufferSpace(4);
         buffer[elementsCount++] = e1;
@@ -116,7 +116,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Add a range of array elements to the stack.
      */
-    public void push(KType [] elements, int start, int len)
+    public void push(final KType [] elements, final int start, final int len)
     {
         assert start >= 0 && len >= 0;
 
@@ -130,7 +130,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * <p><b>This method is handy, but costly if used in tight loops (anonymous
      * array passing)</b></p>
      */
-    public void push(KType... elements)
+    public void push(final KType... elements)
     {
         push(elements, 0, elements.length);
     }
@@ -138,7 +138,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Pushes all elements from another container to the top of the stack.
      */
-    public int pushAll(KTypeContainer<? extends KType> container)
+    public int pushAll(final KTypeContainer<? extends KType> container)
     {
         return addAll(container);
     }
@@ -146,7 +146,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Pushes all elements from another iterable to the top of the stack.
      */
-    public int pushAll(Iterable<? extends KTypeCursor<? extends KType>> iterable)
+    public int pushAll(final Iterable<? extends KTypeCursor<? extends KType>> iterable)
     {
         return addAll(iterable);
     }
@@ -154,7 +154,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Discard an arbitrary number of elements from the top of the stack.
      */
-    public void discard(int count)
+    public void discard(final int count)
     {
         assert elementsCount >= count;
 
@@ -214,7 +214,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * Returns a new object of this list with no need to declare generic type (shortcut
      * instead of using a constructor).
      */
-    public static <KType> KTypeStack<KType> newInstanceWithCapacity(int initialCapacity)
+    public static <KType> KTypeStack<KType> newInstanceWithCapacity(final int initialCapacity)
     {
         return new KTypeStack<KType>(initialCapacity);
     }
@@ -222,7 +222,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Create a stack by pushing a variable number of arguments to it.
      */
-    public static <KType> KTypeStack<KType> from(KType... elements)
+    public static <KType> KTypeStack<KType> from(final KType... elements)
     {
         final KTypeStack<KType> stack = new KTypeStack<KType>(elements.length);
         stack.push(elements);
@@ -232,7 +232,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Create a stack by pushing all elements of another container to it.
      */
-    public static <KType> KTypeStack<KType> from(KTypeContainer<KType> container)
+    public static <KType> KTypeStack<KType> from(final KTypeContainer<KType> container)
     {
         return new KTypeStack<KType>(container);
     }
@@ -243,7 +243,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     @Override
     public KTypeStack<KType> clone()
     {
-        KTypeStack<KType> cloned = new KTypeStack<KType>(this.buffer.length, this.resizer);
+        final KTypeStack<KType> cloned = new KTypeStack<KType>(this.buffer.length, this.resizer);
 
         //in order by construction
         cloned.addAll(this);

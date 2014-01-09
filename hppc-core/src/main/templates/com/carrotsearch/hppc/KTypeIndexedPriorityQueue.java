@@ -1,14 +1,14 @@
 package com.carrotsearch.hppc;
 
-import com.carrotsearch.hppc.predicates.KTypeIndexedPredicate;
-import com.carrotsearch.hppc.predicates.KTypePredicate;
-import com.carrotsearch.hppc.procedures.KTypeIndexedProcedure;
+import com.carrotsearch.hppc.predicates.*;
+import com.carrotsearch.hppc.procedures.*;
 
 /**
  * An Indexed Priority queue of <code>KType</code>s.
  * similar to a simplified map (K,V) = (index, element V)
  * with priority queue capabilities.
  */
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeIndexedPriorityQueue<KType> extends KTypeCollection<KType>
 {

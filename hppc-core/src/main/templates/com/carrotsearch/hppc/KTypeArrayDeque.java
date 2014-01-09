@@ -574,7 +574,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             int size = size();
             int hole = head - tail;
 
-            //pack the separated chunk to the begining of the buffer
+            //pack the separated chunk to the beginning of the buffer
             System.arraycopy(buffer, head, buffer, tail, buffer.length - head);
 
             //reset of the positions

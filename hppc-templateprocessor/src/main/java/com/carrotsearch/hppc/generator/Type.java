@@ -2,13 +2,13 @@ package com.carrotsearch.hppc.generator;
 
 public enum Type
 {
-    GENERIC, BYTE, CHAR, SHORT, INT, FLOAT, LONG, DOUBLE;
+    GENERIC, BYTE, CHAR, SHORT, INT, FLOAT, LONG, DOUBLE, BOOLEAN;
 
     public String getBoxedType()
     {
         if (this == GENERIC) return "Object";
 
-        String boxed = name().toLowerCase();
+        final String boxed = name().toLowerCase();
         return Character.toUpperCase(boxed.charAt(0)) + boxed.substring(1);
     }
 

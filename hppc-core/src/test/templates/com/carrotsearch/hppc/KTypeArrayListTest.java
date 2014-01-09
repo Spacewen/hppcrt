@@ -8,7 +8,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
@@ -26,6 +25,7 @@ import com.carrotsearch.hppc.predicates.KTypePredicate;
 import com.carrotsearch.hppc.procedures.KTypeProcedure;
 import com.carrotsearch.hppc.sorting.KTypeComparator;
 
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /**
  * Unit tests for {@link KTypeArrayList}.
  */
@@ -59,7 +59,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         {
             for (int i = list.elementsCount; i < list.buffer.length; i++) {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                assertTrue(Intrinsics.<KType> defaultKTypeValue() == list.buffer[i]);
+                Assert.assertTrue(Intrinsics.<KType> defaultKTypeValue() == list.buffer[i]);
                 /*! #end !*/
             }
         }
@@ -69,7 +69,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testInitiallyEmpty()
     {
-        assertEquals(0, list.size());
+        Assert.assertEquals(0, list.size());
     }
 
     /* */
@@ -77,7 +77,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testAdd()
     {
         list.add(key1, key2);
-        assertListEquals(list.toArray(), 1, 2);
+        TestUtils.assertListEquals(list.toArray(), 1, 2);
     }
 
     /* */
@@ -86,7 +86,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(key1, key2);
         list.add(key3, key4);
-        assertListEquals(list.toArray(), 1, 2, 3, 4);
+        TestUtils.assertListEquals(list.toArray(), 1, 2, 3, 4);
     }
 
     /* */
@@ -94,7 +94,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testAddArray()
     {
         list.add(asArray(0, 1, 2, 3), 1, 2);
-        assertListEquals(list.toArray(), 1, 2);
+        TestUtils.assertListEquals(list.toArray(), 1, 2);
     }
 
     /* */
@@ -106,20 +106,20 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(0, 1, 2, 3));
         list.add(key4, key5, key6, key7);
-        assertListEquals(list.toArray(), 0, 1, 2, 3, 4, 5, 6, 7);
+        TestUtils.assertListEquals(list.toArray(), 0, 1, 2, 3, 4, 5, 6, 7);
     }
 
     /* */
     @Test
     public void testAddAll()
     {
-        KTypeArrayList<KType> list2 = KTypeArrayList.newInstance();
+        final KTypeArrayList<KType> list2 = KTypeArrayList.newInstance();
         list2.add(asArray(0, 1, 2));
 
         list.addAll(list2);
         list.addAll(list2);
 
-        assertListEquals(list.toArray(), 0, 1, 2, 0, 1, 2);
+        TestUtils.assertListEquals(list.toArray(), 0, 1, 2, 0, 1, 2);
     }
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -132,14 +132,14 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         class B extends A {
         }
 
-        KTypeArrayList<B> list2 = new KTypeArrayList<B>();
+        final KTypeArrayList<B> list2 = new KTypeArrayList<B>();
         list2.add(new B());
 
-        KTypeArrayList<A> list3 = new KTypeArrayList<A>();
+        final KTypeArrayList<A> list3 = new KTypeArrayList<A>();
         list3.add(new B());
         list3.add(new A());
         list3.addAll(list2);
-        assertEquals(3, list3.size());
+        Assert.assertEquals(3, list3.size());
     }
     /*! #end !*/
 
@@ -152,7 +152,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list.insert(2, k3);
         list.insert(1, k4);
 
-        assertListEquals(list.toArray(), 2, 4, 1, 3);
+        TestUtils.assertListEquals(list.toArray(), 2, 4, 1, 3);
     }
 
     /* */
@@ -161,11 +161,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(0, 1, 2));
 
-        assertEquals2(0, list.set(0, k3));
-        assertEquals2(1, list.set(1, k4));
-        assertEquals2(2, list.set(2, k5));
+        TestUtils.assertEquals2(0, list.set(0, k3));
+        TestUtils.assertEquals2(1, list.set(1, k4));
+        TestUtils.assertEquals2(2, list.set(2, k5));
 
-        assertListEquals(list.toArray(), 3, 4, 5);
+        TestUtils.assertListEquals(list.toArray(), 3, 4, 5);
     }
 
     /* */
@@ -178,7 +178,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list.remove(2);
         list.remove(1);
 
-        assertListEquals(list.toArray(), 1, 4);
+        TestUtils.assertListEquals(list.toArray(), 1, 4);
     }
 
     /* */
@@ -188,16 +188,16 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list.add(asArray(0, 1, 2, 3, 4));
 
         list.removeRange(0, 2);
-        assertListEquals(list.toArray(), 2, 3, 4);
+        TestUtils.assertListEquals(list.toArray(), 2, 3, 4);
 
         list.removeRange(2, 3);
-        assertListEquals(list.toArray(), 2, 3);
+        TestUtils.assertListEquals(list.toArray(), 2, 3);
 
         list.removeRange(1, 1);
-        assertListEquals(list.toArray(), 2, 3);
+        TestUtils.assertListEquals(list.toArray(), 2, 3);
 
         list.removeRange(0, 1);
-        assertListEquals(list.toArray(), 3);
+        TestUtils.assertListEquals(list.toArray(), 3);
     }
 
     /* */
@@ -206,24 +206,24 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(0, 1, 2, 1, 0));
 
-        assertEquals(-1, list.removeFirstOccurrence(k5));
-        assertEquals(-1, list.removeLastOccurrence(k5));
-        assertListEquals(list.toArray(), 0, 1, 2, 1, 0);
+        Assert.assertEquals(-1, list.removeFirstOccurrence(k5));
+        Assert.assertEquals(-1, list.removeLastOccurrence(k5));
+        TestUtils.assertListEquals(list.toArray(), 0, 1, 2, 1, 0);
 
-        assertEquals(1, list.removeFirstOccurrence(k1));
-        assertListEquals(list.toArray(), 0, 2, 1, 0);
-        assertEquals(3, list.removeLastOccurrence(k0));
-        assertListEquals(list.toArray(), 0, 2, 1);
-        assertEquals(0, list.removeLastOccurrence(k0));
-        assertListEquals(list.toArray(), 2, 1);
-        assertEquals(-1, list.removeLastOccurrence(k0));
+        Assert.assertEquals(1, list.removeFirstOccurrence(k1));
+        TestUtils.assertListEquals(list.toArray(), 0, 2, 1, 0);
+        Assert.assertEquals(3, list.removeLastOccurrence(k0));
+        TestUtils.assertListEquals(list.toArray(), 0, 2, 1);
+        Assert.assertEquals(0, list.removeLastOccurrence(k0));
+        TestUtils.assertListEquals(list.toArray(), 2, 1);
+        Assert.assertEquals(-1, list.removeLastOccurrence(k0));
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         list.clear();
         list.add(newArray(k0, null, k2, null, k0));
-        assertEquals(1, list.removeFirstOccurrence(null));
-        assertEquals(2, list.removeLastOccurrence(null));
-        assertListEquals(list.toArray(), 0, 2, 0);
+        Assert.assertEquals(1, list.removeFirstOccurrence(null));
+        Assert.assertEquals(2, list.removeLastOccurrence(null));
+        TestUtils.assertListEquals(list.toArray(), 0, 2, 0);
         /*! #end !*/
     }
 
@@ -233,19 +233,19 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(0, 1, 0, 1, 0));
 
-        assertEquals(0, list.removeAllOccurrences(k2));
-        assertEquals(3, list.removeAllOccurrences(k0));
-        assertListEquals(list.toArray(), 1, 1);
+        Assert.assertEquals(0, list.removeAllOccurrences(k2));
+        Assert.assertEquals(3, list.removeAllOccurrences(k0));
+        TestUtils.assertListEquals(list.toArray(), 1, 1);
 
-        assertEquals(2, list.removeAllOccurrences(k1));
-        assertTrue(list.isEmpty());
+        Assert.assertEquals(2, list.removeAllOccurrences(k1));
+        Assert.assertTrue(list.isEmpty());
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         list.clear();
         list.add(newArray(k0, null, k2, null, k0));
-        assertEquals(2, list.removeAllOccurrences(null));
-        assertEquals(0, list.removeAllOccurrences(null));
-        assertListEquals(list.toArray(), 0, 2, 0);
+        Assert.assertEquals(2, list.removeAllOccurrences(null));
+        Assert.assertEquals(0, list.removeAllOccurrences(null));
+        TestUtils.assertListEquals(list.toArray(), 0, 2, 0);
         /*! #end !*/
     }
 
@@ -255,13 +255,13 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(0, 1, 2, 1, 0));
 
-        KTypeOpenHashSet<KType> list2 = KTypeOpenHashSet.newInstance();
+        final KTypeOpenHashSet<KType> list2 = KTypeOpenHashSet.newInstance();
         list2.add(asArray(0, 2));
 
-        assertEquals(3, list.removeAll(list2));
-        assertEquals(0, list.removeAll(list2));
+        Assert.assertEquals(3, list.removeAll(list2));
+        Assert.assertEquals(0, list.removeAll(list2));
 
-        assertListEquals(list.toArray(), 1, 1);
+        TestUtils.assertListEquals(list.toArray(), 1, 1);
     }
 
     /* */
@@ -270,15 +270,16 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(newArray(k0, k1, k2, k1, k4));
 
-        assertEquals(3, list.removeAll(new KTypePredicate<KType>()
+        Assert.assertEquals(3, list.removeAll(new KTypePredicate<KType>()
                 {
-            public boolean apply(KType v)
+            @Override
+            public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
                 }));
 
-        assertListEquals(list.toArray(), 0, 4);
+        TestUtils.assertListEquals(list.toArray(), 0, 4);
     }
 
     /* */
@@ -287,15 +288,16 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(newArray(k0, k1, k2, k1, k0));
 
-        assertEquals(2, list.retainAll(new KTypePredicate<KType>()
+        Assert.assertEquals(2, list.retainAll(new KTypePredicate<KType>()
                 {
-            public boolean apply(KType v)
+            @Override
+            public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
                 }));
 
-        assertListEquals(list.toArray(), 1, 2, 1);
+        TestUtils.assertListEquals(list.toArray(), 1, 2, 1);
     }
 
     /* */
@@ -307,25 +309,26 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         final RuntimeException t = new RuntimeException();
         try
         {
-            assertEquals(3, list.removeAll(new KTypePredicate<KType>()
+            Assert.assertEquals(3, list.removeAll(new KTypePredicate<KType>()
                     {
-                public boolean apply(KType v)
+                @Override
+                public boolean apply(final KType v)
                 {
                     if (v == key2) throw t;
                     return v == key1;
                 };
                     }));
-            fail();
+            Assert.fail();
         }
-        catch (RuntimeException e)
+        catch (final RuntimeException e)
         {
             // Make sure it's really our exception...
             if (e != t) throw e;
         }
 
         // And check if the list is in consistent state.
-        assertListEquals(list.toArray(), 0, key2, key1, 4);
-        assertEquals(4, list.size());
+        TestUtils.assertListEquals(list.toArray(), 0, key2, key1, 4);
+        Assert.assertEquals(4, list.size());
     }
 
     /* */
@@ -336,12 +339,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         list.add((KType) null);
-        assertEquals(5, list.indexOf(null));
+        Assert.assertEquals(5, list.indexOf(null));
         /*! #end !*/
 
-        assertEquals(0, list.indexOf(k0));
-        assertEquals(-1, list.indexOf(k3));
-        assertEquals(2, list.indexOf(k2));
+        Assert.assertEquals(0, list.indexOf(k0));
+        Assert.assertEquals(-1, list.indexOf(k3));
+        Assert.assertEquals(2, list.indexOf(k2));
     }
 
     /* */
@@ -352,12 +355,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         list.add((KType) null);
-        assertEquals(5, list.lastIndexOf(null));
+        Assert.assertEquals(5, list.lastIndexOf(null));
         /*! #end !*/
 
-        assertEquals2(4, list.lastIndexOf(k0));
-        assertEquals2(-1, list.lastIndexOf(k3));
-        assertEquals2(2, list.lastIndexOf(k2));
+        TestUtils.assertEquals2(4, list.lastIndexOf(k0));
+        TestUtils.assertEquals2(-1, list.lastIndexOf(k3));
+        TestUtils.assertEquals2(2, list.lastIndexOf(k2));
     }
 
     /* */
@@ -365,11 +368,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testEnsureCapacity()
     {
         list.ensureCapacity(100);
-        assertTrue(list.buffer.length >= 100);
+        Assert.assertTrue(list.buffer.length >= 100);
 
         list.ensureCapacity(1000);
         list.ensureCapacity(1000);
-        assertTrue(list.buffer.length >= 1000);
+        Assert.assertTrue(list.buffer.length >= 1000);
     }
 
     @Test
@@ -379,11 +382,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         Arrays.fill(list.buffer, k1);
 
         list.resize(10);
-        assertEquals(10, list.size());
+        Assert.assertEquals(10, list.size());
 
         for (int i = 0; i < list.size(); i++) {
 
-            assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.get(i));
+            TestUtils.assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.get(i));
 
         }
 
@@ -393,12 +396,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             list.set(i, k1);
 
         list.resize(5);
-        assertEquals(5, list.size());
+        Assert.assertEquals(5, list.size());
 
         for (int i = list.size(); i < list.buffer.length; i++) {
             //only objects get cleared for GC sake.
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.buffer[i]);
+            TestUtils.assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.buffer[i]);
             /*! #end !*/
         }
 
@@ -410,7 +413,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(1, 2));
         list.trimToSize();
-        assertEquals(2, list.buffer.length);
+        Assert.assertEquals(2, list.buffer.length);
     }
 
     /* */
@@ -419,9 +422,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray(1, 2));
         list.release();
-        assertEquals(0, list.size());
+        Assert.assertEquals(0, list.size());
         list.add(asArray(1, 2));
-        assertEquals(2, list.size());
+        Assert.assertEquals(2, list.size());
     }
 
     /* */
@@ -437,12 +440,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         for (int i = 0; i < count; i++)
             list.add(cast(i));
 
-        assertEquals(count, list.size());
+        Assert.assertEquals(count, list.size());
 
         for (int i = 0; i < count; i++)
-            assertEquals2(cast(i), list.get(i));
+            TestUtils.assertEquals2(cast(i), list.get(i));
 
-        assertTrue("Buffer size: 510 <= " + list.buffer.length,
+        Assert.assertTrue("Buffer size: 510 <= " + list.buffer.length,
                 list.buffer.length <= count + maxGrowth);
     }
 
@@ -452,21 +455,21 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(asArray( 0, 1, 2, 3));
         int count = 0;
-        for (KTypeCursor<KType> cursor : list)
+        for (final KTypeCursor<KType> cursor : list)
         {
             count++;
-            assertEquals2(list.get(cursor.index), cursor.value);
-            assertEquals2(list.buffer[cursor.index], cursor.value);
+            TestUtils.assertEquals2(list.get(cursor.index), cursor.value);
+            TestUtils.assertEquals2(list.buffer[cursor.index], cursor.value);
         }
-        assertEquals(count, list.size());
+        Assert.assertEquals(count, list.size());
 
         count = 0;
         list.resize(0);
-        for (@SuppressWarnings("unused") KTypeCursor<KType> cursor : list)
+        for (@SuppressWarnings("unused") final KTypeCursor<KType> cursor : list)
         {
             count++;
         }
-        assertEquals(0, count);
+        Assert.assertEquals(0, count);
     }
 
     /* */
@@ -474,7 +477,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testIterator()
     {
         list.add(asArray( 0, 1, 2, 3));
-        Iterator<KTypeCursor<KType>> iterator = list.iterator();
+        final Iterator<KTypeCursor<KType>> iterator = list.iterator();
         int count = 0;
         while (iterator.hasNext())
         {
@@ -484,10 +487,10 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             iterator.next();
             count++;
         }
-        assertEquals(count, list.size());
+        Assert.assertEquals(count, list.size());
 
         list.resize(0);
-        assertFalse(list.iterator().hasNext());
+        Assert.assertFalse(list.iterator().hasNext());
     }
 
     /* */
@@ -498,13 +501,14 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         final IntHolder holder = new IntHolder();
         list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
-            public void apply(KType v)
+            @Override
+            public void apply(final KType v)
             {
-                assertEquals2(v, list.get(index++));
+                TestUtils.assertEquals2(v, list.get(index++));
                 holder.value = index;
             }
         });
-        assertEquals(holder.value, list.size());
+        Assert.assertEquals(holder.value, list.size());
     }
 
     /* */
@@ -512,14 +516,15 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testForEachReturnValueFromAnonymousClass()
     {
         list.add(asArray( 1, 2, 3));
-        int result = list.forEach(new KTypeProcedure<KType>() {
+        final int result = list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
-            public void apply(KType v)
+            @Override
+            public void apply(final KType v)
             {
-                assertEquals2(v, list.get(index++));
+                TestUtils.assertEquals2(v, list.get(index++));
             }
         }).index;
-        assertEquals(result, list.size());
+        Assert.assertEquals(result, list.size());
     }
 
     /* */
@@ -538,9 +543,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testFrom()
     {
-        KTypeArrayList<KType> variable = KTypeArrayList.from(k1, k2, k3);
-        assertEquals(3, variable.size());
-        assertListEquals(variable.toArray(), 1, 2, 3);
+        final KTypeArrayList<KType> variable = KTypeArrayList.from(k1, k2, k3);
+        Assert.assertEquals(3, variable.size());
+        TestUtils.assertListEquals(variable.toArray(), 1, 2, 3);
     }
 
     /* */
@@ -550,16 +555,16 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testHashCodeEquals()
     {
-        ObjectArrayList<Integer> l0 = ObjectArrayList.from();
-        assertEquals(1, l0.hashCode());
-        assertEquals(l0, ObjectArrayList.from());
+        final ObjectArrayList<Integer> l0 = ObjectArrayList.from();
+        Assert.assertEquals(1, l0.hashCode());
+        Assert.assertEquals(l0, ObjectArrayList.from());
 
-        KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, k2, k3);
-        KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, k2);
+        final KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, k2, k3);
+        final KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, k2);
         l2.add(k3);
 
-        assertEquals(l1.hashCode(), l2.hashCode());
-        assertEquals(l1, l2);
+        Assert.assertEquals(l1.hashCode(), l2.hashCode());
+        Assert.assertEquals(l1, l2);
     }
 
     /* */
@@ -569,12 +574,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testHashCodeEqualsWithOtherContainer()
     {
-        KTypeStack<KType> l1 = KTypeStack.from(k1, k2, k3);
-        KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, k2);
+        final KTypeStack<KType> l1 = KTypeStack.from(k1, k2, k3);
+        final KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, k2);
         l2.add(k3);
 
-        assertEquals(l1.hashCode(), l2.hashCode());
-        assertEquals(l1, l2);
+        Assert.assertEquals(l1.hashCode(), l2.hashCode());
+        Assert.assertEquals(l1, l2);
     }
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -582,11 +587,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @SuppressWarnings("unchecked")
     public void testHashCodeWithNulls()
     {
-        KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, null, k3);
-        KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, null, k3);
+        final KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, null, k3);
+        final KTypeArrayList<KType> l2 = KTypeArrayList.from(k1, null, k3);
 
-        assertEquals(l1.hashCode(), l2.hashCode());
-        assertEquals(l1, l2);
+        Assert.assertEquals(l1.hashCode(), l2.hashCode());
+        Assert.assertEquals(l1, l2);
     }
     /*! #end !*/
 
@@ -594,9 +599,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testToArrayWithClass()
     {
-        KTypeArrayList<Integer> l1 = KTypeArrayList.from(1, 2, 3);
-        Integer[] result = l1.toArray(Integer.class);
-        assertArrayEquals(new Integer [] {1, 2, 3}, result); // dummy
+        final KTypeArrayList<Integer> l1 = KTypeArrayList.from(1, 2, 3);
+        final Integer[] result = l1.toArray(Integer.class);
+        Assert.assertArrayEquals(new Integer [] {1, 2, 3}, result); // dummy
     }
     /*! #end !*/
 
@@ -605,9 +610,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testToArray()
     {
-        KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, k2, k3);
-        Object[] result = l1.toArray();
-        assertArrayEquals(new Object [] {k1, k2, k3}, result);
+        final KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, k2, k3);
+        final Object[] result = l1.toArray();
+        Assert.assertArrayEquals(new Object [] {k1, k2, k3}, result);
     }
     /*! #end !*/
 
@@ -620,11 +625,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         list.add(k1, k2, k3);
 
-        KTypeArrayList<KType> cloned = list.clone();
+        final KTypeArrayList<KType> cloned = list.clone();
         cloned.removeAllOccurrences(key1);
 
-        assertSortedListEquals(list.toArray(), key1, key2, key3);
-        assertSortedListEquals(cloned.toArray(), key2, key3);
+        TestUtils.assertSortedListEquals(list.toArray(), key1, key2, key3);
+        TestUtils.assertSortedListEquals(cloned.toArray(), key2, key3);
     }
 
     /* */
@@ -634,7 +639,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testToString()
     {
-        assertEquals("["
+        Assert.assertEquals("["
                 + key1 + ", "
                 + key2 + ", "
                 + key3 + "]", KTypeArrayList.from(k1, k2, k3).toString());
@@ -644,42 +649,42 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     public void testPooledIteratorForEach()
     {
         // Unbroken for-each loop
-        int TEST_SIZE = 10000;
-        long TEST_ROUNDS = 100;
+        final int TEST_SIZE = 10000;
+        final long TEST_ROUNDS = 100;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
 
-        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+        final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
 
             @Override
-            public void apply(KType value)
+            public void apply(final KType value)
             {
                 count += castType(value);
             }
         }).count;
 
         long testValue = 0;
-        long initialPoolSize = testContainer.valueIteratorPool.size();
+        final long initialPoolSize = testContainer.valueIteratorPool.size();
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             //for-each in test :
             testValue = 0;
-            for (KTypeCursor<KType> cursor : testContainer)
+            for (final KTypeCursor<KType> cursor : testContainer)
             {
                 //we consume 1 iterator for this loop
-                assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 testValue += castType(cursor.value);
             }
 
             //check checksum the iteration
-            assertEquals(checksum, testValue);
+            Assert.assertEquals(checksum, testValue);
 
             //iterator is returned to its pool
-            assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
         } //end for rounds
     }
 
@@ -688,24 +693,24 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         // for-each loop interrupted
 
-        int TEST_SIZE = 10000;
-        long TEST_ROUNDS = 100;
+        final int TEST_SIZE = 10000;
+        final long TEST_ROUNDS = 100;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
 
         int count = 0;
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             //for-each in test :
-            long initialPoolSize = testContainer.valueIteratorPool.size();
+            final long initialPoolSize = testContainer.valueIteratorPool.size();
 
             count = 0;
-            for (KTypeCursor<KType> cursor : testContainer)
+            for (final KTypeCursor<KType> cursor : testContainer)
             {
                 guard += castType(cursor.value);
                 //we consume 1 iterator for this loop, but reallocs can happen,
                 //so we can only say its != initialPoolSize
-                assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
+                Assert.assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
 
                 //brutally interrupt in the middle
                 if (count > TEST_SIZE / 2)
@@ -719,12 +724,12 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //iterator is NOT returned to its pool, due to the break.
             //reallocation could happen, so that the only testable thing
             //is that the size is != full pool
-            assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
+            Assert.assertTrue(initialPoolSize != testContainer.valueIteratorPool.size());
         } //end for rounds
 
         //Due to policy of the Iterator pool, the intended pool never get bigger that some limit
         //despite the Iterator leak.
-        assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
+        Assert.assertTrue(testContainer.valueIteratorPool.capacity() < IteratorPool.getMaxPoolSize() + 1);
     }
 
     @Test
@@ -732,33 +737,33 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         // for-each loop interrupted
 
-        int TEST_SIZE = 10000;
-        long TEST_ROUNDS = 100;
+        final int TEST_SIZE = 10000;
+        final long TEST_ROUNDS = 100;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
 
-        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+        final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
 
             @Override
-            public void apply(KType value)
+            public void apply(final KType value)
             {
                 count += castType(value);
             }
         }).count;
 
         long testValue = 0;
-        int startingPoolSize = testContainer.valueIteratorPool.size();
+        final int startingPoolSize = testContainer.valueIteratorPool.size();
 
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             //Classical iterator loop, with manually allocated Iterator
-            int initialPoolSize = testContainer.valueIteratorPool.size();
+            final int initialPoolSize = testContainer.valueIteratorPool.size();
 
-            KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
+            final KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
 
-            assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
             testValue = 0;
             while (loopIterator.hasNext())
@@ -767,14 +772,14 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             } //end IteratorLoop
 
             //iterator is returned automatically to its pool, by normal iteration termination
-            assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
 
             //checksum
-            assertEquals(checksum, testValue);
+            Assert.assertEquals(checksum, testValue);
         } //end for rounds
 
         // pool initial size is untouched anyway
-        assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+        Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
     @Test
@@ -782,21 +787,21 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         // for-each loop interrupted
 
-        int TEST_SIZE = 10000;
-        long TEST_ROUNDS = 100;
+        final int TEST_SIZE = 10000;
+        final long TEST_ROUNDS = 100;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
-        int startingPoolSize = testContainer.valueIteratorPool.size();
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
         for (int round = 0; round < TEST_ROUNDS; round++)
         {
             //Classical iterator loop, with manually allocated Iterator
-            long initialPoolSize = testContainer.valueIteratorPool.size();
+            final long initialPoolSize = testContainer.valueIteratorPool.size();
 
-            KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
+            final KTypeArrayList<KType>.ValueIterator loopIterator = testContainer.iterator();
 
-            assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
             count = 0;
             while (loopIterator.hasNext())
@@ -812,40 +817,40 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             } //end IteratorLoop
 
             //iterator is NOT returned to its pool, due to the break.
-            assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize - 1, testContainer.valueIteratorPool.size());
 
             //manual return to the pool
             loopIterator.release();
 
             //now the pool is restored
-            assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
+            Assert.assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
 
         } //end for rounds
 
         // pool initial size is untouched anyway
-        assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+        Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
     @Test
     public void testPooledIteratorExceptionIteratorLoop()
     {
-        int TEST_SIZE = 10000;
-        long TEST_ROUNDS = 100;
+        final int TEST_SIZE = 10000;
+        final long TEST_ROUNDS = 100;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
 
-        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+        final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
 
             @Override
-            public void apply(KType value)
+            public void apply(final KType value)
             {
                 count += castType(value);
             }
         }).count;
 
-        int startingPoolSize = testContainer.valueIteratorPool.size();
+        final int startingPoolSize = testContainer.valueIteratorPool.size();
 
         int count = 0;
         KTypeArrayList<KType>.ValueIterator loopIterator = null;
@@ -855,7 +860,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             try
             {
                 loopIterator = testContainer.iterator();
-                assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 guard = 0;
                 count = 0;
@@ -872,56 +877,56 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
                 } //end while
 
                 //iterator is returned to its pool in case of normal loop termination
-                assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
-                assertEquals(checksum, guard);
+                Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(checksum, guard);
 
-            } catch (Exception e)
+            } catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
-                assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 //manual return to the pool then
                 loopIterator.release();
 
                 //now the pool is restored
-                assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
             }
         } //end for rounds
 
         // pool initial size is untouched anyway
-        assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
+        Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
     }
 
     @Test
     public void testPooledIteratorExceptionSafe()
     {
-        int TEST_SIZE = 224171;
-        long TEST_ROUNDS = 15;
+        final int TEST_SIZE = 224171;
+        final long TEST_ROUNDS = 15;
 
-        KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
+        final KTypeArrayList<KType> testContainer = createArrayWithOrderedData(TEST_SIZE);
 
-        long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
+        final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
 
             @Override
-            public void apply(KType value)
+            public void apply(final KType value)
             {
                 count += castType(value);
             }
         }).count;
 
 
-        int initialPoolSize = testContainer.valueIteratorPool.size();
+        final int initialPoolSize = testContainer.valueIteratorPool.size();
 
         //start with a non full pool, remove 3 elements
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake = testContainer.iterator();
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake2 = testContainer.iterator();
-        AbstractIterator<KTypeCursor<KType>> loopIteratorFake3 = testContainer.iterator();
+        final AbstractIterator<KTypeCursor<KType>> loopIteratorFake = testContainer.iterator();
+        final AbstractIterator<KTypeCursor<KType>> loopIteratorFake2 = testContainer.iterator();
+        final AbstractIterator<KTypeCursor<KType>> loopIteratorFake3 = testContainer.iterator();
 
-        int startingTestPoolSize = testContainer.valueIteratorPool.size();
+        final int startingTestPoolSize = testContainer.valueIteratorPool.size();
 
-        assertEquals(initialPoolSize - 3, startingTestPoolSize);
+        Assert.assertEquals(initialPoolSize - 3, startingTestPoolSize);
 
         int count = 0;
         KTypeArrayList<KType>.ValueIterator loopIterator = null;
@@ -931,7 +936,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             try
             {
                 loopIterator = testContainer.iterator();
-                assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 guard = 0;
                 count = 0;
@@ -949,36 +954,36 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
                 } //end while
 
                 //iterator is returned to its pool in case of normal loop termination
-                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
-                assertEquals(checksum, guard);
+                Assert.assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(checksum, guard);
 
                 //still, try to return it ....
                 loopIterator.release();
 
                 //nothing has changed
-                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
-                assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingTestPoolSize - 1, testContainer.valueIteratorPool.size());
 
                 //manual return to the pool then
                 loopIterator.release();
 
                 //now the pool is restored
-                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
 
                 //continue to try to release...
                 loopIterator.release();
 
                 //nothing has changed
-                assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+                Assert.assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
             }
         } //end for rounds
 
         // pool initial size is untouched anyway
-        assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
+        Assert.assertEquals(startingTestPoolSize, testContainer.valueIteratorPool.size());
 
         //finally return the fake ones, several times
         loopIteratorFake.release();
@@ -990,17 +995,17 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         loopIteratorFake3.release();
         loopIteratorFake3.release();
 
-        assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
+        Assert.assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
     }
 
     @Test
     public void testSort()
     {
         //natural ordering comparator
-        KTypeComparator<KType> comp = new KTypeComparator<KType>() {
+        final KTypeComparator<KType> comp = new KTypeComparator<KType>() {
 
             @Override
-            public int compare(KType e1, KType e2)
+            public int compare(final KType e1, final KType e2)
             {
                 int res = 0;
 
@@ -1017,7 +1022,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             }
         };
 
-        int TEST_SIZE = (int) 1e6;
+        final int TEST_SIZE = (int) 1e6;
         //A) Sort an array of random values of primitive types
 
         /*! #if ($TemplateOptions.KTypePrimitive)
@@ -1048,7 +1053,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
      * @param actual
      * @param length
      */
-    private void assertOrder(KTypeArrayList<KType> order, int startIndex, int endIndex)
+    private void assertOrder(final KTypeArrayList<KType> order, final int startIndex, final int endIndex)
     {
         for (int i = startIndex + 1; i < endIndex; i++)
         {
@@ -1060,9 +1065,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         }
     }
 
-    private KTypeArrayList<KType> createArrayWithOrderedData(int size)
+    private KTypeArrayList<KType> createArrayWithOrderedData(final int size)
     {
-        KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
+        final KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
 
         for (int i = 0; i < size; i++)
         {
@@ -1072,11 +1077,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         return newArray;
     }
 
-    private KTypeArrayList<KType> createArrayWithRandomData(int size, long randomSeed)
+    private KTypeArrayList<KType> createArrayWithRandomData(final int size, final long randomSeed)
     {
-        Random prng = new Random(randomSeed);
+        final Random prng = new Random(randomSeed);
 
-        KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
+        final KTypeArrayList<KType> newArray = KTypeArrayList.newInstanceWithCapacity(KTypeArrayList.DEFAULT_CAPACITY);
 
         for (int i = 0; i < size; i++)
         {

@@ -66,6 +66,7 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  * @author This code is inspired by the collaboration and implementation in the <a
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
  */
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeOpenHashMap<KType, VType>
 implements KTypeVTypeMap<KType, VType>, Cloneable
@@ -175,7 +176,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param initialCapacity Initial capacity (greater than zero and automatically
      *            rounded to the next power of two).
      */
-    public KTypeVTypeOpenHashMap(int initialCapacity)
+    public KTypeVTypeOpenHashMap(final int initialCapacity)
     {
         this(initialCapacity, KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR);
     }
@@ -191,7 +192,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      *
      * @param loadFactor The load factor (greater than zero and smaller than 1).
      */
-    public KTypeVTypeOpenHashMap(int initialCapacity, float loadFactor)
+    public KTypeVTypeOpenHashMap(int initialCapacity, final float loadFactor)
     {
         initialCapacity = Math.max(initialCapacity, KTypeVTypeOpenHashMap.MIN_CAPACITY);
 
@@ -201,7 +202,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 : "Load factor must be between (0, 1].";
 
         this.loadFactor = loadFactor;
-        allocateBuffers(roundCapacity(initialCapacity));
+        allocateBuffers(HashContainerUtils.roundCapacity(initialCapacity));
     }
 
     /* #if ($TemplateOptions.KTypeGeneric) */
@@ -218,7 +219,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * 
      * @param strategy {@link HashingStrategy<KType>} which customizes the equality and hash code for KType objects.
      */
-    public KTypeVTypeOpenHashMap(int initialCapacity, float loadFactor , HashingStrategy<KType> strategy)
+    public KTypeVTypeOpenHashMap(final int initialCapacity, final float loadFactor , final HashingStrategy<KType> strategy)
     {
         this(initialCapacity, loadFactor);
 
@@ -235,7 +236,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Create a hash map from all key-value pairs of another container.
      */
-    public KTypeVTypeOpenHashMap(KTypeVTypeAssociativeContainer<KType, VType> container)
+    public KTypeVTypeOpenHashMap(final KTypeVTypeAssociativeContainer<KType, VType> container)
     {
         this((int)(container.size() * (1 + KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR)));
         putAll(container);
@@ -245,7 +246,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public VType put(KType key, VType value)
+    public VType put(final KType key, final VType value)
     {
         assert assigned < allocated.length;
 
@@ -253,7 +254,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<KType> strategy = this.hashStrategy;
-        int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
@@ -292,10 +293,10 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     @Override
     public int putAll(
-            KTypeVTypeAssociativeContainer<? extends KType, ? extends VType> container)
+            final KTypeVTypeAssociativeContainer<? extends KType, ? extends VType> container)
     {
         final int count = this.assigned;
-        for (KTypeVTypeCursor<? extends KType, ? extends VType> c : container)
+        for (final KTypeVTypeCursor<? extends KType, ? extends VType> c : container)
         {
             put(c.key, c.value);
         }
@@ -307,10 +308,10 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     @Override
     public int putAll(
-            Iterable<? extends KTypeVTypeCursor<? extends KType, ? extends VType>> iterable)
+            final Iterable<? extends KTypeVTypeCursor<? extends KType, ? extends VType>> iterable)
     {
         final int count = this.assigned;
-        for (KTypeVTypeCursor<? extends KType, ? extends VType> c : iterable)
+        for (final KTypeVTypeCursor<? extends KType, ? extends VType> c : iterable)
         {
             put(c.key, c.value);
         }
@@ -329,7 +330,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @return <code>true</code> if <code>key</code> did not exist and <code>value</code>
      * was placed in the map.
      */
-    public boolean putIfAbsent(KType key, VType value)
+    public boolean putIfAbsent(final KType key, final VType value)
     {
         if (!containsKey(key))
         {
@@ -361,7 +362,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param additionValue The value to add to the existing value if <code>key</code> exists.
      * @return Returns the current value associated with <code>key</code> (after changes).
      */
-    /*! #if ($TemplateOptions.VTypePrimitive && $TemplateOptions.KTypePrimitive)
+    /*! #if ($TemplateOptions.VTypeNumeric && $TemplateOptions.KTypePrimitive)
     public VType putOrAdd(KType key, VType putValue, VType additionValue)
     {
         assert assigned < allocated.length;
@@ -392,7 +393,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
     #end !*/
 
-    /*! #if ($TemplateOptions.VTypePrimitive && $TemplateOptions.KTypeGeneric)
+    /*! #if ($TemplateOptions.VTypeNumeric && $TemplateOptions.KTypeGeneric)
     public VType putOrAdd(KType key, VType putValue, VType additionValue)
     {
         assert assigned < allocated.length;
@@ -443,7 +444,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param additionValue The value to put or add to the existing value if <code>key</code> exists.
      * @return Returns the current value associated with <code>key</code> (after changes).
      */
-    /*! #if ($TemplateOptions.VTypePrimitive)
+    /*! #if ($TemplateOptions.VTypeNumeric)
     public VType addTo(KType key, VType additionValue)
     {
         return putOrAdd(key, additionValue, additionValue);
@@ -453,7 +454,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Expand the internal storage buffers (capacity) and rehash.
      */
-    private void expandAndPut(KType pendingKey, VType pendingValue, int freeSlot)
+    private void expandAndPut(final KType pendingKey, final VType pendingValue, final int freeSlot)
     {
         assert assigned == resizeAt;
         assert !allocated[freeSlot];
@@ -464,7 +465,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         final VType   [] oldValues    = this.values;
         final boolean [] oldAllocated = this.allocated;
 
-        allocateBuffers(nextCapacity(keys.length));
+        allocateBuffers(HashContainerUtils.nextCapacity(keys.length));
 
         // We have succeeded at allocating new data so insert the pending key/value at
         // the free slot in the old arrays before rehashing.
@@ -490,7 +491,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 final VType v = oldValues[i];
 
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                int slot = rehashSpecificHash(k, perturbation, strategy) & mask;
+                int slot = Internals.rehashSpecificHash(k, perturbation, strategy) & mask;
                 /*! #else
                 int slot = rehash(k, perturbation) & mask;
                 #end !*/
@@ -511,11 +512,11 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * 
      * @param capacity New capacity (must be a power of two).
      */
-    private void allocateBuffers(int capacity)
+    private void allocateBuffers(final int capacity)
     {
-        KType [] keys = Intrinsics.newKTypeArray(capacity);
-        VType [] values = Intrinsics.newVTypeArray(capacity);
-        boolean [] allocated = new boolean [capacity];
+        final KType [] keys = Intrinsics.newKTypeArray(capacity);
+        final VType [] values = Intrinsics.newVTypeArray(capacity);
+        final boolean [] allocated = new boolean [capacity];
 
         this.keys = keys;
         this.values = values;
@@ -538,7 +539,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * capacities. The speed gain is a result of faster rehash operation (keys are mostly
      * in order).
      */
-    protected int computePerturbationValue(int capacity)
+    protected int computePerturbationValue(final int capacity)
     {
         return HashContainerUtils.PERTURBATIONS[Integer.numberOfLeadingZeros(capacity)];
     }
@@ -547,13 +548,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public VType remove(KType key)
+    public VType remove(final KType key)
     {
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<KType> strategy = this.hashStrategy;
-        int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
@@ -567,7 +568,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 #end !*/)
             {
                 assigned--;
-                VType v = values[slot];
+                final VType v = values[slot];
                 shiftConflictingKeys(slot);
                 return v;
             }
@@ -598,7 +599,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             while (allocated[slotCurr])
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                slotOther = rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
+                slotOther = Internals.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
                 /*! #else
                 slotOther = rehash(keys[slotCurr], perturbation) & mask;
                 #end !*/
@@ -640,11 +641,11 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public int removeAll(KTypeContainer<? extends KType> container)
+    public int removeAll(final KTypeContainer<? extends KType> container)
     {
         final int before = this.assigned;
 
-        for (KTypeCursor<? extends KType> cursor : container)
+        for (final KTypeCursor<? extends KType> cursor : container)
         {
             remove(cursor.value);
         }
@@ -656,7 +657,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public int removeAll(KTypePredicate<? super KType> predicate)
+    public int removeAll(final KTypePredicate<? super KType> predicate)
     {
         final int before = this.assigned;
 
@@ -691,13 +692,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * </pre>
      */
     @Override
-    public VType get(KType key)
+    public VType get(final KType key)
     {
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<KType> strategy = this.hashStrategy;
-        int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
@@ -764,7 +765,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @see #containsKey
      * @return Returns the previous value stored under the given key.
      */
-    public VType lset(VType key)
+    public VType lset(final VType key)
     {
         assert lastSlot >= 0 : "Call containsKey() first.";
         assert allocated[lastSlot] : "Last call to exists did not have any associated value.";
@@ -808,13 +809,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * </pre>#end
      */
     @Override
-    public boolean containsKey(KType key)
+    public boolean containsKey(final KType key)
     {
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<KType> strategy = this.hashStrategy;
-        int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else int slot = rehash(key, perturbation) & mask;
         #end !*/
         final int wrappedAround = slot;
@@ -875,6 +876,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * <p>Note that an empty container may still contain many deleted keys (that occupy buffer
      * space). Adding even a single element to such a container may cause rehashing.</p>
      */
+    @Override
     public boolean isEmpty()
     {
         return size() == 0;
@@ -887,13 +889,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     public int hashCode()
     {
         int h = 0;
-        for (KTypeVTypeCursor<KType, VType> c : this)
+        for (final KTypeVTypeCursor<KType, VType> c : this)
         {
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
             //This hash is an intrinsic property of the container contents,
             //consequently is independent from the HashStrategy, so do not use it !
             /*! #end !*/
-            h += rehash(c.key) + rehash(c.value);
+            h += Internals.rehash(c.key) + Internals.rehash(c.value);
         }
         return h;
     }
@@ -914,7 +916,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      */
     /*! #end !*/
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
         if (obj != null)
         {
@@ -932,6 +934,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             {
                 /* #if ($TemplateOptions.AnyGeneric) */
                 @SuppressWarnings("unchecked")
+                final
                 /* #end */
                 KTypeVTypeMap<KType, VType> other = (KTypeVTypeMap<KType, VType>) obj;
                 if (other.size() == this.size())
@@ -944,7 +947,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
 
                         if (other.containsKey(c.key))
                         {
-                            VType v = other.get(c.key);
+                            final VType v = other.get(c.key);
                             if (Intrinsics.equalsVType(c.value, v))
                             {
                                 continue;
@@ -1008,7 +1011,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 }
 
                 @Override
-                public void initialize(EntryIterator obj) {
+                public void initialize(final EntryIterator obj) {
                     obj.cursor.index = -1;
                 }
             });
@@ -1017,6 +1020,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      * @return
      */
+    @Override
     public EntryIterator iterator()
     {
         //return new EntryIterator();
@@ -1027,7 +1031,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@inheritDoc}
      */
     @Override
-    public <T extends KTypeVTypeProcedure<? super KType, ? super VType>> T forEach(T procedure)
+    public <T extends KTypeVTypeProcedure<? super KType, ? super VType>> T forEach(final T procedure)
     {
         final KType [] keys = this.keys;
         final VType [] values = this.values;
@@ -1062,13 +1066,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 KTypeVTypeOpenHashMap.this;
 
         @Override
-        public boolean contains(KType e)
+        public boolean contains(final KType e)
         {
             return containsKey(e);
         }
 
         @Override
-        public <T extends KTypeProcedure<? super KType>> T forEach(T procedure)
+        public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
         {
             final KType [] localKeys = owner.keys;
             final boolean [] localStates = owner.allocated;
@@ -1083,7 +1087,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public <T extends KTypePredicate<? super KType>> T forEach(T predicate)
+        public <T extends KTypePredicate<? super KType>> T forEach(final T predicate)
         {
             final KType [] localKeys = owner.keys;
             final boolean [] localStates = owner.allocated;
@@ -1100,6 +1104,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             return predicate;
         }
 
+        @Override
         public KeysIterator iterator()
         {
             //return new KeysIterator();
@@ -1119,7 +1124,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public int removeAll(KTypePredicate<? super KType> predicate)
+        public int removeAll(final KTypePredicate<? super KType> predicate)
         {
             return owner.removeAll(predicate);
         }
@@ -1150,13 +1155,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                     }
 
                     @Override
-                    public void initialize(KeysIterator obj) {
+                    public void initialize(final KeysIterator obj) {
                         obj.cursor.index = -1;
                     }
                 });
 
         @Override
-        public KType[] toArray(KType[] target)
+        public KType[] toArray(final KType[] target)
         {
             final boolean[] alloc = owner.allocated;
 
@@ -1231,7 +1236,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public boolean contains(VType value)
+        public boolean contains(final VType value)
         {
             // This is a linear scan over the values, but it's in the contract, so be it.
             final boolean [] allocated = owner.allocated;
@@ -1248,7 +1253,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public <T extends KTypeProcedure<? super VType>> T forEach(T procedure)
+        public <T extends KTypeProcedure<? super VType>> T forEach(final T procedure)
         {
             final boolean [] allocated = owner.allocated;
             final VType [] values = owner.values;
@@ -1263,7 +1268,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public <T extends KTypePredicate<? super VType>> T forEach(T predicate)
+        public <T extends KTypePredicate<? super VType>> T forEach(final T predicate)
         {
             final boolean [] allocated = owner.allocated;
             final VType [] values = owner.values;
@@ -1280,6 +1285,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             return predicate;
         }
 
+        @Override
         public ValuesIterator iterator()
         {
             // return new ValuesIterator();
@@ -1287,13 +1293,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
 
         @Override
-        public int removeAllOccurrences(VType e)
+        public int removeAllOccurrences(final VType e)
         {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public int removeAll(KTypePredicate<? super VType> predicate)
+        public int removeAll(final KTypePredicate<? super VType> predicate)
         {
             throw new UnsupportedOperationException();
         }
@@ -1317,13 +1323,13 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                     }
 
                     @Override
-                    public void initialize(ValuesIterator obj) {
+                    public void initialize(final ValuesIterator obj) {
                         obj.cursor.index = -1;
                     }
                 });
 
         @Override
-        public VType[] toArray(VType[] target)
+        public VType[] toArray(final VType[] target)
         {
             final boolean[] alloc = owner.allocated;
 
@@ -1385,6 +1391,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     {
         /* #if ($TemplateOptions.AnyGeneric) */
         @SuppressWarnings("unchecked")
+        final
         /* #end */
         KTypeVTypeOpenHashMap<KType, VType> cloned =
         new KTypeVTypeOpenHashMap<KType, VType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
@@ -1410,7 +1417,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         buffer.append("[");
 
         boolean first = true;
-        for (KTypeVTypeCursor<KType, VType> cursor : this)
+        for (final KTypeVTypeCursor<KType, VType> cursor : this)
         {
             if (!first) buffer.append(", ");
             buffer.append(cursor.key);
@@ -1425,12 +1432,12 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Creates a hash map from two index-aligned arrays of key-value pairs.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> from(KType [] keys, VType [] values)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> from(final KType [] keys, final VType [] values)
     {
         if (keys.length != values.length)
             throw new IllegalArgumentException("Arrays of keys and values must have an identical length.");
 
-        KTypeVTypeOpenHashMap<KType, VType> map = new KTypeVTypeOpenHashMap<KType, VType>();
+        final KTypeVTypeOpenHashMap<KType, VType> map = new KTypeVTypeOpenHashMap<KType, VType>();
         for (int i = 0; i < keys.length; i++)
         {
             map.put(keys[i], values[i]);
@@ -1441,7 +1448,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     /**
      * Create a hash map from another associative container.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> from(KTypeVTypeAssociativeContainer<KType, VType> container)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> from(final KTypeVTypeAssociativeContainer<KType, VType> container)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(container);
     }
@@ -1464,7 +1471,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     {
         return new KTypeVTypeOpenHashMap<KType, VType>() {
             @Override
-            protected final int computePerturbationValue(int capacity)
+            protected final int computePerturbationValue(final int capacity)
             {
                 return 0;
             }
@@ -1475,7 +1482,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * Create a new hash map with initial capacity and load factor control. (constructor
      * shortcut).
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(int initialCapacity, float loadFactor)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(final int initialCapacity, final float loadFactor)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor);
     }
@@ -1485,11 +1492,11 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * {@link #computePerturbationValue(int)}). This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(final int initialCapacity, final float loadFactor)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor) {
             @Override
-            protected final int computePerturbationValue(int capacity)
+            protected final int computePerturbationValue(final int capacity)
             {
                 return 0;
             }
@@ -1501,7 +1508,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * Create a new hash map with full parameter control, using a specific hash strategy.
      * A strategy = null is equivalent at providing no strategy at all.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstance(final int initialCapacity, final float loadFactor, final HashingStrategy<KType> strategy)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor, strategy);
     }
@@ -1513,11 +1520,11 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
-    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(int initialCapacity, float loadFactor, HashingStrategy<KType> strategy)
+    public static <KType, VType> KTypeVTypeOpenHashMap<KType, VType> newInstanceWithoutPerturbations(final int initialCapacity, final float loadFactor, final HashingStrategy<KType> strategy)
     {
         return new KTypeVTypeOpenHashMap<KType, VType>(initialCapacity, loadFactor, strategy) {
             @Override
-            protected final int computePerturbationValue(int capacity)
+            protected final int computePerturbationValue(final int capacity)
             {
                 return 0;
             }
@@ -1547,7 +1554,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * in containers methods returning "default value"
      * @return
      */
-    public void setDefaultValue(VType defaultValue)
+    public void setDefaultValue(final VType defaultValue)
     {
         this.defaultValue = defaultValue;
     }

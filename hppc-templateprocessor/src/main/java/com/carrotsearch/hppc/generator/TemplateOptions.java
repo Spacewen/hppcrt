@@ -12,15 +12,18 @@ public class TemplateOptions
 {
     public Type ktype;
     public Type vtype;
-    
+
+    public boolean doNotGenerateKType = false;
+    public boolean doNotGenerateVType = false;
+
     public File sourceFile;
 
-    public TemplateOptions(Type ktype)
+    public TemplateOptions(final Type ktype)
     {
         this(ktype, null);
     }
 
-    public TemplateOptions(Type ktype, Type vtype)
+    public TemplateOptions(final Type ktype, final Type vtype)
     {
         this.ktype = ktype;
         this.vtype = vtype;
@@ -31,9 +34,29 @@ public class TemplateOptions
         return ktype != Type.GENERIC;
     }
 
+    public boolean isKTypeNumeric()
+    {
+        return (ktype != Type.GENERIC && ktype != Type.BOOLEAN);
+    }
+
+    public boolean isKTypeBoolean()
+    {
+        return (ktype == Type.BOOLEAN);
+    }
+
     public boolean isVTypePrimitive()
     {
         return getVType() != Type.GENERIC;
+    }
+
+    public boolean isVTypeNumeric()
+    {
+        return (getVType() != Type.GENERIC && getVType() != Type.BOOLEAN);
+    }
+
+    public boolean isVTypeBoolean()
+    {
+        return (vtype == Type.BOOLEAN);
     }
 
     public boolean isKTypeGeneric()
@@ -45,6 +68,7 @@ public class TemplateOptions
     {
         return getVType() == Type.GENERIC;
     }
+
 
     public boolean isAllGeneric()
     {
@@ -76,25 +100,48 @@ public class TemplateOptions
         if (vtype == null) throw new RuntimeException("VType is null.");
         return vtype;
     }
-    
+
+    public void doNotGenerateKType(final String notGeneratingType)
+    {
+        this.doNotGenerateKType = (Type.valueOf(notGeneratingType) == this.ktype);
+    }
+
+    public void doNotGenerateVType(final String notGeneratingType)
+    {
+        if (this.vtype != null)
+        {
+            this.doNotGenerateVType = (Type.valueOf(notGeneratingType) == this.vtype);
+        }
+    }
+
+    public boolean isDoNotGenerateKType()
+    {
+        return this.doNotGenerateKType;
+    }
+
+    public boolean isDoNotGenerateVType()
+    {
+        return this.doNotGenerateVType;
+    }
+
     /**
      * Returns the current time in ISO format.
      */
     public String getTimeNow()
     {
-        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
         return format.format(new Date());
     }
-    
+
     public String getSourceFile()
     {
         return sourceFile.getName();
     }
-    
+
     public String getGeneratedAnnotation()
     {
-        return "@javax.annotation.Generated(date = \"" + 
-            getTimeNow() + "\", value = \"HPPC generated from: " +
-            sourceFile.getName() + "\")";
+        return "@javax.annotation.Generated(date = \"" +
+                getTimeNow() + "\", value = \"HPPC generated from: " +
+                sourceFile.getName() + "\")";
     }
 }

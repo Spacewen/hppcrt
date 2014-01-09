@@ -5,6 +5,7 @@ import com.carrotsearch.hppc.cursors.KTypeVTypeCursor;
 /**
  * An associative container with unique binding from keys to a single value.
  */
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeVTypeMap<KType, VType>
 extends KTypeVTypeAssociativeContainer<KType, VType>
@@ -55,6 +56,7 @@ extends KTypeVTypeAssociativeContainer<KType, VType>
      * <tt>true</tt> if and only if the specified object is also a
      * {@link KTypeVTypeMap} and both objects contains exactly the same key-value pairs.
      */
+    @Override
     public boolean equals(Object obj);
 
     /**
@@ -63,5 +65,6 @@ extends KTypeVTypeAssociativeContainer<KType, VType>
      * within the set). Because sum is commutative, this ensures that different order
      * of elements in a set does not affect the hash code.
      */
+    @Override
     public int hashCode();
 }

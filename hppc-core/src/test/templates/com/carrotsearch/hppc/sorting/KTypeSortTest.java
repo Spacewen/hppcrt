@@ -14,7 +14,6 @@ import com.carrotsearch.hppc.AbstractKTypeTest;
  */
 public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
 {
-
     enum DataDistribution
     {
         ORDERED, SAWTOOTH, RANDOM, STAGGER, PLATEAU, SHUFFLE
@@ -45,22 +44,22 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
     /**
      * Run a "sort certification" test.
      */
-    private void sortCertification(Algorithm algorithm)
+    private void sortCertification(final Algorithm algorithm)
     {
-        int[] n_values =
+        final int[] n_values =
             {
                 100, 1023, 1024, 1025, 1024 * 32
             };
 
-        for (int n : n_values)
+        for (final int n : n_values)
         {
             for (int m = 1; m < 2 * n; m *= 2)
             {
-                for (DataDistribution dist : DataDistribution.values())
+                for (final DataDistribution dist : DataDistribution.values())
                 {
-                    KType[] x = generate(dist, n, m);
+                    final KType[] x = generate(dist, n, m);
 
-                    String testName = dist + "-" + n + "-" + m;
+                    final String testName = dist + "-" + n + "-" + m;
                     testOn(algorithm, x, testName + "-normal");
                     testOn(algorithm, reverse(x, 0, n), testName + "-reversed");
                     testOn(algorithm, reverse(x, 0, n / 2), testName + "-reversed_front");
@@ -77,7 +76,7 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
      * 
      * @param m Step for sawtooth, stagger, plateau and shuffle.
      */
-    private KType[] generate(final DataDistribution dist, int n, int m)
+    private KType[] generate(final DataDistribution dist, final int n, final int m)
     {
         // Start from a constant seed (repeatable tests).
         final Random rand = new Random(0xBADCAFE);
@@ -118,7 +117,13 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
     private KType[] sort(KType[] x)
     {
         x = copy(x);
+
+        /*! #if (! $TemplateOptions.KTypeBoolean) !*/
         Arrays.sort(x);
+        /*! #else
+        x = specialBooleanSort(x);
+        #end !*/
+
         return x;
     }
 
@@ -131,12 +136,12 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
         return x;
     }
 
-    private KType[] reverse(KType[] x, int start, int end)
+    private KType[] reverse(KType[] x, final int start, final int end)
     {
         x = copy(x);
         for (int i = start, j = end - 1; i < j; i++, j--)
         {
-            KType v = x[i];
+            final KType v = x[i];
             x[i] = x[j];
             x[j] = v;
         }
@@ -144,13 +149,13 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @SuppressWarnings("unchecked")
-    private void testOn(Algorithm algo, KType[] order, String testName)
+    private void testOn(final Algorithm algo, final KType[] order, final String testName)
     {
         //natural ordering comparator
-        KTypeComparator<KType> comp = new KTypeComparator<KType>() {
+        final KTypeComparator<KType> comp = new KTypeComparator<KType>() {
 
             @Override
-            public int compare(KType e1, KType e2)
+            public int compare(final KType e1, final KType e2)
             {
                 int res = 0;
 
@@ -173,7 +178,7 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
                 //the supplied KType[] are also Numbers in generics, so are
                 //Comparable
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                Comparable[] orderComparable = newComparableArray(order);
+                final Comparable[] orderComparable = newComparableArray(order);
                 /*! #else
                 KType[] orderComparable = (KType[]) order;
                 #end !*/
@@ -199,7 +204,7 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
      * @param actual
      * @param length
      */
-    private void assertOrder(final KType[] order, int length, String testName)
+    private void assertOrder(final KType[] order, final int length, final String testName)
     {
         for (int i = 1; i < length; i++)
         {
@@ -211,9 +216,48 @@ public class KTypeSortTest<KType> extends AbstractKTypeTest<KType>
         }
     }
 
-    private KType[] copy(KType[] x)
+    private KType[] copy(final KType[] x)
     {
         return newArray(x);
+    }
+
+    private boolean[] specialBooleanSort(final boolean[] inputBoolean)
+    {
+        //sort as is :
+        // a) count the number of false : nbFalse
+        // b) count the number of true : nbTrue
+        //then the sorted result is made of nbFalse "false" elements,
+        //followed by nbTrue "true" elements.
+
+        int nbFalse = 0;
+        int nbTrue = 0;
+
+        for (int ii = 0; ii < inputBoolean.length; ii++)
+        {
+            if (inputBoolean[ii])
+            {
+                nbTrue++;
+            }
+            else
+            {
+                nbFalse++;
+            }
+        }
+
+        //sorted
+        final boolean[] out = new boolean[inputBoolean.length];
+
+        for (int ii = 0; ii < nbFalse; ii++)
+        {
+            out[ii] = false;
+        }
+
+        for (int ii = nbFalse; ii < nbFalse + nbTrue; ii++)
+        {
+            out[ii] = true;
+        }
+
+        return out;
     }
 
 

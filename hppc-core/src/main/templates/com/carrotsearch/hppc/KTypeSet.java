@@ -6,6 +6,7 @@ import java.util.Set;
 /**
  * A set of <code>KType</code>s.
  */
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeSet<KType> extends KTypeCollection<KType>
 {
@@ -17,7 +18,7 @@ public interface KTypeSet<KType> extends KTypeCollection<KType>
      * equal element</b> with the argument (if keys are object types).
      */
     public boolean add(KType k);
-    
+
     /**
      * Compares the specified object with this set for equality. Returns
      * <tt>true</tt> if and only if the specified object is also a

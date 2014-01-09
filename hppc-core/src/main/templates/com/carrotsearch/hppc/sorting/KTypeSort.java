@@ -8,6 +8,7 @@ import com.carrotsearch.hppc.Intrinsics;
  * Utility class for sorting algorithms of <code>KType</code>s arrays.
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
+
 public final class KTypeSort
 {
     /**
@@ -33,11 +34,11 @@ public final class KTypeSort
      * @param beginIndex
      * @param endIndex
      */
-    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(KType[] table, int beginIndex, int endIndex)
+    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(final KType[] table, final int beginIndex, final int endIndex)
     {
         if (endIndex - beginIndex > 1)
         {
-            dualPivotQuicksort(table, beginIndex, endIndex - 1);
+            KTypeSort.dualPivotQuicksort(table, beginIndex, endIndex - 1);
         }
     }
 
@@ -50,11 +51,11 @@ public final class KTypeSort
      * </p>
      * @param table
      */
-    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(KType[] table)
+    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void quicksort(final KType[] table)
     {
         if (table.length > 1)
         {
-            dualPivotQuicksort(table, 0, table.length - 1);
+            KTypeSort.dualPivotQuicksort(table, 0, table.length - 1);
         }
     }
 
@@ -67,9 +68,9 @@ public final class KTypeSort
      * </b></p>
      */
     public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(
-            KType[] table, int beginIndex, int endIndex,
+            final KType[] table, final int beginIndex, final int endIndex,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<? super KType>
+            final Comparator<? super KType>
             /*! #else
             KTypeComparator<? super KType>
              #end !*/
@@ -78,7 +79,7 @@ public final class KTypeSort
 
         if (endIndex - beginIndex > 1)
         {
-            dualPivotQuicksort(table, beginIndex, endIndex - 1, comp);
+            KTypeSort.dualPivotQuicksort(table, beginIndex, endIndex - 1, comp);
         }
     }
 
@@ -89,9 +90,9 @@ public final class KTypeSort
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
-    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(KType[] table,
+    public static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void quicksort(final KType[] table,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<? super KType>
+            final Comparator<? super KType>
     /*! #else
                     KTypeComparator<? super KType>
                     #end !*/
@@ -100,7 +101,7 @@ public final class KTypeSort
 
         if (table.length > 1)
         {
-            dualPivotQuicksort(table, 0, table.length - 1, comp);
+            KTypeSort.dualPivotQuicksort(table, 0, table.length - 1, comp);
         }
     }
 
@@ -111,15 +112,15 @@ public final class KTypeSort
      * @param left
      * @param right
      */
-    private static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void dualPivotQuicksort(KType[] a, int left, int right)
+    private static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType extends Comparable<? super KType>> /*! #end !*/void dualPivotQuicksort(final KType[] a, final int left, final int right)
     {
-        int len = right - left;
+        final int len = right - left;
 
         KType x;
 
         //insertion sort
         //to prevent too-big recursion, swap to insertion sort below a certain size
-        if (len < MIN_LENGTH_FOR_INSERTION_SORT_IN_QSORT)
+        if (len < KTypeSort.MIN_LENGTH_FOR_INSERTION_SORT_IN_QSORT)
         { // insertion sort on tiny array
             for (int i = left + 1; i <= right; i++)
             {
@@ -134,12 +135,12 @@ public final class KTypeSort
         }
 
         // median indexes
-        int sixth = len / 6;
-        int m1 = left + sixth;
-        int m2 = m1 + sixth;
-        int m3 = m2 + sixth;
-        int m4 = m3 + sixth;
-        int m5 = m4 + sixth;
+        final int sixth = len / 6;
+        final int m1 = left + sixth;
+        final int m2 = m1 + sixth;
+        final int m3 = m2 + sixth;
+        final int m4 = m3 + sixth;
+        final int m5 = m4 + sixth;
 
         // 5-element sorting network
         if (Intrinsics.isCompSupKType(a[m1], a[m2]) /* a[m1] > a[m2]*/)
@@ -198,10 +199,10 @@ public final class KTypeSort
         }
 
         // pivots: [ < pivot1 | pivot1 <= && <= pivot2 | > pivot2 ]
-        KType pivot1 = a[m2];
-        KType pivot2 = a[m4];
+        final KType pivot1 = a[m2];
+        final KType pivot2 = a[m4];
 
-        boolean diffPivots = !Intrinsics.isCompEqualKType(pivot1, pivot2);
+        final boolean diffPivots = !Intrinsics.isCompEqualKType(pivot1, pivot2);
 
         a[m2] = a[left];
         a[m4] = a[right];
@@ -276,11 +277,11 @@ public final class KTypeSort
         a[right] = a[great + 1];
         a[great + 1] = pivot2;
         // left and right parts
-        dualPivotQuicksort(a, left, less - 2);
-        dualPivotQuicksort(a, great + 2, right);
+        KTypeSort.dualPivotQuicksort(a, left, less - 2);
+        KTypeSort.dualPivotQuicksort(a, great + 2, right);
 
         // equal elements
-        if (great - less > len - DIST_SIZE_DUALQSORT && diffPivots)
+        if (great - less > len - KTypeSort.DIST_SIZE_DUALQSORT && diffPivots)
         {
             for (int k = less; k <= great; k++)
             {
@@ -307,7 +308,7 @@ public final class KTypeSort
         // center part
         if (diffPivots)
         {
-            dualPivotQuicksort(a, less, great);
+            KTypeSort.dualPivotQuicksort(a, less, great);
         }
     }
 
@@ -319,22 +320,22 @@ public final class KTypeSort
      * @param right
      */
     private static/*! #if ($TemplateOptions.KTypeGeneric) !*/<KType> /*! #end !*/void dualPivotQuicksort(
-            KType[] a,
-            int left, int right,
+            final KType[] a,
+            final int left, final int right,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<? super KType>
+            final Comparator<? super KType>
             /*! #else
             KTypeComparator<? super KType>
              #end !*/
             comp)
     {
-        int len = right - left;
+        final int len = right - left;
 
         KType x;
 
         //insertion sort
         //to prevent too-big recursion, swap to insertion sort below a certain size
-        if (len < MIN_LENGTH_FOR_INSERTION_SORT_IN_QSORT)
+        if (len < KTypeSort.MIN_LENGTH_FOR_INSERTION_SORT_IN_QSORT)
         { // insertion sort on tiny array
             for (int i = left + 1; i <= right; i++)
             {
@@ -349,12 +350,12 @@ public final class KTypeSort
         }
 
         // median indexes
-        int sixth = len / 6;
-        int m1 = left + sixth;
-        int m2 = m1 + sixth;
-        int m3 = m2 + sixth;
-        int m4 = m3 + sixth;
-        int m5 = m4 + sixth;
+        final int sixth = len / 6;
+        final int m1 = left + sixth;
+        final int m2 = m1 + sixth;
+        final int m3 = m2 + sixth;
+        final int m4 = m3 + sixth;
+        final int m5 = m4 + sixth;
 
         // 5-element sorting network
         if (comp.compare(a[m1], a[m2]) > 0 /* a[m1] > a[m2]*/)
@@ -413,10 +414,10 @@ public final class KTypeSort
         }
 
         // pivots: [ < pivot1 | pivot1 <= && <= pivot2 | > pivot2 ]
-        KType pivot1 = a[m2];
-        KType pivot2 = a[m4];
+        final KType pivot1 = a[m2];
+        final KType pivot2 = a[m4];
 
-        boolean diffPivots = comp.compare(pivot1, pivot2) != 0;
+        final boolean diffPivots = comp.compare(pivot1, pivot2) != 0;
 
         a[m2] = a[left];
         a[m4] = a[right];
@@ -491,11 +492,11 @@ public final class KTypeSort
         a[right] = a[great + 1];
         a[great + 1] = pivot2;
         // left and right parts
-        dualPivotQuicksort(a, left, less - 2, comp);
-        dualPivotQuicksort(a, great + 2, right, comp);
+        KTypeSort.dualPivotQuicksort(a, left, less - 2, comp);
+        KTypeSort.dualPivotQuicksort(a, great + 2, right, comp);
 
         // equal elements
-        if (great - less > len - DIST_SIZE_DUALQSORT && diffPivots)
+        if (great - less > len - KTypeSort.DIST_SIZE_DUALQSORT && diffPivots)
         {
             for (int k = less; k <= great; k++)
             {
@@ -522,7 +523,7 @@ public final class KTypeSort
         // center part
         if (diffPivots)
         {
-            dualPivotQuicksort(a, less, great, comp);
+            KTypeSort.dualPivotQuicksort(a, less, great, comp);
         }
     }
 

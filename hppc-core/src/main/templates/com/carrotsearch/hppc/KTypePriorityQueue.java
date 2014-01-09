@@ -3,6 +3,7 @@ package com.carrotsearch.hppc;
 /**
  * A Priority queue of <code>KType</code>s.
  */
+// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypePriorityQueue<KType> extends KTypeCollection<KType>
 {
@@ -21,7 +22,7 @@ public interface KTypePriorityQueue<KType> extends KTypeCollection<KType>
     KType top();
 
 
-        /**
+    /**
      * Retrieve, and remove the top element of the queue,
      * i.e. the min/max element with respect to the comparison criteria
      * (implementation defined) Returns the default value if empty.

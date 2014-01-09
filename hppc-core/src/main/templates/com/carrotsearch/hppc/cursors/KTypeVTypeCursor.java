@@ -4,6 +4,7 @@ package com.carrotsearch.hppc.cursors;
 /**
  * A cursor over entries of an associative container (KType keys and VType values).
  */
+//${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public final class KTypeVTypeCursor<KType, VType>
 {
@@ -23,7 +24,7 @@ public final class KTypeVTypeCursor<KType, VType>
      * The current value.
      */
     public VType value;
-    
+
     @Override
     public String toString()
     {

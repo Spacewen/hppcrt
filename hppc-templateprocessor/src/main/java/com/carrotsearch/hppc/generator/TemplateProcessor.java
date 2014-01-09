@@ -38,7 +38,7 @@ public final class TemplateProcessor
     /**
      * 
      */
-    public void setVerbose(boolean verbose)
+    public void setVerbose(final boolean verbose)
     {
         this.verbose = verbose;
     }
@@ -46,7 +46,7 @@ public final class TemplateProcessor
     /**
      * 
      */
-    public void setIncremental(boolean incremental)
+    public void setIncremental(final boolean incremental)
     {
         this.incremental = incremental;
     }
@@ -54,7 +54,7 @@ public final class TemplateProcessor
     /**
      * 
      */
-    public void setDestDir(File dir)
+    public void setDestDir(final File dir)
     {
         this.outputDir = dir;
     }
@@ -62,7 +62,7 @@ public final class TemplateProcessor
     /**
      * 
      */
-    public void setTemplatesDir(File dir)
+    public void setTemplatesDir(final File dir)
     {
         this.templatesDir = dir;
     }
@@ -73,25 +73,25 @@ public final class TemplateProcessor
     public void execute()
     {
         // Collect files/ checksums from the output folder.
-        List<OutputFile> outputs = collectOutputFiles(new ArrayList<OutputFile>(),
+        final List<OutputFile> outputs = collectOutputFiles(new ArrayList<OutputFile>(),
                 outputDir);
 
         // Collect template files in the input folder.
-        List<TemplateFile> inputs = collectTemplateFiles(new ArrayList<TemplateFile>(),
+        final List<TemplateFile> inputs = collectTemplateFiles(new ArrayList<TemplateFile>(),
                 templatesDir);
 
         // Process templates
         System.out.println("Processing " + inputs.size() + " templates to: " + outputDir.getPath());
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         processTemplates(inputs, outputs);
-        long end = System.currentTimeMillis();
+        final long end = System.currentTimeMillis();
         System.out.println(String.format(Locale.ENGLISH, "Processed in %.2f sec.", (end - start) / 1000.0));
 
         // Remove non-marked files.
         int generated = 0;
         int updated = 0;
         int deleted = 0;
-        for (OutputFile f : outputs)
+        for (final OutputFile f : outputs)
         {
             if (!f.generated)
             {
@@ -117,27 +117,27 @@ public final class TemplateProcessor
     /**
      * Apply templates to <code>.ktype</code> files (single-argument).
      */
-    private void processTemplates(List<TemplateFile> inputs, List<OutputFile> outputs)
+    private void processTemplates(final List<TemplateFile> inputs, final List<OutputFile> outputs)
     {
-        for (TemplateFile f : inputs)
+        for (final TemplateFile f : inputs)
         {
-            String fileName = f.file.getName();
+            final String fileName = f.file.getName();
             if (!fileName.contains("VType") && fileName.contains("KType"))
             {
-                for (Type t : Type.values())
+                for (final Type t : Type.values())
                 {
-                    TemplateOptions options = new TemplateOptions(t);
+                    final TemplateOptions options = new TemplateOptions(t);
                     options.sourceFile = f.file;
                     generate(f, outputs, options);
                 }
             }
             if (fileName.contains("KTypeVType"))
             {
-                for (Type ktype : Type.values())
+                for (final Type ktype : Type.values())
                 {
-                    for (Type vtype : Type.values())
+                    for (final Type vtype : Type.values())
                     {
-                        TemplateOptions options = new TemplateOptions(ktype, vtype);
+                        final TemplateOptions options = new TemplateOptions(ktype, vtype);
                         options.sourceFile = f.file;
                         generate(f, outputs, options);
                     }
@@ -156,54 +156,71 @@ public final class TemplateProcessor
     /**
      * Apply templates.
      */
-    private void generate(TemplateFile f, List<OutputFile> outputs,
-            TemplateOptions templateOptions)
+    private void generate(final TemplateFile f, final List<OutputFile> outputs,
+            final TemplateOptions templateOptions)
     {
-        String targetFileName = targetFileName(relativePath(f.file, templatesDir),
+        final String targetFileName = targetFileName(relativePath(f.file, templatesDir),
                 templateOptions);
-        OutputFile output = findOrCreate(targetFileName, outputs);
+        final OutputFile output = findOrCreate(targetFileName, outputs);
 
         if (!incremental || !output.file.exists()
                 || output.file.lastModified() <= f.file.lastModified())
         {
             String input = readFile(f.file);
             long t1, t0 = System.currentTimeMillis();
-            input = filterVelocity(f, input, templateOptions);
-            timeVelocity += (t1 = System.currentTimeMillis()) - t0;
-            input = filterIntrinsics(f, input, templateOptions);
-            timeIntrinsics += (t0 = System.currentTimeMillis()) - t1;
-            input = filterTypeClassRefs(f, input, templateOptions);
-            timeTypeClassRefs += (t1 = System.currentTimeMillis()) - t0;
-            input = filterComments(f, input, templateOptions);
-            timeComments += (t0 = System.currentTimeMillis()) - t1;
 
-            output.updated = true;
-            saveFile(output.file, input);
+            //Apply velocity : if TemplateOptions.isDoNotGenerateKType() or TemplateOptions.isDoNotGenerateVType() is true, do not
+            //generate the final file.
+            input = filterVelocity(f, input, templateOptions);
+
+            if (!templateOptions.isDoNotGenerateKType() && !templateOptions.isDoNotGenerateVType())
+            {
+                timeVelocity += (t1 = System.currentTimeMillis()) - t0;
+                input = filterIntrinsics(f, input, templateOptions);
+                timeIntrinsics += (t0 = System.currentTimeMillis()) - t1;
+                input = filterTypeClassRefs(f, input, templateOptions);
+                timeTypeClassRefs += (t1 = System.currentTimeMillis()) - t0;
+                input = filterComments(f, input, templateOptions);
+                timeComments += (t0 = System.currentTimeMillis()) - t1;
+
+                output.updated = true;
+                saveFile(output.file, input);
+            }
+            else
+            {
+                //indeed remove the generated file
+                output.file.delete();
+                outputs.remove(output);
+
+                System.out.println("INFO : output from template '" + f.fullPath +
+                        "' with KTYpe = " + templateOptions.getKType() + " and VType =  " +
+                        (templateOptions.hasVType() ? templateOptions.getVType().toString() : "null") + " was bypassed...");
+            }
         }
     }
 
     long timeVelocity, timeIntrinsics, timeTypeClassRefs, timeComments;
 
-    private String filterIntrinsics(TemplateFile f, String input,
-            TemplateOptions templateOptions)
+    private String filterIntrinsics(final TemplateFile f, String input,
+            final TemplateOptions templateOptions)
     {
-        Pattern p = Pattern.compile("(Intrinsics.\\s*)(<[^>]+>\\s*)?([a-zA-Z]+)",
+        final Pattern p = Pattern.compile("(Intrinsics.\\s*)(<[^>]+>\\s*)?([a-zA-Z]+)",
                 Pattern.MULTILINE | Pattern.DOTALL);
 
-        StringBuffer sb = new StringBuffer();
+        final StringBuffer sb = new StringBuffer();
 
         while (true)
         {
-            Matcher m = p.matcher(input);
+            final Matcher m = p.matcher(input);
             if (m.find())
             {
                 sb.append(input.substring(0, m.start()));
 
-                String method = m.group(3);
+                final String method = m.group(3);
 
                 int bracketCount = 0;
                 int last = m.end() + 1;
-                ArrayList<String> params = new ArrayList<String>();
+                final ArrayList<String> params = new ArrayList<String>();
                 outer: for (int i = m.end(); i < input.length(); i++)
                 {
                     switch (input.charAt(i))
@@ -233,12 +250,12 @@ public final class TemplateProcessor
                 if ("defaultKTypeValue".equals(method))
                 {
                     sb.append(templateOptions.isKTypeGeneric()
-                            ? "null" : getDefaultValue(templateOptions.getKType().getType()));
+                            ? "null" : TemplateProcessor.getDefaultValue(templateOptions.getKType().getType()));
                 }
                 else if ("defaultVTypeValue".equals(method))
                 {
                     sb.append(templateOptions.isVTypeGeneric()
-                            ? "null" : getDefaultValue(templateOptions.getVType().getType()));
+                            ? "null" : TemplateProcessor.getDefaultValue(templateOptions.getVType().getType()));
                 }
                 else if ("newKTypeArray".equals(method))
                 {
@@ -270,9 +287,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s))", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s - %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? 0 : (%1$s ? 1 : -1))", params.toArray()));
                     }
                 }
                 else if ("compareKTypeUnchecked".equals(method))
@@ -281,9 +303,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s))", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s - %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? 0 : (%1$s ? 1 : -1))", params.toArray()));
                     }
                 }
                 else if ("isCompSupKType".equals(method))
@@ -292,9 +319,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) > 0)", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s > %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? false : %1$s)", params.toArray()));
                     }
                 }
                 else if ("isCompSupKTypeUnchecked".equals(method))
@@ -303,9 +335,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) > 0)", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s > %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? false : %1$s)", params.toArray()));
                     }
                 }
                 else if ("isCompInfKType".equals(method))
@@ -314,9 +351,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) < 0)", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s < %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? false : %2$s)", params.toArray()));
                     }
                 }
                 else if ("isCompInfKTypeUnchecked".equals(method))
@@ -325,9 +367,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) < 0)", params.toArray()));
                     }
-                    else
+                    else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s < %2$s)", params.toArray()));
+                    }
+                    else
+                    {
+                        //particular case for booleans
+                        sb.append(String.format("((%1$s == %2$s) ? false : %2$s)", params.toArray()));
                     }
                 }
                 else if ("isCompEqualKType".equals(method))
@@ -428,15 +475,15 @@ public final class TemplateProcessor
         return sb.toString();
     }
 
-    private String filterComments(TemplateFile f, String input,
-            TemplateOptions templateOptions)
+    private String filterComments(final TemplateFile f, final String input,
+            final TemplateOptions templateOptions)
     {
-        Pattern p = Pattern.compile("(/\\*!)|(!\\*/)", Pattern.MULTILINE
+        final Pattern p = Pattern.compile("(/\\*!)|(!\\*/)", Pattern.MULTILINE
                 | Pattern.DOTALL);
         return p.matcher(input).replaceAll("");
     }
 
-    private String filterTypeClassRefs(TemplateFile f, String input, TemplateOptions options)
+    private String filterTypeClassRefs(final TemplateFile f, String input, final TemplateOptions options)
     {
         input = unifyTypeWithSignature(f, input, options);
         input = rewriteSignatures(f, input, options);
@@ -444,8 +491,8 @@ public final class TemplateProcessor
         return input;
     }
 
-    private String unifyTypeWithSignature(TemplateFile f, String input,
-            TemplateOptions options)
+    private String unifyTypeWithSignature(final TemplateFile f, final String input,
+            final TemplateOptions options)
     {
         // This is a hack. A better way would be a full source AST and
         // rewrite at the actual typeDecl level.
@@ -453,16 +500,16 @@ public final class TemplateProcessor
         return input.replaceAll("(KType)(?!VType)([A-Za-z]+)(<(?:(\\? super ))?VType>)", "VType$2$3");
     }
 
-    private String rewriteSignatures(TemplateFile f, String input, TemplateOptions options)
+    private String rewriteSignatures(final TemplateFile f, final String input, final TemplateOptions options)
     {
-        Pattern p = Pattern.compile("<[\\?A-Z]");
-        Matcher m = p.matcher(input);
+        final Pattern p = Pattern.compile("<[\\?A-Z]");
+        final Matcher m = p.matcher(input);
 
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         int fromIndex = 0;
         while (m.find(fromIndex))
         {
-            int next = m.start();
+            final int next = m.start();
             int end = next + 1;
             int bracketCount = 1;
             while (bracketCount > 0 && end < input.length())
@@ -480,22 +527,22 @@ public final class TemplateProcessor
         return sb.toString();
     }
 
-    private String rewriteSignature(String signature, TemplateOptions options)
+    private String rewriteSignature(final String signature, final TemplateOptions options)
     {
         if (!signature.contains("KType") && !signature.contains("VType"))
             return signature;
 
-        Pattern p = Pattern.compile("<[^<>]*>", Pattern.MULTILINE | Pattern.DOTALL);
+        final Pattern p = Pattern.compile("<[^<>]*>", Pattern.MULTILINE | Pattern.DOTALL);
 
-        StringBuilder sb = new StringBuilder(signature);
+        final StringBuilder sb = new StringBuilder(signature);
         Matcher m = p.matcher(sb);
         while (m.find())
         {
             String group = m.group();
             group = group.substring(1, group.length() - 1);
-            List<String> args = new ArrayList<String>(Arrays.asList(group.split(",")));
-            StringBuilder b = new StringBuilder();
-            for (Iterator<String> i = args.iterator(); i.hasNext();)
+            final List<String> args = new ArrayList<String>(Arrays.asList(group.split(",")));
+            final StringBuilder b = new StringBuilder();
+            for (final Iterator<String> i = args.iterator(); i.hasNext();)
             {
                 String arg = i.next().trim();
 
@@ -534,18 +581,18 @@ public final class TemplateProcessor
         return sb.toString().replace('{', '<').replace('}', '>');
     }
 
-    private boolean isGenericOnly(String arg, String type)
+    private boolean isGenericOnly(final String arg, final String type)
     {
         return arg.equals(type) || arg.equals("? super " + type) || arg.equals("? extends " + type);
     }
 
-    private String rewriteLiterals(TemplateFile f, String input, TemplateOptions options)
+    private String rewriteLiterals(final TemplateFile f, String input, final TemplateOptions options)
     {
-        Type k = options.getKType();
+        final Type k = options.getKType();
 
         if (options.hasVType())
         {
-            Type v = options.getVType();
+            final Type v = options.getVType();
 
             input = input.replaceAll("(KTypeVType)([A-Z][a-zA-Z]*)(<.+?>)?",
                     (k.isGeneric() ? "Object" : k.getBoxedType()) +
@@ -569,17 +616,18 @@ public final class TemplateProcessor
         return input;
     }
 
-    private void saveFile(File file, String input)
+    private void saveFile(final File file, final String input)
     {
         try
         {
-            if (!file.getParentFile().exists()) file.getParentFile().mkdirs();
+            if (!file.getParentFile().exists())
+                file.getParentFile().mkdirs();
 
-            FileOutputStream fos = new FileOutputStream(file);
+            final FileOutputStream fos = new FileOutputStream(file);
             fos.write(input.getBytes("UTF-8"));
             fos.close();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -588,12 +636,12 @@ public final class TemplateProcessor
     /**
      * Apply velocity to the input.
      */
-    private String filterVelocity(TemplateFile f, String template, TemplateOptions options)
+    private String filterVelocity(final TemplateFile f, final String template, final TemplateOptions options)
     {
         final VelocityContext ctx = new VelocityContext();
         ctx.put("TemplateOptions", options);
 
-        StringWriter sw = new StringWriter();
+        final StringWriter sw = new StringWriter();
         velocity.evaluate(ctx, sw, f.file.getName(), template);
         return sw.toString();
     }
@@ -601,27 +649,27 @@ public final class TemplateProcessor
     /**
      * 
      */
-    private String readFile(File file)
+    private String readFile(final File file)
     {
         try
         {
-            byte [] contents = new byte [(int) file.length()];
-            DataInputStream dataInputStream = new DataInputStream(new FileInputStream(
+            final byte [] contents = new byte [(int) file.length()];
+            final DataInputStream dataInputStream = new DataInputStream(new FileInputStream(
                     file));
             dataInputStream.readFully(contents);
             dataInputStream.close();
             return new String(contents, "UTF-8");
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             throw new RuntimeException(e);
         }
     }
 
-    private OutputFile findOrCreate(String targetFileName, List<OutputFile> outputs)
+    private OutputFile findOrCreate(final String targetFileName, final List<OutputFile> outputs)
     {
-        File candidate = canonicalFile(new File(this.outputDir, targetFileName));
-        for (OutputFile o : outputs)
+        final File candidate = TemplateProcessor.canonicalFile(new File(this.outputDir, targetFileName));
+        for (final OutputFile o : outputs)
         {
             if (o.file.equals(candidate))
             {
@@ -630,12 +678,12 @@ public final class TemplateProcessor
             }
         }
 
-        OutputFile o = new OutputFile(candidate, true);
+        final OutputFile o = new OutputFile(candidate, true);
         outputs.add(o);
         return o;
     }
 
-    private String targetFileName(String relativePath, TemplateOptions templateOptions)
+    private String targetFileName(String relativePath, final TemplateOptions templateOptions)
     {
         if (templateOptions.hasVType()) relativePath = relativePath.replace("KTypeVType",
                 templateOptions.getKType().getBoxedType()
@@ -649,14 +697,14 @@ public final class TemplateProcessor
     /**
      * Relative path name.
      */
-    private String relativePath(File sub, File parent)
+    private String relativePath(final File sub, final File parent)
     {
         try
         {
             return sub.getCanonicalPath().toString()
                     .substring(parent.getCanonicalPath().length());
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             throw new RuntimeException(e);
         }
@@ -665,15 +713,16 @@ public final class TemplateProcessor
     /**
      * Collect files present in the output.
      */
-    private List<OutputFile> collectOutputFiles(final List<OutputFile> list, File dir)
+    private List<OutputFile> collectOutputFiles(final List<OutputFile> list, final File dir)
     {
         if (!dir.exists()) return list;
 
-        for (File file : dir.listFiles(new FilenameFilter()
+        for (final File file : dir.listFiles(new FilenameFilter()
         {
-            public boolean accept(File dir, String name)
+            @Override
+            public boolean accept(final File dir, final String name)
             {
-                File f = new File(dir, name);
+                final File f = new File(dir, name);
                 if (f.isDirectory())
                 {
                     collectOutputFiles(list, f);
@@ -693,13 +742,14 @@ public final class TemplateProcessor
      * Collect all template files from this and subdirectories.
      */
     private List<TemplateFile> collectTemplateFiles(final List<TemplateFile> list,
-            File dir)
+            final File dir)
             {
-        for (File file : dir.listFiles(new FilenameFilter()
+        for (final File file : dir.listFiles(new FilenameFilter()
         {
-            public boolean accept(File dir, String name)
+            @Override
+            public boolean accept(final File dir, final String name)
             {
-                File f = new File(dir, name);
+                final File f = new File(dir, name);
                 if (f.isDirectory())
                 {
                     collectTemplateFiles(list, f);
@@ -715,21 +765,21 @@ public final class TemplateProcessor
         return list;
             }
 
-    static File canonicalFile(File target)
+    static File canonicalFile(final File target)
     {
         try
         {
             return target.getCanonicalFile();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             throw new RuntimeException(e);
         }
     }
 
-    private static String getDefaultValue(String typeName) {
+    private static String getDefaultValue(final String typeName) {
 
-        String litteral = typeName.trim();
+        final String litteral = typeName.trim();
 
         String defaultValue = null;
 
@@ -759,7 +809,7 @@ public final class TemplateProcessor
     /**
      * Command line entry point.
      */
-    public static void main(String [] args)
+    public static void main(final String [] args)
     {
         final TemplateProcessor processor = new TemplateProcessor();
         processor.setTemplatesDir(new File(args[0]));

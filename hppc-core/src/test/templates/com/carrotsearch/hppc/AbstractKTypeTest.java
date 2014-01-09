@@ -2,8 +2,6 @@ package com.carrotsearch.hppc;
 
 import org.junit.Rule;
 import org.junit.rules.MethodRule;
-import static org.junit.Assert.assertEquals;
-
 
 /**
  * Unit helpers for <code>KType</code>.
@@ -36,13 +34,17 @@ public abstract class AbstractKTypeTest<KType>
     /**
      * Convert int to target KType type.
      */
-    public KType cast(int v)
+    public KType cast(final int v)
     {
         /*! #if ($TemplateOptions.KTypePrimitive)
-            return (KType) v;
-            #else !*/
+             #if ($TemplateOptions.KTypeNumeric)
+               return (KType) v;
+             #else
+                return  (v > 0);
+             #end
+         #else !*/
         // @SuppressWarnings("unchecked")
-        KType k = (KType) (Object) v;
+        final KType k = (KType) (Object) v;
         return k;
         /*! #end !*/
     }
@@ -52,16 +54,20 @@ public abstract class AbstractKTypeTest<KType>
      * return a Comparable object, indeed a number
      */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-    public <KType extends Comparable<? super KType>> KType castComparable(int v)
+    public <KType extends Comparable<? super KType>> KType castComparable(final int v)
     /*! #else
     public KType castComparable(int v)
     #end !*/
     {
         /*! #if ($TemplateOptions.KTypePrimitive)
-            return (KType) v;
-            #else !*/
+             #if ($TemplateOptions.KTypeNumeric)
+               return (KType) v;
+             #else
+              return  ( v > 0);
+            #end
+        #else !*/
         // @SuppressWarnings("unchecked")
-        KType k = (KType) (Object) v;
+        final KType k = (KType) (Object) v;
         return k;
         /*! #end !*/
     }
@@ -71,10 +77,14 @@ public abstract class AbstractKTypeTest<KType>
      * returns 0.
      */
     @SuppressWarnings("hiding")
-    public <KType> int castType(KType type)
+    public <KType> int castType(final KType type)
     {
         /*! #if ($TemplateOptions.KTypePrimitive)
-        return (int) type;
+              #if ($TemplateOptions.KTypeNumeric)
+                return (int) type;
+              #else
+                return (type?1:0);
+             #end
         #else !*/
         long k = 0L;
 
@@ -91,11 +101,23 @@ public abstract class AbstractKTypeTest<KType>
         /*! #end !*/
     }
 
-    public KType [] asArray(int... ints)
+    public KType [] asArray(final int... ints)
     {
-        KType [] values = Intrinsics.newKTypeArray(ints.length);
+        final KType [] values = Intrinsics.newKTypeArray(ints.length);
+
         for (int i = 0; i < ints.length; i++)
-            values[i] = (KType) /*! #if ($TemplateOptions.KTypeGeneric) !*/ (Object) /*! #end !*/ ints[i];
+        {
+            /*! #if ($TemplateOptions.KTypePrimitive)
+                 #if ($TemplateOptions.KTypeNumeric)
+                  values[i] = (KType) ints[i];
+               #else
+                  values[i] = (ints[i] > 0)?true:false;
+               #end
+            #else !*/
+            values[i] = (KType) (Object) ints[i];
+            /*! #end !*/
+        }
+
         return values;
     }
 
@@ -104,9 +126,9 @@ public abstract class AbstractKTypeTest<KType>
      * These elements are indeed Comparable Numbers
      * (deep copy)
      */
-    public KType[] newArray(KType... elements)
+    public KType[] newArray(final KType... elements)
     {
-        KType[] values = Intrinsics.newKTypeArray(elements.length);
+        final KType[] values = Intrinsics.newKTypeArray(elements.length);
         for (int i = 0; i < elements.length; i++)
         {
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -119,8 +141,8 @@ public abstract class AbstractKTypeTest<KType>
                 values[i] = null;
             }
             /*! #else
-            values[i] =  (KType)elements[i];
-            #end !*/
+                   values[i] =  (KType)elements[i];
+                #end !*/
         }
 
         return values;
@@ -132,13 +154,13 @@ public abstract class AbstractKTypeTest<KType>
      * (deep copy)
      */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-    public Comparable[] newComparableArray(KType... elements)
+    public Comparable[] newComparableArray(final KType... elements)
     /*! #else
     KType[] newComparableArray(KType... elements)
     #end !*/
     {
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        Comparable[] values = new Comparable[elements.length];
+        final Comparable[] values = new Comparable[elements.length];
         /*! #else
         KType[] values = Intrinsics.newKTypeArray(elements.length);
         #end !*/
@@ -154,8 +176,8 @@ public abstract class AbstractKTypeTest<KType>
                 values[i] = null;
             }
             /*! #else
-            values[i] =  (KType)elements[i];
-            #end !*/
+                  values[i] =  (KType)elements[i];
+              #end !*/
         }
 
         return values;
