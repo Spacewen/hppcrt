@@ -44,6 +44,11 @@ public class TemplateOptions
         return (ktype == Type.BOOLEAN);
     }
 
+    public boolean isKType(final String strKind)
+    {
+        return (Type.valueOf(strKind) == this.ktype);
+    }
+
     public boolean isVTypePrimitive()
     {
         return getVType() != Type.GENERIC;
@@ -57,6 +62,11 @@ public class TemplateOptions
     public boolean isVTypeBoolean()
     {
         return (vtype == Type.BOOLEAN);
+    }
+
+    public boolean isVType(final String strKind)
+    {
+        return (Type.valueOf(strKind) == this.vtype);
     }
 
     public boolean isKTypeGeneric()

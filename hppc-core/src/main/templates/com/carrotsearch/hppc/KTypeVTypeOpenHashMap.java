@@ -304,7 +304,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
 
     /**
-     * Puts all key/value pairs from a given iterable into this map.
+     * {@inheritDoc}
      */
     @Override
     public int putAll(

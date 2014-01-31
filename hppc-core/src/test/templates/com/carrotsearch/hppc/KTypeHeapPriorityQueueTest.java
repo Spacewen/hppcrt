@@ -116,23 +116,63 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     {
         insertElements(prioq, 10, 9, 8, 7, 6, 5, 4, 3);
         assertPrioQueueEquals(prioq, 3, 4, 5, 6, 7, 8, 9, 10);
+        Assert.assertEquals(8, prioq.size());
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(3, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 4, 5, 6, 7, 8, 9, 10);
+        Assert.assertEquals(7, prioq.size());
+        Assert.assertEquals(4, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(4, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 5, 6, 7, 8, 9, 10);
+        Assert.assertEquals(6, prioq.size());
+        Assert.assertEquals(5, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(5, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 6, 7, 8, 9, 10);
+        Assert.assertEquals(5, prioq.size());
+        Assert.assertEquals(6, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(6, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 7, 8, 9, 10);
+        Assert.assertEquals(4, prioq.size());
+        Assert.assertEquals(7, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(7, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 8, 9, 10);
+        Assert.assertEquals(3, prioq.size());
+        Assert.assertEquals(8, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(8, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 9, 10);
+        Assert.assertEquals(2, prioq.size());
+        Assert.assertEquals(9, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(9, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 10);
-
+        Assert.assertEquals(1, prioq.size());
+        Assert.assertEquals(10, castType(prioq.top()));
         Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
+        Assert.assertEquals(10, castType(prioq.popTop()));
+        Assert.assertEquals(0, prioq.size());
+        Assert.assertTrue(prioq.isEmpty());
+
     }
 
     /* */

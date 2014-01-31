@@ -261,23 +261,61 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
     public void testPopTop()
     {
         insertElements(prioq, 0, 10, /**/1, 9, /**/2, 8, /**/3, 7, /**/4, 6, /**/5, 5, /**/6, 4, /**/7, 3);
-
         assertPrioQueueEquals(prioq, 0, 10, /**/1, 9, /**/2, 8, /**/3, 7, /**/4, 6, /**/5, 5, /**/6, 4, /**/7, 3);
+        Assert.assertEquals(8, prioq.size());
+        Assert.assertEquals(3, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
 
         Assert.assertEquals(3, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 6, 4, /**/5, 5, /**/4, 6, /**/3, 7, /**/2, 8, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(7, prioq.size());
+        Assert.assertEquals(4, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+
         Assert.assertEquals(4, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/5, 5, /**/4, 6, /**/3, 7, /**/2, 8, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(6, prioq.size());
+        Assert.assertEquals(5, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+
         Assert.assertEquals(5, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/4, 6, /**/3, 7, /**/2, 8, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(5, prioq.size());
+        Assert.assertEquals(6, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(6, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/3, 7, /**/2, 8, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(4, prioq.size());
+        Assert.assertEquals(7, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(7, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/2, 8, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(3, prioq.size());
+        Assert.assertEquals(8, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(8, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/1, 9, /**/0, 10);
+        Assert.assertEquals(2, prioq.size());
+        Assert.assertEquals(9, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
         Assert.assertEquals(9, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, /**/0, 10);
+        Assert.assertEquals(1, prioq.size());
+        Assert.assertEquals(10, castType(prioq.top()));
+        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertFalse(prioq.isEmpty());
+
+        Assert.assertEquals(10, castType(prioq.popTop()));
+        Assert.assertEquals(0, prioq.size());
+        Assert.assertTrue(prioq.isEmpty());
     }
 
     /* */
