@@ -44,9 +44,20 @@ public class TemplateOptions
         return (ktype == Type.BOOLEAN);
     }
 
-    public boolean isKType(final String strKind)
+    public boolean isKType(final String... strKind)
     {
-        return (Type.valueOf(strKind) == this.ktype);
+        //return true if it matches any type of the list
+        for (final String kind : strKind)
+        {
+
+            if (Type.valueOf(kind) == this.ktype)
+            {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isVTypePrimitive()
@@ -64,9 +75,25 @@ public class TemplateOptions
         return (vtype == Type.BOOLEAN);
     }
 
-    public boolean isVType(final String strKind)
+    public boolean isVType(final String... strKind)
     {
-        return (Type.valueOf(strKind) == this.vtype);
+        if (this.vtype == null)
+        {
+            return false;
+        }
+
+        //return true if it matches any type of the list
+        for (final String kind : strKind)
+        {
+
+            if (Type.valueOf(kind) == this.vtype)
+            {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public boolean isKTypeGeneric()
@@ -76,6 +103,11 @@ public class TemplateOptions
 
     public boolean isVTypeGeneric()
     {
+        if (this.vtype == null)
+        {
+            return false;
+        }
+
         return getVType() == Type.GENERIC;
     }
 
@@ -111,16 +143,39 @@ public class TemplateOptions
         return vtype;
     }
 
-    public void doNotGenerateKType(final String notGeneratingType)
+    public void doNotGenerateKType(final String... notGeneratingType)
     {
-        this.doNotGenerateKType = (Type.valueOf(notGeneratingType) == this.ktype);
+        this.doNotGenerateKType = false;
+
+        //if any of the notGeneratingType is this.ktype, then do not generate
+        for (final String  notToBeGenerated : notGeneratingType) {
+
+            if (Type.valueOf(notToBeGenerated) == this.ktype) {
+
+                this.doNotGenerateKType = true;
+                return;
+            }
+        }
     }
 
-    public void doNotGenerateVType(final String notGeneratingType)
+    public void doNotGenerateVType(final String... notGeneratingType)
     {
-        if (this.vtype != null)
+        this.doNotGenerateVType = false;
+
+        if (this.vtype == null)
         {
-            this.doNotGenerateVType = (Type.valueOf(notGeneratingType) == this.vtype);
+            return;
+        }
+
+        //if any of the notGeneratingType is this.ktype, then do not generate
+        for (final String notToBeGenerated : notGeneratingType)
+        {
+            if (Type.valueOf(notToBeGenerated) == this.vtype)
+            {
+
+                this.doNotGenerateVType = true;
+                return;
+            }
         }
     }
 
