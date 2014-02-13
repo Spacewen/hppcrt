@@ -3,6 +3,8 @@ package com.carrotsearch.hppc;
 import static com.carrotsearch.hppc.TestUtils.*;
 import static org.junit.Assert.*;
 
+import java.util.Random;
+
 import org.junit.*;
 /**
  * Unit tests for {@link KTypeStack}.
@@ -222,4 +224,45 @@ public class KTypeStackTest<KType> extends AbstractKTypeTest<KType>
                 + key2 + ", "
                 + key3 + "]", KTypeStack.from(key1, key2, key3).toString());
     }
+
+    @Test
+    public void testPreallocatedSize()
+    {
+        final Random randomVK = new Random();
+        //Test that the container do not resize if less that the initial size
+
+        final int NB_TEST_RUNS = 50;
+
+        for (int run = 0; run < NB_TEST_RUNS; run++)
+        {
+            //1) Choose a random number of elements
+            /*! #if ($TemplateOptions.isKType("GENERIC", "INT", "LONG", "FLOAT", "DOUBLE")) !*/
+            final int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            /*!
+            #elseif ($TemplateOptions.isKType("SHORT", "CHAR"))
+             int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #else
+              int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #end !*/
+
+            //2) Preallocate to PREALLOCATED_SIZE :
+            final KTypeStack<KType> newStack = KTypeStack.newInstanceWithCapacity(PREALLOCATED_SIZE);
+
+            //3) Add PREALLOCATED_SIZE different values. At the end, size() must be == PREALLOCATED_SIZE,
+            //and internal buffer/allocated must not have changed of size
+            final int contructorBufferSize = newStack.buffer.length;
+
+            for (int i = 0; i < PREALLOCATED_SIZE; i++)
+            {
+
+                newStack.add(cast(randomVK.nextInt()));
+
+                //internal size has not changed.
+                Assert.assertEquals(contructorBufferSize, newStack.buffer.length);
+            }
+
+            Assert.assertEquals(PREALLOCATED_SIZE, newStack.size());
+        } //end for test runs
+    }
+
 }

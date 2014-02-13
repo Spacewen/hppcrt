@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -2149,6 +2150,46 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
         Assert.assertEquals(l1.hashCode(), l2.hashCode());
         Assert.assertEquals(l1, l2);
+    }
+
+    @Test
+    public void testPreallocatedSize()
+    {
+        final Random randomVK = new Random();
+        //Test that the container do not resize if less that the initial size
+
+        final int NB_TEST_RUNS = 50;
+
+        for (int run = 0; run < NB_TEST_RUNS; run++)
+        {
+            //1) Choose a random number of elements
+            /*! #if ($TemplateOptions.isKType("GENERIC", "INT", "LONG", "FLOAT", "DOUBLE")) !*/
+            final int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            /*!
+            #elseif ($TemplateOptions.isKType("SHORT", "CHAR"))
+             int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #else
+              int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #end !*/
+
+            //2) Preallocate to PREALLOCATED_SIZE :
+            final KTypeLinkedList<KType> newList = KTypeLinkedList.newInstanceWithCapacity(PREALLOCATED_SIZE);
+
+            //3) Add PREALLOCATED_SIZE different values. At the end, size() must be == PREALLOCATED_SIZE,
+            //and internal buffer/allocated must not have changed of size
+            final int contructorBufferSize = newList.buffer.length;
+
+            for (int i = 0; i < PREALLOCATED_SIZE; i++)
+            {
+
+                newList.add(cast(randomVK.nextInt()));
+
+                //internal size has not changed.
+                Assert.assertEquals(contructorBufferSize, newList.buffer.length);
+            }
+
+            Assert.assertEquals(PREALLOCATED_SIZE, newList.size());
+        } //end for test runs
     }
 
     /**

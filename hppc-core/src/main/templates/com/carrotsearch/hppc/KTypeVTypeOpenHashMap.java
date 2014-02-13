@@ -192,17 +192,27 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      *
      * @param loadFactor The load factor (greater than zero and smaller than 1).
      */
-    public KTypeVTypeOpenHashMap(int initialCapacity, final float loadFactor)
+    public KTypeVTypeOpenHashMap(final int initialCapacity, final float loadFactor)
     {
-        initialCapacity = Math.max(initialCapacity, KTypeVTypeOpenHashMap.MIN_CAPACITY);
-
-        assert initialCapacity > 0
-        : "Initial capacity must be between (0, " + Integer.MAX_VALUE + "].";
         assert loadFactor > 0 && loadFactor <= 1
                 : "Load factor must be between (0, 1].";
 
         this.loadFactor = loadFactor;
-        allocateBuffers(HashContainerUtils.roundCapacity(initialCapacity));
+
+        //take into account of the load factor to garantee no reallocations before reaching  initialCapacity.
+        int internalCapacity = (int) (initialCapacity / loadFactor) + KTypeVTypeOpenHashMap.MIN_CAPACITY;
+
+        //align on next power of two
+        internalCapacity = HashContainerUtils.roundCapacity(internalCapacity);
+
+        this.keys = Intrinsics.newKTypeArray(internalCapacity);
+        this.values = Intrinsics.newVTypeArray(internalCapacity);
+        this.allocated = new boolean[internalCapacity];
+
+        //the expected resize is really initialCapacity now
+        this.resizeAt = initialCapacity;
+
+        this.perturbation = computePerturbationValue(internalCapacity);
     }
 
     /* #if ($TemplateOptions.KTypeGeneric) */

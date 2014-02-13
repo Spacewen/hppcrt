@@ -161,17 +161,26 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * Creates a hash set with the given capacity and load factor.
      */
-    public KTypeOpenHashSet(int initialCapacity, final float loadFactor)
+    public KTypeOpenHashSet(final int initialCapacity, final float loadFactor)
     {
-        initialCapacity = Math.max(initialCapacity, KTypeOpenHashSet.MIN_CAPACITY);
-
-        assert initialCapacity > 0
-        : "Initial capacity must be between (0, " + Integer.MAX_VALUE + "].";
         assert loadFactor > 0 && loadFactor <= 1
                 : "Load factor must be between (0, 1].";
 
         this.loadFactor = loadFactor;
-        allocateBuffers(HashContainerUtils.roundCapacity(initialCapacity));
+
+        //take into account of the load factor to garantee no reallocations before reaching  initialCapacity.
+        int internalCapacity = (int) (initialCapacity / loadFactor) + KTypeOpenHashSet.MIN_CAPACITY;
+
+        //align on next power of two
+        internalCapacity = HashContainerUtils.roundCapacity(internalCapacity);
+
+        this.keys = Intrinsics.newKTypeArray(internalCapacity);
+        this.allocated = new boolean[internalCapacity];
+
+        //the expected resize is really initialCapacity now
+        this.resizeAt = initialCapacity;
+
+        this.perturbation = computePerturbationValue(internalCapacity);
     }
 
     /* #if ($TemplateOptions.KTypeGeneric) */

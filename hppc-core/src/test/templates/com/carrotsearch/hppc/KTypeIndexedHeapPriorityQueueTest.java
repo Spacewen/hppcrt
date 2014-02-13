@@ -1252,6 +1252,45 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         Assert.assertEquals(initialPoolSize, testContainer.valueIteratorPool.size());
     }
 
+    @Test
+    public void testPreallocatedSize()
+    {
+        final Random randomVK = new Random();
+        //Test that the container do not resize if less that the initial size
+
+        final int NB_TEST_RUNS = 50;
+
+        for (int run = 0; run < NB_TEST_RUNS; run++)
+        {
+            //1) Choose a random number of elements
+            /*! #if ($TemplateOptions.isKType("GENERIC", "INT", "LONG", "FLOAT", "DOUBLE")) !*/
+            final int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            /*!
+            #elseif ($TemplateOptions.isKType("SHORT", "CHAR"))
+             int PREALLOCATED_SIZE = randomVK.nextInt(15000);
+            #else
+              int PREALLOCATED_SIZE = randomVK.nextInt(126);
+            #end !*/
+
+            //2) Preallocate to PREALLOCATED_SIZE :
+            final KTypeIndexedHeapPriorityQueue<KType> newHeap = new KTypeIndexedHeapPriorityQueue<KType>(PREALLOCATED_SIZE);
+
+            //3) Add PREALLOCATED_SIZE different values. At the end, size() must be == PREALLOCATED_SIZE,
+            //and internal buffer/allocated must not have changed of size
+            final int contructorBufferSize = newHeap.buffer.length;
+
+            for (int i = 0; i < PREALLOCATED_SIZE; i++)
+            {
+                newHeap.insert(i, cast(randomVK.nextInt()));
+
+                //internal size has not changed.
+                Assert.assertEquals(contructorBufferSize, newHeap.buffer.length);
+            }
+
+            Assert.assertEquals(PREALLOCATED_SIZE, newHeap.size());
+        } //end for test runs
+    }
+
     /**
      * Check if the indexed, prio queue content is identical to
      * int...elemenents made of (indexes, values) alternated

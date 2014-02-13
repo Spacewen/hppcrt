@@ -108,7 +108,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      */
     public KTypeArrayList()
     {
-        this(DEFAULT_CAPACITY);
+        this(KTypeArrayList.DEFAULT_CAPACITY);
     }
 
     /**
@@ -116,7 +116,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * 
      * @see BoundedProportionalArraySizingStrategy
      */
-    public KTypeArrayList(int initialCapacity)
+    public KTypeArrayList(final int initialCapacity)
     {
         this(initialCapacity, new BoundedProportionalArraySizingStrategy());
     }
@@ -124,13 +124,17 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Create with a custom buffer resizing strategy.
      */
-    public KTypeArrayList(int initialCapacity, ArraySizingStrategy resizer)
+    public KTypeArrayList(final int initialCapacity, final ArraySizingStrategy resizer)
     {
         assert initialCapacity >= 0 : "initialCapacity must be >= 0: " + initialCapacity;
         assert resizer != null;
 
         this.resizer = resizer;
-        ensureBufferSpace(resizer.round(initialCapacity));
+
+        final int internalSize = resizer.round(initialCapacity);
+
+        //allocate internal buffer
+        this.buffer = Intrinsics.newKTypeArray(internalSize);
 
         this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
                 new ObjectFactory<ValueIterator>() {
@@ -143,7 +147,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
                     }
 
                     @Override
-                    public void initialize(ValueIterator obj)
+                    public void initialize(final ValueIterator obj)
                     {
 
                         obj.cursor.index = -1;
@@ -156,7 +160,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Creates a new list from elements of another container.
      */
-    public KTypeArrayList(KTypeContainer<? extends KType> container)
+    public KTypeArrayList(final KTypeContainer<? extends KType> container)
     {
         this(container.size());
         addAll(container);
@@ -166,7 +170,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public void add(KType e1)
+    public void add(final KType e1)
     {
         ensureBufferSpace(1);
         buffer[elementsCount++] = e1;
@@ -177,7 +181,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * use <code>add</code> (vararg-version) or access the buffer directly (tight
      * loop).
      */
-    public void add(KType e1, KType e2)
+    public void add(final KType e1, final KType e2)
     {
         ensureBufferSpace(2);
         buffer[elementsCount++] = e1;
@@ -187,7 +191,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Add all elements from a range of given array to the list.
      */
-    public void add(KType [] elements, int start, int length)
+    public void add(final KType [] elements, final int start, final int length)
     {
         assert length >= 0 : "Length must be >= 0";
 
@@ -201,7 +205,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * <p><b>This method is handy, but costly if used in tight loops (anonymous
      * array passing)</b></p>
      */
-    public void add(KType... elements)
+    public void add(final KType... elements)
     {
         add(elements, 0, elements.length);
     }
@@ -209,12 +213,12 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Adds all elements from another container.
      */
-    public int addAll(KTypeContainer<? extends KType> container)
+    public int addAll(final KTypeContainer<? extends KType> container)
     {
         final int size = container.size();
         ensureBufferSpace(size);
 
-        for (KTypeCursor<? extends KType> cursor : container)
+        for (final KTypeCursor<? extends KType> cursor : container)
         {
             add(cursor.value);
         }
@@ -225,10 +229,10 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /**
      * Adds all elements from another iterable.
      */
-    public int addAll(Iterable<? extends KTypeCursor<? extends KType>> iterable)
+    public int addAll(final Iterable<? extends KTypeCursor<? extends KType>> iterable)
     {
         int size = 0;
-        for (KTypeCursor<? extends KType> cursor : iterable)
+        for (final KTypeCursor<? extends KType> cursor : iterable)
         {
             add(cursor.value);
             size++;
@@ -240,7 +244,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public void insert(int index, KType e1)
+    public void insert(final int index, final KType e1)
     {
         assert (index >= 0 && index <= size()) :
             "Index " + index + " out of bounds [" + 0 + ", " + size() + "].";
@@ -255,7 +259,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public KType get(int index)
+    public KType get(final int index)
     {
         assert (index >= 0 && index < size()) :
             "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
@@ -267,7 +271,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public KType set(int index, KType e1)
+    public KType set(final int index, final KType e1)
     {
         assert (index >= 0 && index < size()) :
             "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
@@ -281,7 +285,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public KType remove(int index)
+    public KType remove(final int index)
     {
         assert (index >= 0 && index < size()) :
             "Index " + index + " out of bounds [" + 0 + ", " + size() + ").";
@@ -300,7 +304,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public void removeRange(int fromIndex, int toIndex)
+    public void removeRange(final int fromIndex, final int toIndex)
     {
         assert (fromIndex >= 0 && fromIndex <= size()) :
             "Index " + fromIndex + " out of bounds [" + 0 + ", " + size() + ").";
@@ -325,7 +329,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int removeFirstOccurrence(KType e1)
+    public int removeFirstOccurrence(final KType e1)
     {
         final int index = indexOf(e1);
         if (index >= 0) remove(index);
@@ -336,7 +340,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int removeLastOccurrence(KType e1)
+    public int removeLastOccurrence(final KType e1)
     {
         final int index = lastIndexOf(e1);
         if (index >= 0) remove(index);
@@ -347,7 +351,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int removeAllOccurrences(KType e1)
+    public int removeAllOccurrences(final KType e1)
     {
         int to = 0;
         for (int from = 0; from < elementsCount; from++)
@@ -379,7 +383,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public boolean contains(KType e1)
+    public boolean contains(final KType e1)
     {
         return indexOf(e1) >= 0;
     }
@@ -388,7 +392,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int indexOf(KType e1)
+    public int indexOf(final KType e1)
     {
         for (int i = 0; i < elementsCount; i++)
             if (Intrinsics.equalsKType(e1, buffer[i]))
@@ -401,7 +405,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int lastIndexOf(KType e1)
+    public int lastIndexOf(final KType e1)
     {
         for (int i = elementsCount - 1; i >= 0; i--)
             if (Intrinsics.equalsKType(e1, buffer[i]))
@@ -415,7 +419,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * that it can hold at least the number of elements specified by
      * the minimum capacity argument.
      */
-    public void ensureCapacity(int minCapacity)
+    public void ensureCapacity(final int minCapacity)
     {
         if (minCapacity > this.buffer.length)
             ensureBufferSpace(minCapacity - size());
@@ -425,10 +429,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * Ensures the internal buffer has enough free slots to store
      * <code>expectedAdditions</code>. Increases internal buffer size if needed.
      */
-    protected void ensureBufferSpace(int expectedAdditions)
+    protected void ensureBufferSpace(final int expectedAdditions)
     {
         final int bufferLen = (buffer == null ? 0 : buffer.length);
-        if (elementsCount >= bufferLen - expectedAdditions)
+
+        if (elementsCount > bufferLen - expectedAdditions)
         {
             final int newSize = resizer.grow(bufferLen, elementsCount, expectedAdditions);
             assert newSize >= elementsCount + expectedAdditions : "Resizer failed to" +
@@ -450,7 +455,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * If the list is expanded, the elements beyond the current size are initialized with JVM-defaults
      * (zero or <code>null</code> values).
      */
-    public void resize(int newSize)
+    public void resize(final int newSize)
     {
         if (newSize <= buffer.length)
         {
@@ -521,7 +526,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /* #end */
     public void release()
     {
-        this.buffer = (KType []) EMPTY;
+        this.buffer = (KType []) KTypeArrayList.EMPTY;
         this.elementsCount = 0;
     }
 
@@ -529,7 +534,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public KType[] toArray(KType[] target)
+    public KType[] toArray(final KType[] target)
     {
         System.arraycopy(buffer, 0, target, 0, elementsCount);
         return target;
@@ -559,10 +564,11 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     @Override
     public int hashCode()
     {
-        int h = 1, max = elementsCount;
+        int h = 1;
+        final int max = elementsCount;
         for (int i = 0; i < max; i++)
         {
-            h = 31 * h + rehash(this.buffer[i]);
+            h = 31 * h + Internals.rehash(this.buffer[i]);
         }
         return h;
     }
@@ -574,19 +580,19 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /* #if ($TemplateOptions.KTypeGeneric) */
     @SuppressWarnings("unchecked")
     /* #end */
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
         if (obj != null)
         {
             if (obj instanceof KTypeArrayList<?>)
             {
-                KTypeArrayList<?> other = (KTypeArrayList<?>) obj;
+                final KTypeArrayList<?> other = (KTypeArrayList<?>) obj;
                 return other.size() == this.size() &&
                         rangeEquals(other.buffer, this.buffer, size());
             }
             else if (obj instanceof KTypeIndexedContainer<?>)
             {
-                KTypeIndexedContainer<?> other = (KTypeIndexedContainer<?>) obj;
+                final KTypeIndexedContainer<?> other = (KTypeIndexedContainer<?>) obj;
                 return other.size() == this.size() &&
                         allIndexesEqual(this, (KTypeIndexedContainer<KType>) other, this.size());
             }
@@ -600,7 +606,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     /*! #if ($TemplateOptions.KTypePrimitive)
     private boolean rangeEquals(KType [] b1, KType [] b2, int length)
         #else !*/
-    private boolean rangeEquals(Object [] b1, Object [] b2, int length)
+    private boolean rangeEquals(final Object [] b1, final Object [] b2, final int length)
     /*! #end !*/
     {
         for (int i = 0; i < length; i++)
@@ -618,13 +624,13 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * Compare index-aligned objects.
      */
     private boolean allIndexesEqual(
-            KTypeIndexedContainer<KType> b1,
-            KTypeIndexedContainer<KType> b2, int length)
+            final KTypeIndexedContainer<KType> b1,
+            final KTypeIndexedContainer<KType> b2, final int length)
     {
         for (int i = 0; i < length; i++)
         {
-            KType o1 = b1.get(i);
-            KType o2 = b2.get(i);
+            final KType o1 = b1.get(i);
+            final KType o2 = b2.get(i);
 
             if (!Intrinsics.equalsKType(o1, o2))
             {
@@ -680,7 +686,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public <T extends KTypeProcedure<? super KType>> T forEach(T procedure)
+    public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
     {
         return forEach(procedure, 0, size());
     }
@@ -690,8 +696,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * <code>fromIndex</code>, inclusive, to <code>toIndex</code>,
      * exclusive.
      */
-    public <T extends KTypeProcedure<? super KType>> T forEach(T procedure,
-            int fromIndex, final int toIndex)
+    public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure,
+            final int fromIndex, final int toIndex)
     {
         assert (fromIndex >= 0 && fromIndex <= size()) :
             "Index " + fromIndex + " out of bounds [" + 0 + ", " + size() + ").";
@@ -715,7 +721,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public int removeAll(KTypePredicate<? super KType> predicate)
+    public int removeAll(final KTypePredicate<? super KType> predicate)
     {
         final int elementsCount = this.elementsCount;
         int to = 0;
@@ -767,7 +773,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * {@inheritDoc}
      */
     @Override
-    public <T extends KTypePredicate<? super KType>> T forEach(T predicate)
+    public <T extends KTypePredicate<? super KType>> T forEach(final T predicate)
     {
         return forEach(predicate, 0, size());
     }
@@ -777,8 +783,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * <code>fromIndex</code>, inclusive, to <code>toIndex</code>,
      * exclusive, or until predicate returns <code>false</code>.
      */
-    public <T extends KTypePredicate<? super KType>> T forEach(T predicate,
-            int fromIndex, final int toIndex)
+    public <T extends KTypePredicate<? super KType>> T forEach(final T predicate,
+            final int fromIndex, final int toIndex)
     {
         assert (fromIndex >= 0 && fromIndex <= size()) :
             "Index " + fromIndex + " out of bounds [" + 0 + ", " + size() + ").";
@@ -814,7 +820,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * instead of using a constructor).
      */
     public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayList<KType> newInstanceWithCapacity(int initialCapacity)
+    KTypeArrayList<KType> newInstanceWithCapacity(final int initialCapacity)
     {
         return new KTypeArrayList<KType>(initialCapacity);
     }
@@ -824,7 +830,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * The elements are copied from the argument to the internal buffer.
      */
     public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayList<KType> from(KType... elements)
+    KTypeArrayList<KType> from(final KType... elements)
     {
         final KTypeArrayList<KType> list = new KTypeArrayList<KType>(elements.length);
         list.add(elements);
@@ -835,7 +841,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * Create a list from elements of another container.
      */
     public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayList<KType> from(KTypeContainer<KType> container)
+    KTypeArrayList<KType> from(final KTypeContainer<KType> container)
     {
         return new KTypeArrayList<KType>(container);
     }
@@ -885,9 +891,9 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * </b></p>
      */
     public void sort(
-            int beginIndex, int endIndex,
+            final int beginIndex, final int endIndex,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<KType>
+            final Comparator<KType>
             /*! #else
             KTypeComparator<KType>
             #end !*/
@@ -910,7 +916,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      */
     public void sort(
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Comparator<KType>
+            final Comparator<KType>
             /*! #else
             KTypeComparator<KType>
             #end !*/

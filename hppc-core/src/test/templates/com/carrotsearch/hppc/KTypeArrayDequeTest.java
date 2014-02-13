@@ -1015,6 +1015,45 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         assertOrder(comparatorDeque);
     }
 
+    @Test
+    public void testPreallocatedSize()
+    {
+        final Random randomVK = new Random();
+        //Test that the container do not resize if less that the initial size
+
+        final int NB_TEST_RUNS = 50;
+
+        for (int run = 0; run < NB_TEST_RUNS; run++)
+        {
+            //1) Choose a random number of elements
+            /*! #if ($TemplateOptions.isKType("GENERIC", "INT", "LONG", "FLOAT", "DOUBLE")) !*/
+            final int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            /*!
+            #elseif ($TemplateOptions.isKType("SHORT", "CHAR"))
+             int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #else
+              int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            #end !*/
+
+            //2) Preallocate to PREALLOCATED_SIZE :
+            final KTypeArrayDeque<KType> newDequeue = KTypeArrayDeque.newInstanceWithCapacity(PREALLOCATED_SIZE);
+
+            //3) Add PREALLOCATED_SIZE different values. At the end, size() must be == PREALLOCATED_SIZE,
+            //and internal buffer/allocated must not have changed of size
+            final int contructorBufferSize = newDequeue.buffer.length;
+
+            for (int i = 0; i < PREALLOCATED_SIZE; i++)
+            {
+                newDequeue.addLast(cast(randomVK.nextInt()));
+
+                //internal size has not changed.
+                Assert.assertEquals(contructorBufferSize, newDequeue.buffer.length);
+            }
+
+            Assert.assertEquals(PREALLOCATED_SIZE, newDequeue.size());
+        } //end for test runs
+    }
+
     /**
      * Test natural ordering in the deque
      * @param expected

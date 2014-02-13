@@ -980,6 +980,50 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
     }
 
+    @Test
+    public void testPreallocatedSize()
+    {
+        final Random randomVK = new Random();
+        //Test that the container do not resize if less that the initial size
+
+        final int NB_TEST_RUNS = 50;
+
+        for (int run = 0; run < NB_TEST_RUNS; run++)
+        {
+            //1) Choose a random number of elements
+            /*! #if ($TemplateOptions.isKType("GENERIC", "INT", "LONG", "FLOAT", "DOUBLE")) !*/
+            final int PREALLOCATED_SIZE = randomVK.nextInt(100000);
+            /*!
+            #elseif ($TemplateOptions.isKType("SHORT", "CHAR"))
+             int PREALLOCATED_SIZE = randomVK.nextInt(15000);
+            #else
+              int PREALLOCATED_SIZE = randomVK.nextInt(126);
+            #end !*/
+
+            //2) Preallocate to PREALLOCATED_SIZE :
+            final KTypeOpenHashSet<KType> newSet = KTypeOpenHashSet.newInstanceWithCapacity(PREALLOCATED_SIZE,
+                    KTypeOpenHashSet.DEFAULT_LOAD_FACTOR);
+
+            //3) Add PREALLOCATED_SIZE different values. At the end, size() must be == PREALLOCATED_SIZE,
+            //and internal buffer/allocated must not have changed of size
+            final int contructorBufferSize = newSet.keys.length;
+
+            Assert.assertEquals(contructorBufferSize, newSet.allocated.length);
+
+            for (int i = 0 ; i < PREALLOCATED_SIZE; i++) {
+
+                newSet.add(cast(i));
+
+                //internal size has not changed.
+                Assert.assertEquals(contructorBufferSize, newSet.keys.length);
+                Assert.assertEquals(contructorBufferSize, newSet.allocated.length);
+            }
+
+            Assert.assertEquals(PREALLOCATED_SIZE, newSet.size());
+        } //end for test runs
+    }
+
+
     private KTypeOpenHashSet<KType> createSetWithOrderedData(final int size)
     {
 
