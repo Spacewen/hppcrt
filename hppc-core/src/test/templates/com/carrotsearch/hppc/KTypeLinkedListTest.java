@@ -540,21 +540,6 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(l1, l2);
     }
 
-    /* */
-    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-    @SuppressWarnings("unchecked")
-    /*! #end !*/
-    @Test
-    public void testHashCodeEqualsWithOtherContainer()
-    {
-        final KTypeStack<KType> l1 = KTypeStack.from(k1, k2, k3);
-        final KTypeLinkedList<KType> l2 = KTypeLinkedList.from(k1, k2);
-        l2.add(k3);
-
-        Assert.assertEquals(l1.hashCode(), l2.hashCode());
-        Assert.assertEquals(l1, l2);
-    }
-
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     @Test
     @SuppressWarnings("unchecked")

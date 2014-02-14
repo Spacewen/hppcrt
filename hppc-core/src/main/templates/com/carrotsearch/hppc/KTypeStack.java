@@ -1,6 +1,13 @@
 package com.carrotsearch.hppc;
 
-import com.carrotsearch.hppc.cursors.KTypeCursor;
+import java.util.*;
+
+import com.carrotsearch.hppc.cursors.*;
+import com.carrotsearch.hppc.predicates.*;
+import com.carrotsearch.hppc.procedures.*;
+import com.carrotsearch.hppc.sorting.*;
+
+import static com.carrotsearch.hppc.Internals.*;
 
 /**
  * An extension to {@link KTypeArrayList} adding stack-related utility methods. The top of
@@ -69,6 +76,135 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     public KTypeStack(final KTypeContainer<KType> container)
     {
         super(container);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param index : counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public void insert(final int index, final KType e1)
+    {
+        super.insert(this.elementsCount - index, e1);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param index : counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public KType get(final int index)
+    {
+        return super.get(this.elementsCount - index - 1);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param index : counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public KType set(final int index, final KType e1)
+    {
+        return super.set(this.elementsCount - index - 1, e1);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param index : counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public KType remove(final int index)
+    {
+        return super.remove(this.elementsCount - index - 1);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @param index : counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public void removeRange(final int fromIndex, final int toIndex)
+    {
+        final int startRemoveRange = size() - toIndex;
+        final int endRemoveRange = size() - fromIndex;
+
+        super.removeRange(startRemoveRange, endRemoveRange);
+    }
+
+    /**
+     * {@inheritDoc}
+     * The first occurrence is counted from the top of the stack, going to the bottom.
+     */
+    @Override
+    public int removeFirstOccurrence(final KType e1)
+    {
+        final int index = indexOf(e1);
+        if (index >= 0)
+            remove(index);
+        return index;
+    }
+
+    /**
+     * {@inheritDoc}
+     * The last occurrence is counted from the bottom of the stack, going upwards to the top.
+     */
+    @Override
+    public int removeLastOccurrence(final KType e1)
+    {
+        final int index = lastIndexOf(e1);
+        if (index >= 0)
+            remove(index);
+        return index;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return counted from the top of the stack, i.e = 0 if top, bottom is index = size() - 1
+     */
+    @Override
+    public int indexOf(final KType e1)
+    {
+        //reverse logic
+        int res = super.lastIndexOf(e1);
+
+        if (res != -1)
+        {
+            res = elementsCount - res - 1;
+        }
+
+        return res;
+    }
+
+    @Override
+    public int lastIndexOf(final KType e1)
+    {
+        //reverse logic
+        int res = super.indexOf(e1);
+
+        if (res != -1)
+        {
+            res = elementsCount - res - 1;
+        }
+
+        return res;
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return  Returns the target argument for chaining, built from top of the stack to bottom.
+     */
+    @Override
+    public KType[] toArray(final KType[] target)
+    {
+        final int size = elementsCount;
+
+        //copy the buffer backwards.
+        for (int i = 0; i < size; i++)
+        {
+            target[i] = buffer[size - i - 1];
+        }
+
+        return target;
     }
 
     /**
@@ -238,12 +374,158 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     }
 
     /**
+     * Sort the stack from [beginIndex, endIndex[
+     * by natural ordering (smaller first, from top to bottom of stack)
+     * @param beginIndex
+     * @param endIndex
+     */
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public void sort(int beginIndex, int endIndex)
+    {
+        assert endIndex <= elementsCount;
+
+        if (endIndex - beginIndex > 1)
+        {
+            //take care of ordering the right range : [startSortingRange, endSortingRange[
+
+            final int size = size();
+
+            final int startSortingRange = size - endIndex;
+            final int endSortingRange = size - beginIndex;
+
+            KTypeSort.quicksort(buffer, startSortingRange, endSortingRange);
+
+            //reverse [startSortingRange, endSortingRange [
+            KType tmpValue;
+
+            final int halfSize = (endSortingRange - startSortingRange) / 2;
+
+            for (int i = 0; i < halfSize; i++)
+            {
+                tmpValue = this.buffer[i + startSortingRange];
+                this.buffer[i + startSortingRange] = this.buffer[endSortingRange - i - 1];
+                this.buffer[endSortingRange - i - 1] = tmpValue;
+            }
+        }
+    }
+    #end !*/
+
+    /**
+     * Sort the whole stack by natural ordering (smaller first, from top to bottom of stack)
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009]
+     * </b></p>
+     * @param beginIndex
+     * @param endIndex
+     */
+    /*! #if ($TemplateOptions.KTypePrimitive)
+    public void sort()
+    {
+        //sort full
+        super.sort();
+
+        //reverse all elements
+        final int size = size();
+        final int halfSize = size / 2;
+
+        KType tmpValue;
+
+        for (int i = 0; i < halfSize; i++)
+        {
+            tmpValue = this.buffer[i];
+            this.buffer[i] = this.buffer[size - i - 1];
+            this.buffer[size - i - 1] = tmpValue;
+        }
+    }
+    #end !*/
+
+    /**
+     * Sort the stack of <code>KType</code>s from [beginIndex, endIndex[
+     * where [beginIndex, endIndex[ is counted from the top of the stack, i.e top is = index 0, bottom is endIndex[. That way,
+     * the smallest elements are at the top of the stack.
+     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
+     * </b></p>
+     */
+    public void sort(
+            final int beginIndex, final int endIndex,
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            final Comparator<KType>
+            /*! #else
+            KTypeComparator<KType>
+            #end !*/
+            comp)
+    {
+        assert endIndex <= elementsCount;
+
+        if (endIndex - beginIndex > 1)
+        {
+            //take care of ordering the right range : [startSortingRange, endSortingRange[
+
+            final int size = size();
+
+            final int startSortingRange = size - endIndex;
+            final int endSortingRange = size - beginIndex;
+
+            KTypeSort.quicksort(buffer, startSortingRange, endSortingRange, comp);
+
+            //reverse [startSortingRange, endSortingRange [
+            KType tmpValue;
+
+            final int halfSize = (endSortingRange - startSortingRange) / 2;
+
+            for (int i = 0; i < halfSize; i++)
+            {
+                tmpValue = this.buffer[i + startSortingRange];
+                this.buffer[i + startSortingRange] = this.buffer[endSortingRange - i - 1];
+                this.buffer[endSortingRange - i - 1] = tmpValue;
+            }
+        }
+    }
+
+    /**
+     * Sort by dual-pivot quicksort an entire stack of <code>KType</code>s, the way
+     * the smallest elements are at the top of the stack.
+     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * <p><b>
+     * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
+     * </b></p>
+     */
+    public void sort(
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            final Comparator<KType>
+            /*! #else
+            KTypeComparator<KType>
+            #end !*/
+            comp)
+    {
+        //sort full
+        super.sort(comp);
+
+        //reverse all elements
+        final int size = size();
+        final int halfSize = size / 2;
+
+        KType tmpValue;
+
+        for (int i = 0; i < halfSize; i++)
+        {
+            tmpValue = this.buffer[i];
+            this.buffer[i] = this.buffer[size - i - 1];
+            this.buffer[size - i - 1] = tmpValue;
+        }
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
     public KTypeStack<KType> clone()
     {
         final KTypeStack<KType> cloned = new KTypeStack<KType>(this.buffer.length, this.resizer);
+
+        cloned.defaultValue = this.defaultValue;
 
         //in order by construction
         cloned.addAll(this);
