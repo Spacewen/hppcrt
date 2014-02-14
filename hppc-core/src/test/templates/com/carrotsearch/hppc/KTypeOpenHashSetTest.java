@@ -210,6 +210,31 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testFullLoadFactor()
+    {
+        set = new KTypeOpenHashSet<KType>(1, 1f);
+
+        // Fit in the byte key range.
+        final int capacity = 0x80;
+        final int max = capacity - 1;
+        for (int i = 0; i < max; i++)
+        {
+            set.add(cast(i));
+        }
+
+        // Still not expanded.
+        Assert.assertEquals(max, set.size());
+        Assert.assertEquals(capacity, set.keys.length);
+        // Won't expand (existing key).
+        set.add(cast(0));
+        Assert.assertEquals(capacity, set.keys.length);
+        // Expanded.
+        set.add(cast(0xff));
+        Assert.assertEquals(2 * capacity, set.keys.length);
+    }
+
+    /* */
+    @Test
     public void testBug_HPPC73_FullCapacityGet()
     {
         set = new KTypeOpenHashSet<KType>(1, 1f);

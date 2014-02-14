@@ -6,7 +6,7 @@ import com.carrotsearch.hppc.cursors.*;
 import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
 import com.carrotsearch.hppc.sorting.*;
-import static com.carrotsearch.hppc.Internals.*;
+
 
 /**
  * An double-linked list of KTypes. This is an hybrid of {@link KTypeDeque} and {@link  KTypeIndexedContainer},
@@ -125,7 +125,12 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         assert resizer != null;
 
         this.resizer = resizer;
-        ensureBufferSpace(resizer.round(initialCapacity));
+
+        final int internalSize = resizer.round(initialCapacity);
+
+        //allocate internal buffer
+        this.buffer = Intrinsics.newKTypeArray(internalSize + 2);
+        this.beforeAfterPointers = new long[internalSize + 2];
 
         //initialize
         elementsCount = 2;
@@ -527,7 +532,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     protected void ensureBufferSpace(final int expectedAdditions)
     {
         final int bufferLen = (buffer == null ? 0 : buffer.length);
-        if (elementsCount >= bufferLen - expectedAdditions)
+        if (elementsCount > bufferLen - expectedAdditions)
         {
             final int newSize = resizer.grow(bufferLen, elementsCount, expectedAdditions);
             assert newSize >= elementsCount + expectedAdditions : "Resizer failed to" +

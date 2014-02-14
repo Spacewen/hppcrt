@@ -1,17 +1,13 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.HashContainerUtils.PERTURBATIONS;
-import static com.carrotsearch.hppc.HashContainerUtils.nextCapacity;
-import static com.carrotsearch.hppc.HashContainerUtils.roundCapacity;
-import static com.carrotsearch.hppc.Internals.rehash;
-import static com.carrotsearch.hppc.Internals.rehashSpecificHash;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.*;
 
-import com.carrotsearch.hppc.cursors.KTypeCursor;
-import com.carrotsearch.hppc.hash.MurmurHash3;
-import com.carrotsearch.hppc.predicates.KTypePredicate;
-import com.carrotsearch.hppc.procedures.KTypeProcedure;
+import com.carrotsearch.hppc.cursors.*;
+import com.carrotsearch.hppc.predicates.*;
+import com.carrotsearch.hppc.procedures.*;
+
+import static com.carrotsearch.hppc.Internals.*;
+import static com.carrotsearch.hppc.HashContainerUtils.*;
 
 /**
  * A hash set of <code>KType</code>s, implemented using using open
@@ -177,8 +173,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         this.keys = Intrinsics.newKTypeArray(internalCapacity);
         this.allocated = new boolean[internalCapacity];
 
-        //the expected resize is really initialCapacity now
-        this.resizeAt = initialCapacity;
+        //Take advantage of the rounding so that the resize occur a bit later than expected.
+        this.resizeAt = (int) Math.max(2, internalCapacity * loadFactor - 2);
 
         this.perturbation = computePerturbationValue(internalCapacity);
     }

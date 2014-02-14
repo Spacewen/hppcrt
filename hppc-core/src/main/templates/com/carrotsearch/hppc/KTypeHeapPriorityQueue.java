@@ -1,7 +1,6 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.Internals.rehash;
-import java.util.Comparator;
+import java.util.*;
 
 import com.carrotsearch.hppc.cursors.*;
 import com.carrotsearch.hppc.predicates.*;
@@ -76,8 +75,10 @@ implements KTypePriorityQueue<KType>, Cloneable
         assert resizer != null;
 
         this.resizer = resizer;
+
         //1-based index buffer, assure allocation
-        ensureBufferSpace(resizer.round(initialCapacity + 1));
+        int internalSize = resizer.round(initialCapacity);
+        this.buffer = Intrinsics.newKTypeArray(internalSize + 1);
 
         this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
                 new ObjectFactory<ValueIterator>() {
@@ -591,7 +592,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     protected void ensureBufferSpace(final int expectedAdditions)
     {
         final int bufferLen = (buffer == null ? 0 : buffer.length - 1);
-        if (elementsCount >= bufferLen - expectedAdditions)
+        if (elementsCount > bufferLen - expectedAdditions)
         {
             final int newSize = resizer.grow(bufferLen, elementsCount, expectedAdditions + 1);
             assert newSize >= elementsCount + expectedAdditions : "Resizer failed to" +

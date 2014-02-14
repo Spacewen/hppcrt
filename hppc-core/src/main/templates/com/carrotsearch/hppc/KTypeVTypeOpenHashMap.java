@@ -209,8 +209,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         this.values = Intrinsics.newVTypeArray(internalCapacity);
         this.allocated = new boolean[internalCapacity];
 
-        //the expected resize is really initialCapacity now
-        this.resizeAt = initialCapacity;
+        //Take advantage of the rounding so that the resize occur a bit later than expected.
+        this.resizeAt = (int) Math.max(2, internalCapacity * loadFactor - 2);
 
         this.perturbation = computePerturbationValue(internalCapacity);
     }

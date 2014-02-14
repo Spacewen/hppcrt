@@ -2166,7 +2166,6 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
             for (int i = 0; i < PREALLOCATED_SIZE; i++)
             {
-
                 newList.add(cast(randomVK.nextInt()));
 
                 //internal size has not changed.

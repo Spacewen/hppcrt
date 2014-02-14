@@ -87,10 +87,8 @@ public class TemplateOptions
         //return true if it matches any type of the list
         for (final String kind : strKind)
         {
-
             if (Type.valueOf(kind) == this.vtype)
             {
-
                 return true;
             }
         }
@@ -174,7 +172,6 @@ public class TemplateOptions
         {
             if (Type.valueOf(notToBeGenerated) == this.vtype)
             {
-
                 this.doNotGenerateVType = true;
                 return;
             }
@@ -209,12 +206,10 @@ public class TemplateOptions
 
     public boolean isDefined(final String... defines)
     {
-
         for (final String def : defines)
         {
             if (this.definesSet.contains(def))
             {
-
                 return true;
             }
         }
@@ -224,12 +219,10 @@ public class TemplateOptions
 
     public boolean isUnDefined(final String... defines)
     {
-
         for (final String def : defines)
         {
             if (this.definesSet.contains(def))
             {
-
                 return false;
             }
         }

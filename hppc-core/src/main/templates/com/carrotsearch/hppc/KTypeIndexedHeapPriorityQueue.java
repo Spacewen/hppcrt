@@ -1,8 +1,6 @@
 package com.carrotsearch.hppc;
 
-import static com.carrotsearch.hppc.Internals.rehash;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.util.*;
 
 import com.carrotsearch.hppc.cursors.*;
 import com.carrotsearch.hppc.predicates.*;
