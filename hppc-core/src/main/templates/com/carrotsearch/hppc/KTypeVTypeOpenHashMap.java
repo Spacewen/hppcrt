@@ -372,48 +372,29 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param additionValue The value to add to the existing value if <code>key</code> exists.
      * @return Returns the current value associated with <code>key</code> (after changes).
      */
-    /*! #if ($TemplateOptions.VTypeNumeric && $TemplateOptions.KTypePrimitive)
+    /*! #if ($TemplateOptions.VTypeNumeric)
     public VType putOrAdd(KType key, VType putValue, VType additionValue)
     {
         assert assigned < allocated.length;
 
         final int mask = allocated.length - 1;
-        int slot = rehash(key, perturbation) & mask;
+
+        #if($TemplateOptions.KTypeGeneric)
+            final HashingStrategy<KType> strategy = this.hashStrategy;
+            int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+        #else
+            int slot = rehash(key, perturbation) & mask;
+        #end
 
         while (allocated[slot])
         {
-            if (key == keys[slot])
-            {
-                values[slot] += additionValue;
-                return values[slot];
-            }
-
-            slot = (slot + 1) & mask;
-        }
-
-        if (assigned == resizeAt) {
-            expandAndPut(key, putValue, slot);
-        } else {
-            assigned++;
-            allocated[slot] = true;
-            keys[slot] = key;
-            values[slot] = putValue;
-        }
-        return putValue;
-    }
-    #end !*/
-
-    /*! #if ($TemplateOptions.VTypeNumeric && $TemplateOptions.KTypeGeneric)
-    public VType putOrAdd(KType key, VType putValue, VType additionValue)
-    {
-        assert assigned < allocated.length;
-
-        final int mask = allocated.length - 1;
-        final HashingStrategy<KType> strategy = this.hashStrategy;
-        int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
-        while (allocated[slot])
-        {
-            if (Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy))
+            if (
+                 #if($TemplateOptions.KTypeGeneric)
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                #else
+                    key == keys[slot]
+                #end
+            )
             {
                 values[slot] += additionValue;
                 return values[slot];
