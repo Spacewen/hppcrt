@@ -3,6 +3,7 @@ package com.carrotsearch.hppc.generator;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
 
 /**
@@ -15,6 +16,8 @@ public class TemplateOptions
 
     public boolean doNotGenerateKType = false;
     public boolean doNotGenerateVType = false;
+
+    public HashSet<String> definesSet = new HashSet<String>();
 
     public File sourceFile;
 
@@ -49,7 +52,6 @@ public class TemplateOptions
         //return true if it matches any type of the list
         for (final String kind : strKind)
         {
-
             if (Type.valueOf(kind) == this.ktype)
             {
 
@@ -189,24 +191,70 @@ public class TemplateOptions
         return this.doNotGenerateVType;
     }
 
+    public void define(final String... defines)
+    {
+        for (final String def : defines)
+        {
+            this.definesSet.add(def);
+        }
+    }
+
+    public void unDefine(final String... defines)
+    {
+        for (final String def : defines)
+        {
+            this.definesSet.remove(def);
+        }
+    }
+
+    public boolean isDefined(final String... defines)
+    {
+
+        for (final String def : defines)
+        {
+            if (this.definesSet.contains(def))
+            {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isUnDefined(final String... defines)
+    {
+
+        for (final String def : defines)
+        {
+            if (this.definesSet.contains(def))
+            {
+
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /**
      * Returns the current time in ISO format.
      */
-    public String getTimeNow()
-    {
-        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
-        return format.format(new Date());
-    }
+     public String getTimeNow()
+     {
+         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
+         return format.format(new Date());
+     }
 
-    public String getSourceFile()
-    {
-        return sourceFile.getName();
-    }
+     public String getSourceFile()
+     {
+         return sourceFile.getName();
+     }
 
-    public String getGeneratedAnnotation()
-    {
-        return "@javax.annotation.Generated(date = \"" +
-                getTimeNow() + "\", value = \"HPPC generated from: " +
-                sourceFile.getName() + "\")";
-    }
+     public String getGeneratedAnnotation()
+     {
+         return "@javax.annotation.Generated(date = \"" +
+                 getTimeNow() + "\", value = \"HPPC generated from: " +
+                 sourceFile.getName() + "\")";
+     }
 }

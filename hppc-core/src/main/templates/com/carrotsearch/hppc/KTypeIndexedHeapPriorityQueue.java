@@ -19,6 +19,7 @@ import com.carrotsearch.hppc.sorting.*;
  * and change priority in O(log2(N)) time.
  */
 // ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+// ${TemplateOptions.unDefine("debug", "DEBUG")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
 implements KTypeIndexedPriorityQueue<KType>, Cloneable
@@ -222,8 +223,6 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 lastElementIndex = qp[elementsCount];
 
                 //put the last element at position pos, like in deleteIndex()
-                //not needed, overwritten below :
-                //qp[pos] = -1;
 
                 buffer[pos] = buffer[elementsCount];
                 //last element is now at deleted position pos
@@ -236,14 +235,16 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 qp[pos] = lastElementIndex;
 
                 //Not really needed
-                //qp[elementsCount] = -1;
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                qp[elementsCount] = -1;
+                /*! #end !*/
 
                 //for GC
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
 
-                //diminuish size
+                //Diminish size
                 elementsCount--;
                 deleted++;
             } //end if to delete
@@ -256,8 +257,10 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
         //reestablish heap
         refreshPriorities();
 
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
         assert isMinHeap();
         assert isConsistent();
+        /*! #end !*/
 
         return deleted;
     }
@@ -278,7 +281,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
 
         //This is not really needed to reset this,
         //but is useful to catch inconsistencies in assertions
-        //Arrays.fill(qp, -1);
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        Arrays.fill(qp, -1);
+        /*! #end !*/
 
         this.elementsCount = 0;
     }
@@ -461,8 +466,6 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
 
         //swim last element
         swim(count);
-        //do not assert here, too slow to be done at each insert
-        //assert isMinHeap();
 
         return true;
     }
@@ -510,7 +513,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
     @Override
     public KType getIndex(final int index)
     {
-        // assert index >= pq.length || pq[index] > 0 : "Element of index " + " doesn't exist !";
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        assert index >= pq.length || pq[index] > 0 : "Element of index " + " doesn't exist !";
+        /*! #end !*/
 
         KType elem = this.defaultValue;
 
@@ -570,7 +575,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 /*! #end !*/
 
                 //Not really needed, but usefull to catch inconsistencies
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
                 qp[deletedPos] = -1;
+                /*! #end !*/
 
                 //diminuish size
                 elementsCount--;
@@ -578,16 +585,23 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
             else
             {
                 //We are not removing the last element
-                // assert (deletedPos > 0 && qp[deletedPos] == index) : String.format("pq[index] = %d, qp[pq[index]] = %d (index = %d)",
-                //         deletedPos, qp[deletedPos], index);
+
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                assert (deletedPos > 0 && qp[deletedPos] == index) : String.format("pq[index] = %d, qp[pq[index]] = %d (index = %d)",
+                        deletedPos, qp[deletedPos], index);
+                /*! #end !*/
 
                 final int lastElementIndex = qp[elementsCount];
 
-                //    assert (lastElementIndex >= 0 && pq[lastElementIndex] == elementsCount) : String.format("lastElementIndex = qp[elementsCount] = %d, pq[lastElementIndex] = %d, elementsCount = %d",
-                //            lastElementIndex, pq[lastElementIndex], elementsCount);
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                assert (lastElementIndex >= 0 && pq[lastElementIndex] == elementsCount) : String.format("lastElementIndex = qp[elementsCount] = %d, pq[lastElementIndex] = %d, elementsCount = %d",
+                        lastElementIndex, pq[lastElementIndex], elementsCount);
+                /*! #end !*/
 
                 //not needed, overwritten below :
-                //qp[deletedPos] = -1;
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                qp[deletedPos] = -1;
+                /*! #end !*/
 
                 buffer[deletedPos] = buffer[elementsCount];
                 //last element is now at pos deletedPos
@@ -599,7 +613,9 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 pq[index] = 0;
 
                 //Not really needed, but usefull to catch inconsistencies
-                //qp[elementsCount] = -1;
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                qp[elementsCount] = -1;
+                /*! #end !*/
 
                 //for GC
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -610,11 +626,13 @@ implements KTypeIndexedPriorityQueue<KType>, Cloneable
                 elementsCount--;
 
                 //after swapping positions
-                //   assert (pq[lastElementIndex] == deletedPos) : String.format("pq[lastElementIndex = %d] = %d, while deletedPos = %d, (index = %d)",
-                //           lastElementIndex, pq[lastElementIndex], deletedPos, index);
+                /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+                assert (pq[lastElementIndex] == deletedPos) : String.format("pq[lastElementIndex = %d] = %d, while deletedPos = %d, (index = %d)",
+                        lastElementIndex, pq[lastElementIndex], deletedPos, index);
 
-                //   assert (qp[deletedPos] == lastElementIndex) : String.format("qp[deletedPos = %d] = %d, while lastElementIndex = %d, (index = %d)",
-                //           deletedPos, qp[deletedPos], lastElementIndex, index);
+                assert (qp[deletedPos] == lastElementIndex) : String.format("qp[deletedPos = %d] = %d, while lastElementIndex = %d, (index = %d)",
+                        deletedPos, qp[deletedPos], lastElementIndex, index);
+                /*! #end !*/
 
                 if (elementsCount > 1)
                 {

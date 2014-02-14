@@ -24,12 +24,13 @@ especially noticable for big container sizes.
 4. API additions:
    1.  toArray(existing array) for every container, good for array reuse in RealTime environnement
    2.  In hppc.sorting, primitive and Generics in place array sorts, similar to java.util.Arrays with Comparable and Comparator versions
-   3.  sort methods for ArrayLists
+   3.  sort methods for ArrayLists, LinkedLists
    4.  sort methods for ArrayDeques
    5.  Custom HashingStrategy for Object HashMaps/HashSets, to override the usual equals()/hashCode().
    6.  Priority queues, and Indexed priority queues
    7.  Double linked-lists, supporting all operations common to lists and dequeues, with rich bi-derectional iterating methods.
    8.  Custom default values for methods returning default values in some circonstances (see Javadoc)
+   9.  Boolean versions of containers when it makes sense: lists, queues, stacks, values of Maps.
 
 All these new features are Unit tested, so should work reasonably well.
 Pre-built binaries, sources and Javadoc are provided in the 'hppc/binaries' of the '0.6x-RT' branch for convenience.

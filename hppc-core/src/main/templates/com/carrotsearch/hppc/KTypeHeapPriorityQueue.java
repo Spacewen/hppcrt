@@ -17,6 +17,7 @@ import com.carrotsearch.hppc.sorting.*;
  */
 
 // ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+// ${TemplateOptions.unDefine("debug", "DEBUG")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
 implements KTypePriorityQueue<KType>, Cloneable
@@ -175,7 +176,10 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //restore the heap
         refreshPriorities();
+
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
         assert isMinHeap();
+        /*! #end !*/
 
         return deleted;
     }
@@ -235,7 +239,9 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //reestablish heap
         refreshPriorities();
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
         assert isMinHeap();
+        /*! #end !*/
 
         return elementsCount - to + 1;
     }
@@ -373,8 +379,6 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //swim last element
         swim(elementsCount);
-        //do not use it here, too slow to be done at each insert
-        // assert isMinHeap();
     }
 
     /**
@@ -433,8 +437,6 @@ implements KTypePriorityQueue<KType>, Cloneable
 
                 //percolate down the first element
                 sink(1);
-                //do not use it here, too slow to be done at each popTop()
-                // assert isMinHeap();
             }
         }
 
@@ -458,7 +460,9 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //restore heap
         refreshPriorities();
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
         assert isMinHeap();
+        /*! #end !*/
 
         return size;
     }
@@ -480,7 +484,9 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //restore heap
         refreshPriorities();
+        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
         assert isMinHeap();
+        /*! #end !*/
 
         return size;
     }
