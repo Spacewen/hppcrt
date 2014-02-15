@@ -48,7 +48,7 @@ import static com.carrotsearch.hppc.Internals.*;
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeArrayDeque<KType>
-extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
+        extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -71,7 +71,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * Direct deque iteration from head to tail: iterate buffer[i % buffer.length] for i in [this.head; this.head + size()[
      * </p>
      */
-    public KType [] buffer;
+    public KType[] buffer;
 
     /**
      * The index of the element at the head of the deque or an
@@ -90,7 +90,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      */
     protected final ArraySizingStrategy resizer;
 
-
     /**
      * internal pool of DescendingValueIterator (must be created in constructor)
      */
@@ -100,7 +99,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * internal pool of ValueIterator (must be created in constructor)
      */
     protected final IteratorPool<KTypeCursor<KType>, ValueIterator> valueIteratorPool;
-
 
     /**
      * Create with default sizing strategy and initial capacity for storing
@@ -142,13 +140,15 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 new ObjectFactory<ValueIterator>() {
 
                     @Override
-                    public ValueIterator create() {
+                    public ValueIterator create()
+                    {
 
                         return new ValueIterator();
                     }
 
                     @Override
-                    public void initialize(final ValueIterator obj) {
+                    public void initialize(final ValueIterator obj)
+                    {
 
                         obj.cursor.index = Intrinsics.oneLeft(KTypeArrayDeque.this.head, KTypeArrayDeque.this.buffer.length);
                         obj.remaining = KTypeArrayDeque.this.size();
@@ -159,13 +159,15 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 new ObjectFactory<DescendingValueIterator>() {
 
                     @Override
-                    public DescendingValueIterator create() {
+                    public DescendingValueIterator create()
+                    {
 
                         return new DescendingValueIterator();
                     }
 
                     @Override
-                    public void initialize(final DescendingValueIterator obj) {
+                    public void initialize(final DescendingValueIterator obj)
+                    {
 
                         obj.cursor.index = KTypeArrayDeque.this.tail;
                         obj.remaining = KTypeArrayDeque.this.size();
@@ -324,7 +326,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
 
         final KType result = buffer[head];
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        buffer[head] = Intrinsics.<KType>defaultKTypeValue();
+        buffer[head] = Intrinsics.<KType> defaultKTypeValue();
         /*! #end !*/
         head = Intrinsics.oneRight(head, buffer.length);
         return result;
@@ -341,7 +343,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         tail = Intrinsics.oneLeft(tail, buffer.length);
         final KType result = buffer[tail];
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        buffer[tail] = Intrinsics.<KType>defaultKTypeValue();
+        buffer[tail] = Intrinsics.<KType> defaultKTypeValue();
         /*! #end !*/
         return result;
     }
@@ -375,7 +377,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     public int removeFirstOccurrence(final KType e1)
     {
         final int index = bufferIndexOf(e1);
-        if (index >= 0) removeAtBufferIndex(index);
+        if (index >= 0)
+            removeAtBufferIndex(index);
         return index;
     }
 
@@ -407,7 +410,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     public int removeLastOccurrence(final KType e1)
     {
         final int index = lastBufferIndexOf(e1);
-        if (index >= 0) removeAtBufferIndex(index);
+        if (index >= 0)
+            removeAtBufferIndex(index);
         return index;
     }
 
@@ -423,6 +427,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     {
         final int bufLen = buffer.length;
         final int last = Intrinsics.oneLeft(head, bufLen);
+        final KType[] buffer = this.buffer;
+
         for (int i = Intrinsics.oneLeft(tail, bufLen); i != last; i = Intrinsics.oneLeft(i, bufLen))
         {
             if (Intrinsics.equalsKType(e1, buffer[i]))
@@ -441,13 +447,15 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         int removed = 0;
         final int last = tail;
         final int bufLen = buffer.length;
+        final KType[] buffer = this.buffer;
+
         int from, to;
         for (from = to = head; from != last; from = Intrinsics.oneRight(from, bufLen))
         {
             if (Intrinsics.equalsKType(e1, buffer[from]))
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[from] = Intrinsics.<KType>defaultKTypeValue();
+                buffer[from] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
                 removed++;
                 continue;
@@ -457,7 +465,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             {
                 buffer[to] = buffer[from];
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[from] = Intrinsics.<KType>defaultKTypeValue();
+                buffer[from] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
             }
 
@@ -482,50 +490,50 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 : index >= head || index < tail) : "Index out of range (head="
                 + head + ", tail=" + tail + ", index=" + index + ").";
 
-                // Cache fields in locals (hopefully moved to registers).
-                final KType [] b = this.buffer;
-                final int bufLen = b.length;
-                final int lastIndex = bufLen - 1;
-                final int head = this.head;
-                final int tail = this.tail;
+        // Cache fields in locals (hopefully moved to registers).
+        final KType[] b = this.buffer;
+        final int bufLen = b.length;
+        final int lastIndex = bufLen - 1;
+        final int head = this.head;
+        final int tail = this.tail;
 
-                final int leftChunk = Math.abs(index - head) % bufLen;
-                final int rightChunk = Math.abs(tail - index) % bufLen;
+        final int leftChunk = Math.abs(index - head) % bufLen;
+        final int rightChunk = Math.abs(tail - index) % bufLen;
 
-                if (leftChunk < rightChunk)
-                {
-                    if (index >= head)
-                    {
-                        System.arraycopy(b, head, b, head + 1, leftChunk);
-                    }
-                    else
-                    {
-                        System.arraycopy(b, 0, b, 1, index);
-                        b[0] = b[lastIndex];
-                        System.arraycopy(b, head, b, head + 1, lastIndex - head);
-                    }
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    b[head] = Intrinsics.<KType>defaultKTypeValue();
-                    /*! #end !*/
-                    this.head = Intrinsics.oneRight(head, bufLen);
-                }
-                else
-                {
-                    if (index < tail)
-                    {
-                        System.arraycopy(b, index + 1, b, index, rightChunk);
-                    }
-                    else
-                    {
-                        System.arraycopy(b, index + 1, b, index, lastIndex - index);
-                        b[lastIndex] = b[0];
-                        System.arraycopy(b, 1, b, 0, tail);
-                    }
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    b[tail] = Intrinsics.<KType>defaultKTypeValue();
-                    /*! #end !*/
-                    this.tail = Intrinsics.oneLeft(tail, bufLen);
-                }
+        if (leftChunk < rightChunk)
+        {
+            if (index >= head)
+            {
+                System.arraycopy(b, head, b, head + 1, leftChunk);
+            }
+            else
+            {
+                System.arraycopy(b, 0, b, 1, index);
+                b[0] = b[lastIndex];
+                System.arraycopy(b, head, b, head + 1, lastIndex - head);
+            }
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            b[head] = Intrinsics.<KType> defaultKTypeValue();
+            /*! #end !*/
+            this.head = Intrinsics.oneRight(head, bufLen);
+        }
+        else
+        {
+            if (index < tail)
+            {
+                System.arraycopy(b, index + 1, b, index, rightChunk);
+            }
+            else
+            {
+                System.arraycopy(b, index + 1, b, index, lastIndex - index);
+                b[lastIndex] = b[0];
+                System.arraycopy(b, 1, b, 0, tail);
+            }
+            /*! #if ($TemplateOptions.KTypeGeneric) !*/
+            b[tail] = Intrinsics.<KType> defaultKTypeValue();
+            /*! #end !*/
+            this.tail = Intrinsics.oneLeft(tail, bufLen);
+        }
     }
 
     /**
@@ -616,7 +624,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                     " return sensible new size: " + newSize + " <= "
                     + (elementsCount + expectedAdditions);
 
-            final KType [] newBuffer = Intrinsics.<KType[]>newKTypeArray(newSize);
+            final KType[] newBuffer = Intrinsics.<KType[]> newKTypeArray(newSize);
             if (bufferLen > 0)
             {
                 toArray(newBuffer);
@@ -636,7 +644,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * @return Returns the target argument for chaining.
      */
     @Override
-    public KType [] toArray(final KType [] target)
+    public KType[] toArray(final KType[] target)
     {
         assert target.length >= size() : "Target array must be >= " + size();
 
@@ -651,7 +659,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             // [head...buffer.length - 1][0, tail - 1]
             final int rightCount = buffer.length - head;
             System.arraycopy(buffer, head, target, 0, rightCount);
-            System.arraycopy(buffer,    0, target, rightCount, tail);
+            System.arraycopy(buffer, 0, target, rightCount, tail);
         }
 
         return target;
@@ -704,7 +712,6 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
             return cursor;
         }
     }
-
 
     /**
      * An iterator implementation for {@link ObjectArrayDeque#descendingIterator()}.
@@ -795,7 +802,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      */
     private void forEach(final KTypeProcedure<? super KType> procedure, final int fromIndex, final int toIndex)
     {
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
         for (int i = fromIndex; i != toIndex; i = Intrinsics.oneRight(i, buffer.length))
         {
             procedure.apply(buffer[i]);
@@ -811,7 +818,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         final int fromIndex = head;
         final int toIndex = tail;
 
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
         for (int i = fromIndex; i != toIndex; i = Intrinsics.oneRight(i, buffer.length))
         {
             if (!predicate.apply(buffer[i]))
@@ -841,7 +848,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         if (fromIndex == toIndex)
             return;
 
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
         int i = toIndex;
         do
         {
@@ -871,7 +878,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         if (fromIndex == toIndex)
             return;
 
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
         int i = toIndex;
         do
         {
@@ -890,6 +897,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         int removed = 0;
         final int last = tail;
         final int bufLen = buffer.length;
+        final KType[] buffer = this.buffer;
+
         int from, to;
         from = to = head;
         try
@@ -899,7 +908,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 if (predicate.apply(buffer[from]))
                 {
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType>defaultKTypeValue();
+                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                     removed++;
                     continue;
@@ -909,7 +918,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 {
                     buffer[to] = buffer[from];
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType>defaultKTypeValue();
+                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                 }
 
@@ -925,7 +934,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 {
                     buffer[to] = buffer[from];
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType>defaultKTypeValue();
+                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                 }
 
@@ -946,7 +955,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         final int fromIndex = head;
         final int toIndex = tail;
 
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
+
         for (int i = fromIndex; i != toIndex; i = Intrinsics.oneRight(i, buffer.length))
         {
             if (Intrinsics.equalsKType(e, buffer[i]))
@@ -966,7 +976,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
         final int fromIndex = head;
         final int toIndex = tail;
 
-        final KType [] buffer = this.buffer;
+        final KType[] buffer = this.buffer;
+
         for (int i = fromIndex; i != toIndex; i = Intrinsics.oneRight(i, buffer.length))
         {
             h = 31 * h + Internals.rehash(this.buffer[i]);
@@ -992,7 +1003,7 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
                 if (other.size() == this.size())
                 {
                     final int fromIndex = head;
-                    final KType [] buffer = this.buffer;
+                    final KType[] buffer = this.buffer;
                     int i = fromIndex;
 
                     //request a pooled iterator
@@ -1033,8 +1044,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * Returns a new object of this class with no need to declare generic type (shortcut
      * instead of using a constructor).
      */
-    public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayDeque<KType> newInstance()
+    public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
+            KTypeArrayDeque<KType> newInstance()
     {
         return new KTypeArrayDeque<KType>();
     }
@@ -1043,8 +1054,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
      * Returns a new object of this class with no need to declare generic type (shortcut
      * instead of using a constructor).
      */
-    public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayDeque<KType> newInstanceWithCapacity(final int initialCapacity)
+    public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
+            KTypeArrayDeque<KType> newInstanceWithCapacity(final int initialCapacity)
     {
         return new KTypeArrayDeque<KType>(initialCapacity);
     }
@@ -1052,8 +1063,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     /**
      * Create a new deque by pushing a variable number of arguments to the end of it.
      */
-    public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayDeque<KType> from(final KType... elements)
+    public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
+            KTypeArrayDeque<KType> from(final KType... elements)
     {
         final KTypeArrayDeque<KType> coll = new KTypeArrayDeque<KType>(elements.length);
         coll.addLast(elements);
@@ -1063,8 +1074,8 @@ extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
     /**
      * Create a new deque by pushing a variable number of arguments to the end of it.
      */
-    public static /* #if ($TemplateOptions.KTypeGeneric) */ <KType> /* #end */
-    KTypeArrayDeque<KType> from(final KTypeArrayDeque<KType> container)
+    public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
+            KTypeArrayDeque<KType> from(final KTypeArrayDeque<KType> container)
     {
         return new KTypeArrayDeque<KType>(container);
     }

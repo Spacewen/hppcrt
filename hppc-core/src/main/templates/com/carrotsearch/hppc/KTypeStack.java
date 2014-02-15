@@ -125,8 +125,10 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     @Override
     public void removeRange(final int fromIndex, final int toIndex)
     {
-        final int startRemoveRange = size() - toIndex;
-        final int endRemoveRange = size() - fromIndex;
+        final int size = size();
+
+        final int startRemoveRange = size - toIndex;
+        final int endRemoveRange = size - fromIndex;
 
         super.removeRange(startRemoveRange, endRemoveRange);
     }
@@ -138,10 +140,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     @Override
     public int removeFirstOccurrence(final KType e1)
     {
-        final int index = indexOf(e1);
-        if (index >= 0)
-            remove(index);
-        return index;
+        return super.removeFirstOccurrence(e1);
     }
 
     /**
@@ -151,10 +150,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     @Override
     public int removeLastOccurrence(final KType e1)
     {
-        final int index = lastIndexOf(e1);
-        if (index >= 0)
-            remove(index);
-        return index;
+        return super.removeLastOccurrence(e1);
     }
 
     /**

@@ -7,7 +7,6 @@ import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
 import com.carrotsearch.hppc.sorting.*;
 
-
 /**
  * An double-linked list of KTypes. This is an hybrid of {@link KTypeDeque} and {@link  KTypeIndexedContainer},
  * with the ability to push or remove values from either head or tail, in constant time.
@@ -28,7 +27,7 @@ import com.carrotsearch.hppc.sorting.*;
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeLinkedList<KType>
-extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, KTypeDeque<KType>, Cloneable
+        extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, KTypeDeque<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -226,9 +225,12 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
 
         ensureBufferSpace(length);
 
+        final KType[] buffer = this.buffer;
+        final long[] beforeAfterPointers = this.beforeAfterPointers;
+
         for (int i = 0; i < length; i++)
         {
-            insertAfterPosNoCheck(elements[start + i], Intrinsics.getLinkBefore(this.beforeAfterPointers[KTypeLinkedList.TAIL_POSITION]));
+            insertAfterPosNoCheck(elements[start + i], Intrinsics.getLinkBefore(beforeAfterPointers[KTypeLinkedList.TAIL_POSITION]));
         }
     }
 
@@ -1565,6 +1567,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         final long[] pointers = this.beforeAfterPointers;
 
+        final KType[] buffer = this.buffer;
+
         int currentPos = Intrinsics.getLinkAfter(pointers[KTypeLinkedList.HEAD_POSITION]);
 
         while (currentPos != KTypeLinkedList.TAIL_POSITION)
@@ -1586,6 +1590,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     {
         final long[] pointers = this.beforeAfterPointers;
 
+        final KType[] buffer = this.buffer;
+
         int currentPos = Intrinsics.getLinkAfter(pointers[KTypeLinkedList.HEAD_POSITION]);
 
         while (currentPos != KTypeLinkedList.TAIL_POSITION)
@@ -1602,7 +1608,6 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         return predicate;
     }
 
-
     /**
      * {@inheritDoc}
      */
@@ -1610,6 +1615,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     public <T extends KTypeProcedure<? super KType>> T descendingForEach(final T procedure)
     {
         final long[] pointers = this.beforeAfterPointers;
+
+        final KType[] buffer = this.buffer;
 
         int currentPos = Intrinsics.getLinkBefore(pointers[KTypeLinkedList.TAIL_POSITION]);
 
@@ -1631,6 +1638,8 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
     public <T extends KTypePredicate<? super KType>> T descendingForEach(final T predicate)
     {
         final long[] pointers = this.beforeAfterPointers;
+
+        final KType[] buffer = this.buffer;
 
         int currentPos = Intrinsics.getLinkBefore(pointers[KTypeLinkedList.TAIL_POSITION]);
 
@@ -1680,13 +1689,12 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
         return deleted;
     }
 
-
     /**
      * Returns a new object of this class with no need to declare generic type (shortcut
      * instead of using a constructor).
      */
     public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
-    KTypeLinkedList<KType> newInstance()
+            KTypeLinkedList<KType> newInstance()
     {
         return new KTypeLinkedList<KType>();
     }
@@ -1696,7 +1704,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * instead of using a constructor).
      */
     public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
-    KTypeLinkedList<KType> newInstanceWithCapacity(final int initialCapacity)
+            KTypeLinkedList<KType> newInstanceWithCapacity(final int initialCapacity)
     {
         return new KTypeLinkedList<KType>(initialCapacity);
     }
@@ -1706,7 +1714,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * The elements are copied from the argument to the internal buffer.
      */
     public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
-    KTypeLinkedList<KType> from(final KType... elements)
+            KTypeLinkedList<KType> from(final KType... elements)
     {
         final KTypeLinkedList<KType> list = new KTypeLinkedList<KType>(elements.length);
         list.add(elements);
@@ -1717,7 +1725,7 @@ extends AbstractKTypeCollection<KType> implements KTypeIndexedContainer<KType>, 
      * Create a list from elements of another container.
      */
     public static/* #if ($TemplateOptions.KTypeGeneric) */<KType> /* #end */
-    KTypeLinkedList<KType> from(final KTypeContainer<KType> container)
+            KTypeLinkedList<KType> from(final KTypeContainer<KType> container)
     {
         return new KTypeLinkedList<KType>(container);
     }

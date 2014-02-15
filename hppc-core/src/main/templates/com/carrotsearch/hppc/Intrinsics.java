@@ -47,7 +47,7 @@ public final class Intrinsics
      */
     public static <T> T defaultKTypeValue()
     {
-        return null;
+        return (T) null;
     }
 
     /**
@@ -58,7 +58,7 @@ public final class Intrinsics
      */
     public static <T> T defaultVTypeValue()
     {
-        return null;
+        return (T) null;
     }
 
     /**

@@ -19,7 +19,7 @@ import com.carrotsearch.hppc.sorting.*;
 // ${TemplateOptions.unDefine("debug", "DEBUG")}
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
-implements KTypePriorityQueue<KType>, Cloneable
+        implements KTypePriorityQueue<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -77,7 +77,7 @@ implements KTypePriorityQueue<KType>, Cloneable
         this.resizer = resizer;
 
         //1-based index buffer, assure allocation
-        int internalSize = resizer.round(initialCapacity);
+        final int internalSize = resizer.round(initialCapacity);
         this.buffer = Intrinsics.newKTypeArray(internalSize + 1);
 
         this.valueIteratorPool = new IteratorPool<KTypeCursor<KType>, ValueIterator>(
@@ -106,7 +106,7 @@ implements KTypePriorityQueue<KType>, Cloneable
      * @see BoundedProportionalArraySizingStrategy
      */
     public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp
-            /*! #else
+    /*! #else
     KTypeComparator<KType> comp
     #end !*/)
     {
@@ -151,22 +151,24 @@ implements KTypePriorityQueue<KType>, Cloneable
     {
         int to = 1;
         final int size = elementsCount;
+        final KType[] buff = this.buffer;
+
         //1-based index
         for (int from = 1; from <= size; from++)
         {
-            if (Intrinsics.equalsKType(e1, buffer[from]))
+            if (Intrinsics.equalsKType(e1, buff[from]))
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[from] = Intrinsics.<KType> defaultKTypeValue();
+                buff[from] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
                 continue;
             }
 
             if (to != from)
             {
-                buffer[to] = buffer[from];
+                buff[to] = buff[from];
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[from] = Intrinsics.<KType> defaultKTypeValue();
+                buff[from] = Intrinsics.<KType> defaultKTypeValue();
                 /*! #end !*/
             }
             to++;
@@ -178,7 +180,7 @@ implements KTypePriorityQueue<KType>, Cloneable
         //restore the heap
         refreshPriorities();
 
-        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -192,6 +194,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     public int removeAll(final KTypePredicate<? super KType> predicate)
     {
         final int elementsCount = this.elementsCount;
+        final KType[] buff = this.buffer;
 
         //1-based index
         int to = 1;
@@ -202,19 +205,19 @@ implements KTypePriorityQueue<KType>, Cloneable
             //1-based index
             for (; from <= elementsCount; from++)
             {
-                if (predicate.apply(buffer[from]))
+                if (predicate.apply(buff[from]))
                 {
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
+                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                     continue;
                 }
 
                 if (to != from)
                 {
-                    buffer[to] = buffer[from];
+                    buff[to] = buff[from];
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
+                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                 }
                 to++;
@@ -227,9 +230,9 @@ implements KTypePriorityQueue<KType>, Cloneable
             {
                 if (to != from)
                 {
-                    buffer[to] = buffer[from];
+                    buff[to] = buff[from];
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buffer[from] = Intrinsics.<KType> defaultKTypeValue();
+                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
                 }
                 to++;
@@ -240,7 +243,7 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //reestablish heap
         refreshPriorities();
-        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -309,10 +312,11 @@ implements KTypePriorityQueue<KType>, Cloneable
     {
         //1-based index
         final int size = elementsCount;
+        final KType[] buff = this.buffer;
 
         for (int i = 1; i <= size; i++)
         {
-            if (Intrinsics.equalsKType(element, buffer[i]))
+            if (Intrinsics.equalsKType(element, buff[i]))
             {
                 return true;
             }
@@ -336,12 +340,12 @@ implements KTypePriorityQueue<KType>, Cloneable
     @Override
     public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
     {
-        final KType[] buffer = this.buffer;
+        final KType[] buff = this.buffer;
         final int size = elementsCount;
 
         for (int i = 1; i <= size; i++)
         {
-            procedure.apply(buffer[i]);
+            procedure.apply(buff[i]);
         }
 
         return procedure;
@@ -353,12 +357,12 @@ implements KTypePriorityQueue<KType>, Cloneable
     @Override
     public <T extends KTypePredicate<? super KType>> T forEach(final T predicate)
     {
-        final KType[] buffer = this.buffer;
+        final KType[] buff = this.buffer;
         final int size = elementsCount;
 
         for (int i = 1; i <= size; i++)
         {
-            if (!predicate.apply(buffer[i]))
+            if (!predicate.apply(buff[i]))
                 break;
         }
 
@@ -461,7 +465,7 @@ implements KTypePriorityQueue<KType>, Cloneable
 
         //restore heap
         refreshPriorities();
-        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -475,17 +479,22 @@ implements KTypePriorityQueue<KType>, Cloneable
     public int addAll(final Iterable<? extends KTypeCursor<? extends KType>> iterable)
     {
         int size = 0;
+        final KType[] buff = this.buffer;
+        int count = this.elementsCount;
+
         for (final KTypeCursor<? extends KType> cursor : iterable)
         {
             ensureBufferSpace(1);
-            elementsCount++;
-            buffer[elementsCount] = cursor.value;
+            count++;
+            buff[count] = cursor.value;
             size++;
         }
 
+        this.elementsCount = count;
+
         //restore heap
         refreshPriorities();
-        /*! #if($TemplateOptions.isDefined("debug", "DEBUG")) !*/
+        /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -500,10 +509,12 @@ implements KTypePriorityQueue<KType>, Cloneable
     {
         int h = 1;
         final int max = elementsCount;
+        final KType[] buff = this.buffer;
+
         //1-based index
         for (int i = 1; i <= max; i++)
         {
-            h = 31 * h + Internals.rehash(this.buffer[i]);
+            h = 31 * h + Internals.rehash(buff[i]);
         }
         return h;
     }
@@ -626,6 +637,8 @@ implements KTypePriorityQueue<KType>, Cloneable
     private void sinkComparable(int k)
     {
         final int N = elementsCount;
+        final KType[] buff = this.buffer;
+
         KType tmp;
         int child;
 
@@ -634,20 +647,20 @@ implements KTypePriorityQueue<KType>, Cloneable
             //get the child of k
             child = k << 1;
 
-            if (child < N && Intrinsics.isCompSupKTypeUnchecked(buffer[child], buffer[child + 1]))
+            if (child < N && Intrinsics.isCompSupKTypeUnchecked(buff[child], buff[child + 1]))
             {
                 child++;
             }
 
-            if (!Intrinsics.isCompSupKTypeUnchecked(buffer[k], buffer[child]))
+            if (!Intrinsics.isCompSupKTypeUnchecked(buff[k], buff[child]))
             {
                 break;
             }
 
             //swap k and child
-            tmp = buffer[k];
-            buffer[k] = buffer[child];
-            buffer[child] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[child];
+            buff[child] = tmp;
 
             k = child;
         } //end while
@@ -660,6 +673,8 @@ implements KTypePriorityQueue<KType>, Cloneable
     private void sinkComparator(int k)
     {
         final int N = elementsCount;
+        final KType[] buff = this.buffer;
+
         KType tmp;
         int child;
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -673,20 +688,20 @@ implements KTypePriorityQueue<KType>, Cloneable
             //get the child of k
             child = k << 1;
 
-            if (child < N && comp.compare(buffer[child], buffer[child + 1]) > 0)
+            if (child < N && comp.compare(buff[child], buff[child + 1]) > 0)
             {
                 child++;
             }
 
-            if (comp.compare(buffer[k], buffer[child]) <= 0)
+            if (comp.compare(buff[k], buff[child]) <= 0)
             {
                 break;
             }
 
             //swap k and child
-            tmp = buffer[k];
-            buffer[k] = buffer[child];
-            buffer[child] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[child];
+            buff[child] = tmp;
 
             k = child;
         } //end while
@@ -700,17 +715,18 @@ implements KTypePriorityQueue<KType>, Cloneable
     {
         KType tmp;
         int parent;
+        final KType[] buff = this.buffer;
 
         while (k > 1 && Intrinsics.isCompSupKTypeUnchecked(buffer[k >> 1], buffer[k]))
         {
             //swap k and its parent
             parent = k >> 1;
 
-        tmp = buffer[k];
-        buffer[k] = buffer[parent];
-        buffer[parent] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[parent];
+            buff[parent] = tmp;
 
-        k = parent;
+            k = parent;
         }
     }
 
@@ -722,21 +738,23 @@ implements KTypePriorityQueue<KType>, Cloneable
     {
         KType tmp;
         int parent;
+        final KType[] buff = this.buffer;
+
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final Comparator<KType> comp = this.comparator;
         /*! #else
         KTypeComparator<KType> comp = this.comparator;
         #end !*/
 
-        while (k > 1 && comp.compare(buffer[k >> 1], buffer[k]) > 0)
+        while (k > 1 && comp.compare(buff[k >> 1], buff[k]) > 0)
         {
             //swap k and its parent
             parent = k >> 1;
-        tmp = buffer[k];
-        buffer[k] = buffer[parent];
-        buffer[parent] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[parent];
+            buff[parent] = tmp;
 
-        k = parent;
+            k = parent;
         }
     }
 
@@ -764,11 +782,12 @@ implements KTypePriorityQueue<KType>, Cloneable
         }
     }
 
+/*! #if($TemplateOptions.isDefined("debug")) !*/
     /**
-     * method to test invariant in assert
+     * methods to test invariant in assert, not present in final generated code
      */
 // is pq[1..N] a min heap?
-    protected boolean isMinHeap()
+    private boolean isMinHeap()
     {
         if (this.comparator == null)
         {
@@ -817,4 +836,7 @@ implements KTypePriorityQueue<KType>, Cloneable
         //recursively test
         return isMinHeapComparator(left) && isMinHeapComparator(right);
     }
+
+    //end of ifdef debug
+    /*! #end !*/
 }

@@ -2,6 +2,7 @@ package com.carrotsearch.hppc;
 
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Random;
 
 import org.junit.After;
@@ -62,7 +63,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             }
         }
 
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
     }
 
     /* */
@@ -117,56 +118,56 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         insertElements(prioq, 10, 9, 8, 7, 6, 5, 4, 3);
         assertPrioQueueEquals(prioq, 3, 4, 5, 6, 7, 8, 9, 10);
         Assert.assertEquals(8, prioq.size());
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(3, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 4, 5, 6, 7, 8, 9, 10);
         Assert.assertEquals(7, prioq.size());
         Assert.assertEquals(4, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(4, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 5, 6, 7, 8, 9, 10);
         Assert.assertEquals(6, prioq.size());
         Assert.assertEquals(5, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(5, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 6, 7, 8, 9, 10);
         Assert.assertEquals(5, prioq.size());
         Assert.assertEquals(6, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(6, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 7, 8, 9, 10);
         Assert.assertEquals(4, prioq.size());
         Assert.assertEquals(7, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(7, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 8, 9, 10);
         Assert.assertEquals(3, prioq.size());
         Assert.assertEquals(8, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(8, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 9, 10);
         Assert.assertEquals(2, prioq.size());
         Assert.assertEquals(9, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(9, castType(prioq.popTop()));
         assertPrioQueueEquals(prioq, 10);
         Assert.assertEquals(1, prioq.size());
         Assert.assertEquals(10, castType(prioq.top()));
-        Assert.assertTrue(prioq.isMinHeap());
+        Assert.assertTrue(isMinHeap(prioq));
         Assert.assertFalse(prioq.isEmpty());
 
         Assert.assertEquals(10, castType(prioq.popTop()));
@@ -512,12 +513,12 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
             if (i % 33548 == 0)
             {
-                Assert.assertTrue(testPQ.isMinHeap());
+                Assert.assertTrue(isMinHeap(testPQ));
             }
         }
 
         Assert.assertEquals(COUNT, testPQ.size());
-        Assert.assertTrue(testPQ.isMinHeap());
+        Assert.assertTrue(isMinHeap(testPQ));
 
         //B) popTop elements one by one
         //they are supposed to come in natural order
@@ -542,7 +543,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
             if (i % 11101 == 0)
             {
-                Assert.assertTrue(testPQ.isMinHeap());
+                Assert.assertTrue(isMinHeap(testPQ));
             }
 
             currentSize--;
@@ -598,12 +599,12 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
             if (i % 50548 == 0)
             {
-                Assert.assertTrue(testPQ.isMinHeap());
+                Assert.assertTrue(isMinHeap(testPQ));
             }
         }
 
         Assert.assertEquals(COUNT, testPQ.size());
-        Assert.assertTrue(testPQ.isMinHeap());
+        Assert.assertTrue(isMinHeap(testPQ));
 
         //B) popTop elements one by one
         //they are supposed to come in inverse-natural order
@@ -632,7 +633,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
             if (i % 28548 == 0)
             {
-                Assert.assertTrue(testPQ.isMinHeap());
+                Assert.assertTrue(isMinHeap(testPQ));
             }
 
             currentSize--;
@@ -1089,7 +1090,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     /**
      * Check if the prio queue content is identical to a given ordered sequence of elements.
      */
-    public void assertPrioQueueEquals(final KTypeHeapPriorityQueue<KType> obj, final int... elements)
+    private void assertPrioQueueEquals(final KTypeHeapPriorityQueue<KType> obj, final int... elements)
     {
         Assert.assertEquals(elements.length, obj.size());
 
@@ -1103,11 +1104,65 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         }
     }
 
-    public void insertElements(final KTypeHeapPriorityQueue<KType> pq, final int... elements)
+    private void insertElements(final KTypeHeapPriorityQueue<KType> pq, final int... elements)
     {
         for (int i = 0; i < elements.length; i++)
         {
             pq.insert(cast(elements[i]));
         }
+    }
+
+    /**
+     * method to test invariant in assert
+     */
+// is pq[1..N] a min heap?
+    private boolean isMinHeap(KTypeHeapPriorityQueue<KType> q)
+    {
+        if (q.comparator == null)
+        {
+            return isMinHeapComparable(q, 1);
+        }
+
+        return isMinHeapComparator(q, 1);
+    }
+
+// is subtree of pq[1..N] rooted at k a min heap?
+    private boolean isMinHeapComparable(KTypeHeapPriorityQueue<KType> q, final int k)
+    {
+        final int N = q.elementsCount;
+
+        if (k > N)
+            return true;
+        final int left = 2 * k, right = 2 * k + 1;
+
+        if (left <= N && Intrinsics.isCompSupKTypeUnchecked(q.buffer[k], q.buffer[left]))
+            return false;
+        if (right <= N && Intrinsics.isCompSupKTypeUnchecked(q.buffer[k], q.buffer[right]))
+            return false;
+        //recursively test
+        return isMinHeapComparable(q, left) && isMinHeapComparable(q, right);
+    }
+
+// is subtree of pq[1..N] rooted at k a min heap?
+    private boolean isMinHeapComparator(KTypeHeapPriorityQueue<KType> q, final int k)
+    {
+        final int N = q.elementsCount;
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final Comparator<KType> comp = q.comparator;
+        /*! #else
+        KTypeComparator<KType> comp = q.comparator;
+        #end !*/
+
+        if (k > N)
+            return true;
+        final int left = 2 * k, right = 2 * k + 1;
+
+        if (left <= N && comp.compare(q.buffer[k], q.buffer[left]) > 0)
+            return false;
+        if (right <= N && comp.compare(q.buffer[k], q.buffer[right]) > 0)
+            return false;
+        //recursively test
+        return isMinHeapComparator(q, left) && isMinHeapComparator(q, right);
     }
 }
