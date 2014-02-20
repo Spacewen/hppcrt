@@ -310,7 +310,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         final RuntimeException t = new RuntimeException();
         try
         {
-            Assert.assertEquals(3, list.removeAll(new KTypePredicate<KType>()
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size
+            Assert.assertEquals(5, list.removeAll(new KTypePredicate<KType>()
                     {
                 @Override
                 public boolean apply(final KType v)

@@ -15,11 +15,11 @@ import com.carrotsearch.hppc.sorting.*;
  * and constant time to examine the first element.
  */
 
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
-// ${TemplateOptions.unDefine("debug", "DEBUG")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
+/*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
-        implements KTypePriorityQueue<KType>, Cloneable
+implements KTypePriorityQueue<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -106,7 +106,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
      * @see BoundedProportionalArraySizingStrategy
      */
     public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp
-    /*! #else
+            /*! #else
     KTypeComparator<KType> comp
     #end !*/)
     {
@@ -149,35 +149,41 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     @Override
     public int removeAllOccurrences(final KType e1)
     {
-        int to = 1;
-        final int size = elementsCount;
-        final KType[] buff = this.buffer;
+        //remove by position
+        int deleted = 0;
+        final KType[] buffer = this.buffer;
+
+        int elementsCount = this.elementsCount;
 
         //1-based index
-        for (int from = 1; from <= size; from++)
+        int pos = 1;
+
+        while (pos <= elementsCount)
         {
-            if (Intrinsics.equalsKType(e1, buff[from]))
+            //delete it
+            if (Intrinsics.equalsKType(e1, buffer[pos]))
             {
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buff[from] = Intrinsics.<KType> defaultKTypeValue();
-                /*! #end !*/
-                continue;
-            }
+                //put the last element at position pos, like in deleteIndex()
+                buffer[pos] = buffer[elementsCount];
 
-            if (to != from)
+                //for GC
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
+                /*! #end !*/
+
+                //Diminish size
+                elementsCount--;
+                deleted++;
+            } //end if to delete
+            else
             {
-                buff[to] = buff[from];
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buff[from] = Intrinsics.<KType> defaultKTypeValue();
-                /*! #end !*/
+                pos++;
             }
-            to++;
-        }
+        } //end while
 
-        final int deleted = size - to + 1;
-        this.elementsCount = to - 1;
+        this.elementsCount = elementsCount;
 
-        //restore the heap
+        //reestablish heap
         refreshPriorities();
 
         /*! #if($TemplateOptions.isDefined("debug")) !*/
@@ -190,64 +196,53 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     /**
      * {@inheritDoc}
      */
-    @Override
     public int removeAll(final KTypePredicate<? super KType> predicate)
     {
-        final int elementsCount = this.elementsCount;
-        final KType[] buff = this.buffer;
+        //remove by position
+        int deleted = 0;
+        final KType[] buffer = this.buffer;
+        int elementsCount = this.elementsCount;
 
         //1-based index
-        int to = 1;
-        int from = 1;
+        int pos = 1;
 
         try
         {
-            //1-based index
-            for (; from <= elementsCount; from++)
+            while (pos <= elementsCount)
             {
-                if (predicate.apply(buff[from]))
+                //delete it
+                if (predicate.apply(buffer[pos]))
                 {
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
-                    /*! #end !*/
-                    continue;
-                }
+                    //put the last element at position pos, like in deleteIndex()
+                    buffer[pos] = buffer[elementsCount];
 
-                if (to != from)
-                {
-                    buff[to] = buff[from];
+                    //for GC
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
+                    buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
                     /*! #end !*/
+
+                    //Diminish size
+                    elementsCount--;
+                    deleted++;
+                } //end if to delete
+                else
+                {
+                    pos++;
                 }
-                to++;
-            }
+            } //end while
         }
         finally
         {
-            // Keep the list in a consistent state, even if the predicate throws an exception.
-            for (; from <= elementsCount; from++)
-            {
-                if (to != from)
-                {
-                    buff[to] = buff[from];
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    buff[from] = Intrinsics.<KType> defaultKTypeValue();
-                    /*! #end !*/
-                }
-                to++;
-            }
-
-            this.elementsCount = to - 1;
+            this.elementsCount = elementsCount;
+            //reestablish heap
+            refreshPriorities();
         }
 
-        //reestablish heap
-        refreshPriorities();
         /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
         /*! #end !*/
 
-        return elementsCount - to + 1;
+        return deleted;
     }
 
     /**
@@ -722,11 +717,11 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
             //swap k and its parent
             parent = k >> 1;
 
-            tmp = buff[k];
-            buff[k] = buff[parent];
-            buff[parent] = tmp;
+        tmp = buff[k];
+        buff[k] = buff[parent];
+        buff[parent] = tmp;
 
-            k = parent;
+        k = parent;
         }
     }
 
@@ -750,11 +745,11 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         {
             //swap k and its parent
             parent = k >> 1;
-            tmp = buff[k];
-            buff[k] = buff[parent];
-            buff[parent] = tmp;
+        tmp = buff[k];
+        buff[k] = buff[parent];
+        buff[parent] = tmp;
 
-            k = parent;
+        k = parent;
         }
     }
 

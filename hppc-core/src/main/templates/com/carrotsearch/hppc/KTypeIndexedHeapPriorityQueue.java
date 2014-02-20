@@ -16,11 +16,11 @@ import com.carrotsearch.hppc.sorting.*;
  * As it is indexed, it also supports containsIndex() in constant time, deleteIndex()
  * and change priority in O(log2(N)) time.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
-// ${TemplateOptions.unDefine("debug", "DEBUG")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
+/*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
-        implements KTypeIndexedPriorityQueue<KType>, Cloneable
+implements KTypeIndexedPriorityQueue<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -83,7 +83,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     protected final KTypeIndexedPredicate<KType> negateIndexedPredicate = new KTypeIndexedPredicate<KType>() {
 
         @Override
-        public boolean apply(final int index, final KType k)
+        public final boolean apply(final int index, final KType k)
         {
             return !testIndexedPredicate.apply(index, k);
         }
@@ -92,7 +92,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     protected final KTypePredicate<KType> containsPredicate = new KTypePredicate<KType>() {
 
         @Override
-        public boolean apply(final KType k)
+        public final boolean apply(final KType k)
         {
             return Intrinsics.equalsKType(testContainsPredicate, k);
         }
@@ -142,7 +142,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
      * @see BoundedProportionalArraySizingStrategy
      */
     public KTypeIndexedHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp
-    /*! #else
+            /*! #else
     KTypeComparator<KType> comp
     #end !*/)
     {
@@ -214,50 +214,58 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
 
         int lastElementIndex = -1;
 
+        int elementsCount = this.elementsCount;
+
         //1-based index
         int pos = 1;
 
-        while (pos <= elementsCount)
+        try
         {
-            //delete it
-            if (predicate == null ? indexedPredicate.apply(qp[pos], buffer[pos]) : predicate.apply(buffer[pos]))
+            while (pos <= elementsCount)
             {
-                lastElementIndex = qp[elementsCount];
+                //delete it
+                if (predicate == null ? indexedPredicate.apply(qp[pos], buffer[pos]) : predicate.apply(buffer[pos]))
+                {
+                    lastElementIndex = qp[elementsCount];
 
-                //put the last element at position pos, like in deleteIndex()
+                    //put the last element at position pos, like in deleteIndex()
 
-                buffer[pos] = buffer[elementsCount];
-                //last element is now at deleted position pos
-                pq[lastElementIndex] = pos;
+                    buffer[pos] = buffer[elementsCount];
+                    //last element is now at deleted position pos
+                    pq[lastElementIndex] = pos;
 
-                //mark the index element to be removed
-                //we must reset with 0 so that qp[pq[index]] is always valid !
-                pq[qp[pos]] = 0;
+                    //mark the index element to be removed
+                    //we must reset with 0 so that qp[pq[index]] is always valid !
+                    pq[qp[pos]] = 0;
 
-                qp[pos] = lastElementIndex;
+                    qp[pos] = lastElementIndex;
 
-                //Not really needed
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
-                qp[elementsCount] = -1;
-                /*! #end !*/
+                    //Not really needed
+                    /*! #if($TemplateOptions.isDefined("debug")) !*/
+                    qp[elementsCount] = -1;
+                    /*! #end !*/
 
-                //for GC
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
-                /*! #end !*/
+                    //for GC
+                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    buffer[elementsCount] = Intrinsics.<KType> defaultKTypeValue();
+                    /*! #end !*/
 
-                //Diminish size
-                elementsCount--;
-                deleted++;
-            } //end if to delete
-            else
-            {
-                pos++;
-            }
-        } //end while
-
-        //reestablish heap
-        refreshPriorities();
+                    //Diminish size
+                    elementsCount--;
+                    deleted++;
+                } //end if to delete
+                else
+                {
+                    pos++;
+                }
+            } //end while
+        }
+        finally
+        {
+            this.elementsCount = elementsCount;
+            //reestablish heap
+            refreshPriorities();
+        }
 
         /*! #if($TemplateOptions.isDefined("debug")) !*/
         assert isMinHeap();
@@ -970,22 +978,22 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
             //swap k and its parent
             parent = k >> 1;
 
-            //swap k and parent
-            tmp = buffer[k];
-            buffer[k] = buffer[parent];
-            buffer[parent] = tmp;
+        //swap k and parent
+        tmp = buffer[k];
+        buffer[k] = buffer[parent];
+        buffer[parent] = tmp;
 
-            //swap references
-            indexK = qp[k];
-            indexParent = qp[parent];
+        //swap references
+        indexK = qp[k];
+        indexParent = qp[parent];
 
-            pq[indexK] = parent;
-            pq[indexParent] = k;
+        pq[indexK] = parent;
+        pq[indexParent] = k;
 
-            qp[k] = indexParent;
-            qp[parent] = indexK;
+        qp[k] = indexParent;
+        qp[parent] = indexK;
 
-            k = parent;
+        k = parent;
         }
     }
 
@@ -1014,22 +1022,22 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
             //swap k and its parent
             parent = k >> 1;
 
-            //swap k and parent
-            tmp = buffer[k];
-            buffer[k] = buffer[parent];
-            buffer[parent] = tmp;
+        //swap k and parent
+        tmp = buffer[k];
+        buffer[k] = buffer[parent];
+        buffer[parent] = tmp;
 
-            //swap references
-            indexK = qp[k];
-            indexParent = qp[parent];
+        //swap references
+        indexK = qp[k];
+        indexParent = qp[parent];
 
-            pq[indexK] = parent;
-            pq[indexParent] = k;
+        pq[indexK] = parent;
+        pq[indexParent] = k;
 
-            qp[k] = indexParent;
-            qp[parent] = indexK;
+        qp[k] = indexParent;
+        qp[parent] = indexK;
 
-            k = parent;
+        k = parent;
         }
     }
 

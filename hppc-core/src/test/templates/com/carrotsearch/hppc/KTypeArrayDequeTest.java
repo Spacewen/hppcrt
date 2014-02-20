@@ -366,7 +366,9 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         try
         {
-            Assert.assertEquals(3, deque.removeAll(new KTypePredicate<KType>()
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size
+            Assert.assertEquals(5, deque.removeAll(new KTypePredicate<KType>()
                     {
                 @Override
                 public boolean apply(final KType v)

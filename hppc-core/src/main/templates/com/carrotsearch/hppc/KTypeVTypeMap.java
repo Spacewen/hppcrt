@@ -5,7 +5,7 @@ import com.carrotsearch.hppc.cursors.KTypeVTypeCursor;
 /**
  * An associative container with unique binding from keys to a single value.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeVTypeMap<KType, VType>
 extends KTypeVTypeAssociativeContainer<KType, VType>

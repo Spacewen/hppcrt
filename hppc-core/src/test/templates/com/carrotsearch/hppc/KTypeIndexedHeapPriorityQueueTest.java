@@ -368,6 +368,41 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
 
     /* */
     @Test
+    public void testRemoveAllWithPredicateInterrupted()
+    {
+        insertElements(prioq, 0, 0, 1, 1, 2, 2, 3, 1, 11, 11, 44, 44, 66, 11, 77, 12);
+
+        final RuntimeException t = new RuntimeException();
+        try
+        {
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size
+            Assert.assertEquals(8, prioq.removeAll(new KTypePredicate<KType>()
+                    {
+                @Override
+                public boolean apply(final KType v)
+                {
+                    if (v == cast(11))
+                        throw t;
+                    return v == key1;
+                };
+                    }));
+            Assert.fail();
+        }
+        catch (final RuntimeException e)
+        {
+            // Make sure it's really our exception...
+            if (e != t)
+                throw e;
+        }
+
+        // And check if the list is in consistent state.
+        assertPrioQueueEquals(prioq, 0, 0, 2, 2, 11, 11, 44, 44, 66, 11, 77, 12);
+        Assert.assertEquals(6, prioq.size());
+    }
+
+    /* */
+    @Test
     public void testRemoveAllEverything()
     {
         insertElements(prioq, 0, 0, 1, 1, 2, 2, 11, 1, 44, 4);
@@ -400,6 +435,42 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
                 }));
 
         assertPrioQueueEquals(prioq, 0, 0, 2, 2, 3, 4, 8, 12, 44, 4);
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllWithIndexedPredicateInterrupted()
+    {
+        insertElements(prioq, 0, 0, 1, 1, 2, 2, 3, 1, 11, 11, 44, 44, 66, 11, 77, 12);
+
+        final RuntimeException t = new RuntimeException();
+        try
+        {
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size
+            Assert.assertEquals(8, prioq.removeAll(new KTypeIndexedPredicate<KType>()
+                    {
+                @Override
+                public boolean apply(final int index, final KType v)
+                {
+                    if (index == 44)
+                        throw t;
+                    return index == 1 || index == 11 || index == 66;
+                };
+                    }));
+            Assert.fail();
+        }
+        catch (final RuntimeException e)
+        {
+            // Make sure it's really our exception...
+            if (e != t)
+                throw e;
+        }
+
+        // And check if the list is in consistent state.
+        //Beware, the heap is indeed iterated by priorities, not indices :
+        assertPrioQueueEquals(prioq, 0, 0, 2, 2, 3, 1, 44, 44, 77, 12);
+        Assert.assertEquals(5, prioq.size());
     }
 
     /* */
@@ -1298,14 +1369,14 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
      */
     public void assertPrioQueueEquals(final KTypeIndexedHeapPriorityQueue<KType> obj, final int... elements)
     {
-        Assert.assertEquals(elements.length / 2, obj.size());
+        Assert.assertEquals(obj.toString(), elements.length / 2, obj.size());
 
         //test
         int i = 0;
         while (i < elements.length)
         {
-            Assert.assertTrue(obj.containsIndex(elements[i]));
-            Assert.assertEquals(elements[i + 1], castType(obj.getIndex(elements[i])));
+            Assert.assertTrue(obj.toString(), obj.containsIndex(elements[i]));
+            Assert.assertEquals(obj.toString(), elements[i + 1], castType(obj.getIndex(elements[i])));
             i++;
             i++;
         }
@@ -1320,6 +1391,8 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
             i++;
             i++;
         }
+
+        Assert.assertEquals(elements.length / 2, pq.size());
     }
 
     private boolean checkConsistency(final KTypeIndexedHeapPriorityQueue<KType> prio)

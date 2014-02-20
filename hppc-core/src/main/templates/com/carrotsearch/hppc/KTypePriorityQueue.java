@@ -3,7 +3,7 @@ package com.carrotsearch.hppc;
 /**
  * A Priority queue of <code>KType</code>s.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypePriorityQueue<KType> extends KTypeCollection<KType>
 {

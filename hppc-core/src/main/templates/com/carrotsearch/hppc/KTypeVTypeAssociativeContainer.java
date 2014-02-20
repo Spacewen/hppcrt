@@ -15,7 +15,7 @@ import com.carrotsearch.hppc.procedures.*;
  * 
  * @see KTypeContainer
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeVTypeAssociativeContainer<KType, VType>
 extends Iterable<KTypeVTypeCursor<KType, VType>>

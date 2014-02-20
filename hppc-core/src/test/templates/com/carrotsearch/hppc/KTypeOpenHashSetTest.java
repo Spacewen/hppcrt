@@ -42,26 +42,44 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         set = KTypeOpenHashSet.newInstance();
     }
 
+    /**
+     * Check that the set is consistent, i.e all allocated slots are reachable by get(),
+     * and all not-allocated contains nulls if Generic
+     * @param set
+     */
     @After
-    public void checkTrailingSpaceUninitialized()
+    public void checkConsistency()
     {
         if (set != null)
         {
             int occupied = 0;
+
             for (int i = 0; i < set.keys.length; i++)
             {
                 if (!set.allocated[i])
                 {
+                    //if not allocated, generic version if patched to null for GC sake
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
                     TestUtils.assertEquals2(Intrinsics.defaultKTypeValue(), set.keys[i]);
                     /*! #end !*/
                 }
                 else
                 {
+                    //try to reach the key by contains()
+                    Assert.assertTrue(set.contains(set.keys[i]));
+
+                    //check slot
+                    Assert.assertEquals(i, set.lslot());
+
+                    //Retrieve again by lkey()
+                    Assert.assertEquals(castType(set.keys[i]), castType(set.lkey()));
+
                     occupied++;
                 }
             }
+
             Assert.assertEquals(occupied, set.assigned);
+            Assert.assertEquals(occupied, set.size());
         }
     }
 
@@ -298,6 +316,44 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testRemoveAllWithPredicateInterrupted()
+    {
+        set.add(newArray(k0, k1, k2, k3, k4, k5, k6, k7, k8));
+
+        final RuntimeException t = new RuntimeException();
+        try
+        {
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size + 1
+            Assert.assertEquals(10, set.removeAll(new KTypePredicate<KType>()
+                    {
+                @Override
+                public boolean apply(final KType v)
+                {
+                    if (v == key7)
+                        throw t;
+                    return v == key2 || v == key9 || v == key5;
+                };
+                    }));
+
+            Assert.fail();
+        }
+        catch (final RuntimeException e)
+        {
+            // Make sure it's really our exception...
+            if (e != t)
+                throw e;
+        }
+
+        // And check if the set is in consistent state. We cannot predict the pattern,
+        //but we know that since key7 throws an exception, key7 is still present in the set.
+
+        Assert.assertTrue(set.contains(key7));
+        checkConsistency();
+    }
+
+    /* */
+    @Test
     public void testRetainAllWithPredicate()
     {
         set.add(newArray(k0, k1, k2, k3, k4, k5));
@@ -320,7 +376,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     {
         set.add(asArray(1, 2, 3));
         set.clear();
-        checkTrailingSpaceUninitialized();
+        checkConsistency();
         Assert.assertEquals(0, set.size());
     }
 
@@ -337,14 +393,47 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         {
             count++;
             Assert.assertTrue(set.contains(cursor.value));
-            /* #if ($TemplateOptions.KTypeGeneric) */
+
             TestUtils.assertEquals2(cursor.value, set.lkey());
-            /* #end */
         }
         Assert.assertEquals(count, set.size());
 
         set.clear();
         Assert.assertFalse(set.iterator().hasNext());
+    }
+
+    @Test
+    public void testLkey()
+    {
+        set.add(key1);
+        set.add(key8);
+        set.add(key3);
+        set.add(key9);
+        set.add(key2);
+        set.add(key5);
+
+        Assert.assertTrue(set.contains(key1));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        Assert.assertSame(key1, set.lkey());
+        /*! #end !*/
+
+        KType key1_ = cast(1);
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        key1_ = (KType) new Integer(1);
+        Assert.assertNotSame(key1, key1_);
+        /*! #end !*/
+
+        Assert.assertEquals(castType(key1), castType(key1_));
+
+        Assert.assertTrue(set.contains(key1_));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        Assert.assertSame(key1, set.lkey());
+        /*! #end !*/
+
+        Assert.assertEquals(castType(key1_), castType(set.lkey()));
     }
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -360,7 +449,6 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     }
     /*! #end !*/
 
-    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
      * Run some random insertions/ deletions and compare the results
      * against <code>java.util.HashSet</code>.
@@ -378,26 +466,26 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
             for (int round = 0; round < size * 20; round++)
             {
-                final Integer key = rnd.nextInt(size);
+                final KType key = cast(rnd.nextInt(size));
 
                 if (rnd.nextBoolean())
                 {
-                    other.add(cast(key));
-                    set.add(cast(key));
+                    other.add(key);
+                    set.add(key);
 
-                    Assert.assertTrue(set.contains(cast(key)));
-                    TestUtils.assertEquals2(key, set.lkey());
+                    Assert.assertTrue(set.contains(key));
+                    Assert.assertEquals(castType(key), castType(set.lkey()));
                 }
                 else
                 {
-                    Assert.assertEquals(other.remove(key), set.remove(cast(key)));
+                    Assert.assertTrue("size= " + size + ", round = " + round,
+                            other.remove(key) == set.remove(key));
                 }
 
                 Assert.assertEquals(other.size(), set.size());
             }
         }
     }
-    /*! #end !*/
 
     /* */
     @Test

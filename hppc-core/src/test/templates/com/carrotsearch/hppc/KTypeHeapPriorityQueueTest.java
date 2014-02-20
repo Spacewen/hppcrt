@@ -63,6 +63,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             }
         }
 
+        //check heap property
         Assert.assertTrue(isMinHeap(prioq));
     }
 
@@ -250,7 +251,9 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         final RuntimeException t = new RuntimeException();
         try
         {
-            Assert.assertEquals(3, prioq.removeAll(new KTypePredicate<KType>()
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size
+            Assert.assertEquals(5, prioq.removeAll(new KTypePredicate<KType>()
                     {
                 @Override
                 public boolean apply(final KType v)
@@ -260,6 +263,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
                     return v == key1;
                 };
                     }));
+
             Assert.fail();
         }
         catch (final RuntimeException e)
@@ -1116,7 +1120,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
      * method to test invariant in assert
      */
 // is pq[1..N] a min heap?
-    private boolean isMinHeap(KTypeHeapPriorityQueue<KType> q)
+    private boolean isMinHeap(final KTypeHeapPriorityQueue<KType> q)
     {
         if (q.comparator == null)
         {
@@ -1127,7 +1131,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     }
 
 // is subtree of pq[1..N] rooted at k a min heap?
-    private boolean isMinHeapComparable(KTypeHeapPriorityQueue<KType> q, final int k)
+    private boolean isMinHeapComparable(final KTypeHeapPriorityQueue<KType> q, final int k)
     {
         final int N = q.elementsCount;
 
@@ -1144,7 +1148,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     }
 
 // is subtree of pq[1..N] rooted at k a min heap?
-    private boolean isMinHeapComparator(KTypeHeapPriorityQueue<KType> q, final int k)
+    private boolean isMinHeapComparator(final KTypeHeapPriorityQueue<KType> q, final int k)
     {
         final int N = q.elementsCount;
 

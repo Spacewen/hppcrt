@@ -406,6 +406,26 @@ public abstract class TestUtils
         org.junit.Assert.assertEquals(a, b, TestUtils.delta);
     }
 
+    public static void assertEquals2(final int a, final int b)
+    {
+        org.junit.Assert.assertEquals(a, b);
+    }
+
+    public static void assertEquals2(final char a, final char b)
+    {
+        org.junit.Assert.assertEquals(a, b);
+    }
+
+    public static void assertEquals2(final short a, final short b)
+    {
+        org.junit.Assert.assertEquals(a, b);
+    }
+
+    public static void assertEquals2(final byte a, final byte b)
+    {
+        org.junit.Assert.assertEquals(a, b);
+    }
+
     /** Override for generated templates. */
     public static void assertEquals2(final float a, final float b)
     {

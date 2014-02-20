@@ -8,7 +8,7 @@ import com.carrotsearch.hppc.procedures.*;
  * similar to a simplified map (K,V) = (index, element V)
  * with priority queue capabilities.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeIndexedPriorityQueue<KType> extends KTypeCollection<KType>
 {

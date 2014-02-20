@@ -55,7 +55,7 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  * @author This code is inspired by the collaboration and implementation in the <a
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeOpenHashSet<KType>
 extends AbstractKTypeCollection<KType>
@@ -485,7 +485,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         /* #end */
     }
 
-    /* #if ($TemplateOptions.KTypeGeneric) */
     /**
      * Returns the last key saved in a call to {@link #contains} if it returned <code>true</code>.
      * Precondition : {@link #contains} must have been called previously !
@@ -498,7 +497,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         return keys[lastSlot];
     }
-    /* #end */
 
     /**
      * @return Returns the slot of the last key looked up in a call to {@link #contains} if

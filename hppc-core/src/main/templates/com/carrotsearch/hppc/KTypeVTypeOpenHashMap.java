@@ -65,10 +65,10 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  * @author This code is inspired by the collaboration and implementation in the <a
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
  */
-// ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeOpenHashMap<KType, VType>
-        implements KTypeVTypeMap<KType, VType>, Cloneable
+implements KTypeVTypeMap<KType, VType>, Cloneable
 {
     /**
      * Minimum capacity for the map.
@@ -270,8 +270,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -552,8 +552,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -697,8 +697,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -712,7 +712,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         return this.defaultValue;
     }
 
-    /* #if ($TemplateOptions.KTypeGeneric) */
     /**
      * Returns the last key stored in this has map for the corresponding
      * most recent call to {@link #containsKey}.
@@ -732,10 +731,11 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      */
     public KType lkey()
     {
-        return keys[lslot()];
-    }
+        assert lastSlot >= 0 : "Call containsKey() first.";
+        assert allocated[lastSlot] : "Last call to exists did not have any associated value.";
 
-    /* #end */
+        return keys[lastSlot];
+    }
 
     /**
      * Returns the last value saved in a call to {@link #containsKey}.
@@ -815,8 +815,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -1057,7 +1057,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      * A view of the keys inside this hash map.
      */
     public final class KeysContainer
-            extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
+    extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
                 KTypeVTypeOpenHashMap.this;
@@ -1394,9 +1394,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         @SuppressWarnings("unchecked")
         final/* #end */
         KTypeVTypeOpenHashMap<KType, VType> cloned =
-                new KTypeVTypeOpenHashMap<KType, VType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
-                        /* #if ($TemplateOptions.KTypeGeneric) */
-                        , this.hashStrategy
+        new KTypeVTypeOpenHashMap<KType, VType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
+                /* #if ($TemplateOptions.KTypeGeneric) */
+                , this.hashStrategy
                 /* #end */);
 
         cloned.putAll(this);

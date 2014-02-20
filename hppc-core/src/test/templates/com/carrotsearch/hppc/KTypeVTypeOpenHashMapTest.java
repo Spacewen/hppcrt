@@ -42,16 +42,24 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
      */
     public KTypeVTypeOpenHashMap<KType, VType> map = KTypeVTypeOpenHashMap.newInstance();
 
+    /**
+     * Check that the set is consistent, i.e all allocated slots are reachable by get(),
+     * and all not-allocated contains nulls if Generic
+     * @param set
+     */
     @After
-    public void checkEmptySlotsUninitialized()
+    public void checkConsistency()
     {
         if (map != null)
         {
             int occupied = 0;
+
             for (int i = 0; i < map.keys.length; i++)
             {
                 if (map.allocated[i] == false)
                 {
+                    //if not allocated, generic version if patched to null for GC sake
+
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
                     TestUtils.assertEquals2(Intrinsics.defaultKTypeValue(), map.keys[i]);
                     /*! #end !*/
@@ -61,6 +69,19 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
                 }
                 else
                 {
+                    //try to reach the key by contains()
+                    Assert.assertTrue(map.containsKey(map.keys[i]));
+
+                    //check slot
+                    Assert.assertEquals(i, map.lslot());
+
+                    //get() test
+                    Assert.assertEquals(vcastType(map.values[i]), vcastType(map.get(map.keys[i])));
+
+                    //retreive again by lkey(), lget() :
+                    Assert.assertEquals(castType(map.keys[i]), castType(map.lkey()));
+                    Assert.assertEquals(vcastType(map.values[i]), vcastType(map.lget()));
+
                     occupied++;
                 }
             }
@@ -88,8 +109,8 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
     }
 
     /**
-     * Convert a VType to long, (VType being a boxed elementary type or a primitive), else
-     * returns 0L.
+     * Convert a VType to int, (VType being a boxed elementary type or a primitive), else
+     * returns 0.
      */
     protected int vcastType(final VType type)
     {
@@ -323,6 +344,52 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
                 });
         Assert.assertEquals(1, map.size());
         Assert.assertTrue(map.containsKey(key1));
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllWithPredicateInterrupted()
+    {
+        map.put(key0, value1);
+        map.put(key1, value1);
+        map.put(key2, value1);
+        map.put(key3, value1);
+        map.put(key4, value1);
+        map.put(key5, value1);
+        map.put(key6, value1);
+        map.put(key7, value1);
+        map.put(key8, value1);
+
+        final RuntimeException t = new RuntimeException();
+        try
+        {
+            //the assert below should never be triggered because of the exception
+            //so give it an invalid value in case the thing terminates  = initial size + 1
+            Assert.assertEquals(10, map.removeAll(new KTypePredicate<KType>()
+                    {
+                @Override
+                public boolean apply(final KType key)
+                {
+                    if (key == key7)
+                        throw t;
+                    return key == key2 || key == key9 || key == key5;
+                };
+                    }));
+
+            Assert.fail();
+        }
+        catch (final RuntimeException e)
+        {
+            // Make sure it's really our exception...
+            if (e != t)
+                throw e;
+        }
+
+        // And check if the set is in consistent state. We cannot predict the pattern,
+        //but we know that since key7 throws an exception, key7 is still present in the set.
+
+        Assert.assertTrue(map.containsKey(key7));
+        checkConsistency();
     }
 
     /* */
@@ -632,21 +699,40 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
     }
     /*! #end !*/
 
-    /*! #if ($TemplateOptions.KTypeGeneric) !*/
     @Test
-    @SuppressWarnings("unchecked")
     public void testLkey()
     {
         map.put(key1, vcast(10));
+        map.put(key8, vcast(5));
+        map.put(key5, vcast(5));
+        map.put(key7, vcast(6));
+        map.put(key2, vcast(5));
+        map.put(key4, vcast(32));
+        map.put(key9, vcast(25));
+
         Assert.assertTrue(map.containsKey(key1));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
         Assert.assertSame(key1, map.lkey());
-        final KType key1_ = (KType) new Integer(1);
+        /*! #end !*/
+
+        KType key1_ = cast(1);
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        key1_ = (KType) new Integer(1);
         Assert.assertNotSame(key1, key1_);
-        Assert.assertEquals(key1, key1_);
+        /*! #end !*/
+
+        Assert.assertEquals(castType(key1), castType(key1_));
+
         Assert.assertTrue(map.containsKey(key1_));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
         Assert.assertSame(key1, map.lkey());
+        /*! #end !*/
+
+        Assert.assertEquals(castType(key1_), castType(map.lkey()));
     }
-    /*! #end !*/
 
     /*! #if ($TemplateOptions.VTypeGeneric) !*/
     @Test
@@ -688,13 +774,14 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
                     map.put(key, value);
                     other.put(key, value);
 
-                    Assert.assertEquals(value, map.get(key));
+                    Assert.assertEquals(vcastType(value), vcastType(map.get(key)));
                     Assert.assertTrue(map.containsKey(key));
-                    Assert.assertEquals(value, map.lget());
+                    Assert.assertEquals(vcastType(value), vcastType(map.lget()));
                 }
                 else
                 {
-                    Assert.assertEquals(other.remove(key), map.remove(key));
+                    Assert.assertEquals("size= " + size + ", round = " + round,
+                            vcastType(other.remove(key)), vcastType(map.remove(key)));
                 }
 
                 Assert.assertEquals(other.size(), map.size());
@@ -789,7 +876,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
          * Verify the map contains all of the conflicting keys.
          */
         for (final IntCursor c : hashChain)
-            TestUtils.assertEquals2(value1, map.get(cast(c.value)));
+            Assert.assertEquals(vcastType(value1), vcastType(map.get(cast(c.value))));
 
         /*
          * Verify the map contains all the other keys.
