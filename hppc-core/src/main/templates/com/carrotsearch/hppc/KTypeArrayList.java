@@ -142,17 +142,21 @@ public class KTypeArrayList<KType>
                     @Override
                     public ValueIterator create()
                     {
-
                         return new ValueIterator();
                     }
 
                     @Override
                     public void initialize(final ValueIterator obj)
                     {
-
                         obj.cursor.index = -1;
                         obj.size = KTypeArrayList.this.size();
                         obj.buffer = KTypeArrayList.this.buffer;
+                    }
+
+                    @Override
+                    public void reset(final ValueIterator obj) {
+                        // for GC sake
+                        obj.buffer = null;
                     }
                 });
     }
@@ -678,6 +682,7 @@ public class KTypeArrayList<KType>
      * {@inheritDoc}
      * @return
      */
+    @Override
     public ValueIterator iterator()
     {
         //return new ValueIterator<KType>(buffer, size());

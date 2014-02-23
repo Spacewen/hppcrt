@@ -57,7 +57,8 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     @Before
     public void initialize()
     {
-        list = KTypeLinkedList.newInstance();
+        //create a vary small list to force reallocs.
+        list = KTypeLinkedList.newInstanceWithCapacity(2);
 
         sequence = KTypeArrayList.newInstance();
 
@@ -66,7 +67,7 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @After
-    public void checkTrailingSpaceUninitialized()
+    public void checkConsistency()
     {
         if (list != null)
         {
@@ -154,6 +155,7 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         list3.addAll(list2);
         Assert.assertEquals(3, list3.size());
     }
+
     /*! #end !*/
 
     /* */
@@ -332,13 +334,13 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k4));
 
         Assert.assertEquals(3, list.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertListEquals(list.toArray(), 0, 4);
     }
@@ -350,25 +352,25 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k4));
 
         Assert.assertEquals(5, list.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return true;
             };
-                }));
+        }));
 
         Assert.assertEquals(0, list.size());
 
         //try again
         Assert.assertEquals(0, list.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return true;
             };
-                }));
+        }));
 
         Assert.assertEquals(0, list.size());
     }
@@ -380,13 +382,13 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k0));
 
         Assert.assertEquals(2, list.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertListEquals(list.toArray(), 1, 2, 1);
     }
@@ -403,20 +405,22 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size
             Assert.assertEquals(5, list.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
-                    if (v == key2) throw t;
+                    if (v == key2)
+                        throw t;
                     return v == key1;
                 };
-                    }));
+            }));
             Assert.fail();
         }
         catch (final RuntimeException e)
         {
             // Make sure it's really our exception...
-            if (e != t) throw e;
+            if (e != t)
+                throw e;
         }
 
         // And check if the list is in consistent state.
@@ -472,10 +476,11 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testForEachWithProcedure()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         final IntHolder holder = new IntHolder();
         list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
+
             @Override
             public void apply(final KType v)
             {
@@ -490,9 +495,10 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testForEachReturnValueFromAnonymousClass()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         final int result = list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
+
             @Override
             public void apply(final KType v)
             {
@@ -506,9 +512,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testClear()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         list.clear();
-        checkTrailingSpaceUninitialized();
+        checkConsistency();
     }
 
     /* */
@@ -553,6 +559,7 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(l1.hashCode(), l2.hashCode());
         Assert.assertEquals(l1, l2);
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -561,8 +568,9 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
     {
         final KTypeLinkedList<Integer> l1 = KTypeLinkedList.from(1, 2, 3);
         final Integer[] result = l1.toArray(Integer.class);
-        Assert.assertArrayEquals(new Integer [] {1, 2, 3}, result); // dummy
+        Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, result); // dummy
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -574,6 +582,7 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         final Object[] result = l1.toArray();
         Assert.assertArrayEquals(new Object[] { k1, k2, k3, k4, k5, k7 }, result);
     }
+
     /*! #end !*/
 
     /* */
@@ -844,7 +853,8 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
                 Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
                 Assert.assertEquals(checksum, guard);
 
-            } catch (final Exception e)
+            }
+            catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
                 Assert.assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
@@ -879,7 +889,6 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
                 count += castType(value);
             }
         }).count;
-
 
         final int initialPoolSize = testContainer.valueIteratorPool.size();
 
@@ -1331,7 +1340,6 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         TestUtils.assertListEquals(list.toArray(), 1);
     }
 
-
     /* */
     @Test
     public void testIterable()
@@ -1350,8 +1358,8 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
 
         count = 0;
         list.clear();
-        for (@SuppressWarnings("unused") final
-                KTypeCursor<KType> cursor : list)
+        for (@SuppressWarnings("unused")
+        final KTypeCursor<KType> cursor : list)
         {
             count++;
         }

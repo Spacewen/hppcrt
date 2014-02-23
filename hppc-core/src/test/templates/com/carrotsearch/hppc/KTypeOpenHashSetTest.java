@@ -80,6 +80,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
             Assert.assertEquals(occupied, set.assigned);
             Assert.assertEquals(occupied, set.size());
+
         }
     }
 
@@ -89,8 +90,8 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         // This test is only applicable to selected key types.
         Assume.assumeTrue(
                 int[].class.isInstance(set.keys) ||
-                long[].class.isInstance(set.keys) ||
-                Object[].class.isInstance(set.keys));
+                        long[].class.isInstance(set.keys) ||
+                        Object[].class.isInstance(set.keys));
 
         final IntArrayList hashChain = TestUtils.generateMurmurHash3CollisionChain(0x1fff, 0x7e, 0x1fff / 3);
 
@@ -281,7 +282,6 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(capacity, set.keys.length);
     }
 
-
     /* */
     @Test
     public void testRemoveAllFromLookupContainer()
@@ -303,13 +303,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         set.add(newArray(k0, k1, k2));
 
         Assert.assertEquals(1, set.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1;
             };
-                }));
+        }));
 
         TestUtils.assertSortedListEquals(set.toArray(), 0, key2);
     }
@@ -326,7 +326,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size + 1
             Assert.assertEquals(10, set.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
@@ -334,7 +334,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
                         throw t;
                     return v == key2 || v == key9 || v == key5;
                 };
-                    }));
+            }));
 
             Assert.fail();
         }
@@ -359,13 +359,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         set.add(newArray(k0, k1, k2, k3, k4, k5));
 
         Assert.assertEquals(4, set.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertSortedListEquals(set.toArray(), key1, key2);
     }
@@ -447,6 +447,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(0, set.size());
         Assert.assertFalse(set.contains(null));
     }
+
     /*! #end !*/
 
     /**
@@ -549,6 +550,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(l1.hashCode(), l2.hashCode());
         Assert.assertEquals(l1, l2);
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -573,16 +575,16 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     public void testToString()
     {
         Assume.assumeTrue(
-                int[].class.isInstance(set.keys)     ||
-                short[].class.isInstance(set.keys)   ||
-                byte[].class.isInstance(set.keys)    ||
-                long[].class.isInstance(set.keys)    ||
-                Object[].class.isInstance(set.keys));
+                int[].class.isInstance(set.keys) ||
+                        short[].class.isInstance(set.keys) ||
+                        byte[].class.isInstance(set.keys) ||
+                        long[].class.isInstance(set.keys) ||
+                        Object[].class.isInstance(set.keys));
 
         this.set.add(key1, key2);
         String asString = set.toString();
         asString = asString.replaceAll("[\\[\\],\\ ]", "");
-        final char [] asCharArray = asString.toCharArray();
+        final char[] asCharArray = asString.toCharArray();
         Arrays.sort(asCharArray);
         Assert.assertEquals("12", new String(asCharArray));
     }
@@ -599,9 +601,9 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         //a) Check that 2 different sets filled the same way with same values and strategies = null
         //are indeed equal.
         final long TEST_SEED = 23167132166456L;
-        final int TEST_SIZE = (int)500e3;
+        final int TEST_SIZE = (int) 500e3;
         final KTypeOpenHashSet<KType> refSet = createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
-        KTypeOpenHashSet<KType> refSet2 =createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
+        KTypeOpenHashSet<KType> refSet2 = createSetWithRandomData(TEST_SIZE, null, TEST_SEED);
 
         Assert.assertEquals(refSet, refSet2);
 
@@ -630,18 +632,18 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         final KTypeOpenHashSet<KType> refSet3 = createSetWithRandomData(TEST_SIZE,
                 new HashingStrategy<KType>() {
 
-            @Override
-            public int computeHashCode(final KType object) {
+                    @Override
+                    public int computeHashCode(final KType object) {
 
-                return object.hashCode();
-            }
+                        return object.hashCode();
+                    }
 
-            @Override
-            public boolean equals(final KType o1, final KType o2) {
+                    @Override
+                    public boolean equals(final KType o1, final KType o2) {
 
-                return o1.equals(o2);
-            }
-        }, TEST_SEED);
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
 
         //because they do the same thing as above, but with semantically different strategies, ref3 is != ref
         Assert.assertFalse(refSet.equals(refSet3));
@@ -657,46 +659,46 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         KTypeOpenHashSet<KType> refSet4 = createSetWithRandomData(TEST_SIZE,
                 new HashingStrategy<KType>() {
 
-            @Override
-            public boolean equals(final Object obj) {
+                    @Override
+                    public boolean equals(final Object obj) {
 
-                return true;
-            }
+                        return true;
+                    }
 
-            @Override
-            public int computeHashCode(final KType object) {
+                    @Override
+                    public int computeHashCode(final KType object) {
 
-                return object.hashCode();
-            }
+                        return object.hashCode();
+                    }
 
-            @Override
-            public boolean equals(final KType o1, final KType o2) {
+                    @Override
+                    public boolean equals(final KType o1, final KType o2) {
 
-                return o1.equals(o2);
-            }
-        }, TEST_SEED);
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
 
         KTypeOpenHashSet<KType> refSet4Image = createSetWithRandomData(TEST_SIZE,
                 new HashingStrategy<KType>() {
 
-            @Override
-            public boolean equals(final Object obj) {
+                    @Override
+                    public boolean equals(final Object obj) {
 
-                return true;
-            }
+                        return true;
+                    }
 
-            @Override
-            public int computeHashCode(final KType object) {
+                    @Override
+                    public int computeHashCode(final KType object) {
 
-                return object.hashCode();
-            }
+                        return object.hashCode();
+                    }
 
-            @Override
-            public boolean equals(final KType o1, final KType o2) {
+                    @Override
+                    public boolean equals(final KType o1, final KType o2) {
 
-                return o1.equals(o2);
-            }
-        }, TEST_SEED);
+                        return o1.equals(o2);
+                    }
+                }, TEST_SEED);
 
         Assert.assertEquals(refSet4, refSet4Image);
         //but strategy instances are indeed 2 different objects
@@ -744,7 +746,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         Assume.assumeTrue(Object[].class.isInstance(set.keys));
 
         final long TEST_SEED = 749741621030146103L;
-        final int TEST_SIZE = (int)500e3;
+        final int TEST_SIZE = (int) 500e3;
 
         //those following 3  sets behave indeed the same in the test context:
         final KTypeOpenHashSet<KType> refSet = KTypeOpenHashSet.newInstance();
@@ -793,7 +795,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             Assert.assertEquals(refSet.contains(cast(putValue)), refSetNullStrategy.contains(cast(putValue)));
             Assert.assertEquals(refSet.contains(cast(putValue)), refSetIdenticalStrategy.contains(cast(putValue)));
 
-            final boolean isToBeRemoved = (prng.nextInt() % 3  == 0);
+            final boolean isToBeRemoved = (prng.nextInt() % 3 == 0);
             putValue = prng.nextInt();
 
             if (isToBeRemoved)
@@ -830,6 +832,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
         return newSet;
     }
+
     /*! #end !*/
 
     @Test
@@ -846,6 +849,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
+
             @Override
             public void apply(final KType value) {
 
@@ -865,7 +869,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
                 //we consume 1 iterator for this loop
                 Assert.assertEquals(initialPoolSize - 1, testContainer.entryIteratorPool.size());
 
-                testValue +=  castType(cursor.value);
+                testValue += castType(cursor.value);
             }
 
             //check checksum the iteration
@@ -937,6 +941,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         final long checksum = testContainer.forEach(new KTypeProcedure<KType>() {
 
             long count;
+
             @Override
             public void apply(final KType value)
             {
@@ -1076,7 +1081,8 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
                 Assert.assertEquals(startingPoolSize, testContainer.entryIteratorPool.size());
                 Assert.assertEquals(checksum, guard);
 
-            } catch (final Exception e)
+            }
+            catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
                 Assert.assertEquals(startingPoolSize - 1, testContainer.entryIteratorPool.size());
@@ -1123,7 +1129,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
             Assert.assertEquals(contructorBufferSize, newSet.allocated.length);
 
-            for (int i = 0 ; i < PREALLOCATED_SIZE; i++) {
+            for (int i = 0; i < PREALLOCATED_SIZE; i++) {
 
                 newSet.add(cast(i));
 
@@ -1136,14 +1142,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         } //end for test runs
     }
 
-
     private KTypeOpenHashSet<KType> createSetWithOrderedData(final int size)
     {
 
         final KTypeOpenHashSet<KType> newSet = KTypeOpenHashSet.newInstanceWithCapacity(KTypeOpenHashSet.DEFAULT_CAPACITY,
                 KTypeOpenHashSet.DEFAULT_LOAD_FACTOR);
 
-        for (int i = 0; i < size ; i++) {
+        for (int i = 0; i < size; i++) {
 
             newSet.add(cast(i));
         }

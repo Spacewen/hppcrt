@@ -54,7 +54,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @After
-    public void checkTrailingSpaceUninitialized()
+    public void checkConsistency()
     {
         if (list != null)
         {
@@ -142,6 +142,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list3.addAll(list2);
         Assert.assertEquals(3, list3.size());
     }
+
     /*! #end !*/
 
     /* */
@@ -272,13 +273,13 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k4));
 
         Assert.assertEquals(3, list.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertListEquals(list.toArray(), 0, 4);
     }
@@ -290,13 +291,13 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         list.add(newArray(k0, k1, k2, k1, k0));
 
         Assert.assertEquals(2, list.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertListEquals(list.toArray(), 1, 2, 1);
     }
@@ -313,20 +314,22 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size
             Assert.assertEquals(5, list.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
-                    if (v == key2) throw t;
+                    if (v == key2)
+                        throw t;
                     return v == key1;
                 };
-                    }));
+            }));
             Assert.fail();
         }
         catch (final RuntimeException e)
         {
             // Make sure it's really our exception...
-            if (e != t) throw e;
+            if (e != t)
+                throw e;
         }
 
         // And check if the list is in consistent state.
@@ -389,11 +392,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
         for (int i = 0; i < list.size(); i++) {
 
-            TestUtils.assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.get(i));
+            TestUtils.assertEquals2(Intrinsics.<KType> defaultKTypeValue(), list.get(i));
 
         }
 
-        Arrays.fill(list.buffer, Intrinsics.<KType>defaultKTypeValue());
+        Arrays.fill(list.buffer, Intrinsics.<KType> defaultKTypeValue());
 
         for (int i = 5; i < list.size(); i++)
             list.set(i, k1);
@@ -404,7 +407,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         for (int i = list.size(); i < list.buffer.length; i++) {
             //only objects get cleared for GC sake.
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            TestUtils.assertEquals2(Intrinsics.<KType>defaultKTypeValue(), list.buffer[i]);
+            TestUtils.assertEquals2(Intrinsics.<KType> defaultKTypeValue(), list.buffer[i]);
             /*! #end !*/
         }
 
@@ -456,7 +459,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testIterable()
     {
-        list.add(asArray( 0, 1, 2, 3));
+        list.add(asArray(0, 1, 2, 3));
         int count = 0;
         for (final KTypeCursor<KType> cursor : list)
         {
@@ -468,7 +471,8 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
 
         count = 0;
         list.resize(0);
-        for (@SuppressWarnings("unused") final KTypeCursor<KType> cursor : list)
+        for (@SuppressWarnings("unused")
+        final KTypeCursor<KType> cursor : list)
         {
             count++;
         }
@@ -479,7 +483,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testIterator()
     {
-        list.add(asArray( 0, 1, 2, 3));
+        list.add(asArray(0, 1, 2, 3));
         final Iterator<KTypeCursor<KType>> iterator = list.iterator();
         int count = 0;
         while (iterator.hasNext())
@@ -500,10 +504,11 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testForEachWithProcedure()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         final IntHolder holder = new IntHolder();
         list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
+
             @Override
             public void apply(final KType v)
             {
@@ -518,9 +523,10 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testForEachReturnValueFromAnonymousClass()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         final int result = list.forEach(new KTypeProcedure<KType>() {
             int index = 0;
+
             @Override
             public void apply(final KType v)
             {
@@ -534,9 +540,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testClear()
     {
-        list.add(asArray( 1, 2, 3));
+        list.add(asArray(1, 2, 3));
         list.clear();
-        checkTrailingSpaceUninitialized();
+        checkConsistency();
     }
 
     /* */
@@ -581,6 +587,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(l1.hashCode(), l2.hashCode());
         Assert.assertEquals(l1, l2);
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -589,8 +596,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         final KTypeArrayList<Integer> l1 = KTypeArrayList.from(1, 2, 3);
         final Integer[] result = l1.toArray(Integer.class);
-        Assert.assertArrayEquals(new Integer [] {1, 2, 3}, result); // dummy
+        Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, result); // dummy
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -600,8 +608,9 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     {
         final KTypeArrayList<KType> l1 = KTypeArrayList.from(k1, k2, k3);
         final Object[] result = l1.toArray();
-        Assert.assertArrayEquals(new Object [] {k1, k2, k3}, result);
+        Assert.assertArrayEquals(new Object[] { k1, k2, k3 }, result);
     }
+
     /*! #end !*/
 
     /* */
@@ -868,7 +877,8 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
                 Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
                 Assert.assertEquals(checksum, guard);
 
-            } catch (final Exception e)
+            }
+            catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
                 Assert.assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());
@@ -903,7 +913,6 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
                 count += castType(value);
             }
         }).count;
-
 
         final int initialPoolSize = testContainer.valueIteratorPool.size();
 

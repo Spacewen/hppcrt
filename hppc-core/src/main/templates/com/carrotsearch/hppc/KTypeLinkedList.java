@@ -157,6 +157,14 @@ public class KTypeLinkedList<KType>
                         obj.pointers = KTypeLinkedList.this.beforeAfterPointers;
                         obj.internalPos = KTypeLinkedList.HEAD_POSITION;
                     }
+
+                    @Override
+                    public void reset(final ValueIterator obj) {
+                        // for GC sake
+                        obj.buffer = null;
+                        obj.pointers = null;
+
+                    }
                 });
 
         this.descendingValueIteratorPool = new IteratorPool<KTypeCursor<KType>, DescendingValueIterator>(
@@ -177,6 +185,13 @@ public class KTypeLinkedList<KType>
                         obj.buffer = KTypeLinkedList.this.buffer;
                         obj.pointers = KTypeLinkedList.this.beforeAfterPointers;
                         obj.internalPos = KTypeLinkedList.TAIL_POSITION;
+                    }
+
+                    @Override
+                    public void reset(final DescendingValueIterator obj) {
+                        // for GC sake
+                        obj.buffer = null;
+                        obj.pointers = null;
                     }
                 });
     }
@@ -530,10 +545,12 @@ public class KTypeLinkedList<KType>
     /**
      * Ensures the internal buffer has enough free slots to store
      * <code>expectedAdditions</code>. Increases internal buffer size if needed.
+     * @return true if a reallocation occurs
      */
-    protected void ensureBufferSpace(final int expectedAdditions)
+    protected boolean ensureBufferSpace(final int expectedAdditions)
     {
         final int bufferLen = (buffer == null ? 0 : buffer.length);
+
         if (elementsCount > bufferLen - expectedAdditions)
         {
             final int newSize = resizer.grow(bufferLen, elementsCount, expectedAdditions);
@@ -552,7 +569,12 @@ public class KTypeLinkedList<KType>
             }
             this.buffer = newBuffer;
             this.beforeAfterPointers = newPointers;
+
+            return true;
+
         }
+
+        return false;
     }
 
     /**
@@ -1184,6 +1206,13 @@ public class KTypeLinkedList<KType>
             //protect the head
             if (this.internalPos != KTypeLinkedList.HEAD_POSITION)
             {
+                //assure growing, and grab the new arrays references if needed
+                if (ensureBufferSpace(1)) {
+
+                    this.pointers = KTypeLinkedList.this.beforeAfterPointers;
+                    this.buffer = KTypeLinkedList.this.buffer;
+                }
+
                 final int beforePos = Intrinsics.getLinkBefore(this.pointers[this.internalPos]);
 
                 //we insert after the previous
@@ -1203,6 +1232,13 @@ public class KTypeLinkedList<KType>
             //protect the tail
             if (this.internalPos != KTypeLinkedList.TAIL_POSITION)
             {
+                //assure growing, and grab the new arrays references if needed
+                if (ensureBufferSpace(1)) {
+
+                    this.pointers = KTypeLinkedList.this.beforeAfterPointers;
+                    this.buffer = KTypeLinkedList.this.buffer;
+                }
+
                 //we insert after us
                 insertAfterPosNoCheck(e1, this.internalPos);
             }

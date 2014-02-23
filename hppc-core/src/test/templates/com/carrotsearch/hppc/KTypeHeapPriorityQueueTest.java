@@ -1,6 +1,5 @@
 package com.carrotsearch.hppc;
 
-
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
@@ -18,7 +17,6 @@ import com.carrotsearch.hppc.predicates.KTypePredicate;
 import com.carrotsearch.hppc.procedures.KTypeProcedure;
 import com.carrotsearch.hppc.sorting.KTypeComparator;
 import com.carrotsearch.hppc.sorting.KTypeSort;
-
 
 /**
  * Unit tests for {@link KTypeHeapPriorityQueue}.
@@ -49,7 +47,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @After
-    public void checkTrailingSpaceUninitialized()
+    public void checkConsistency()
     {
         if (prioq != null)
         {
@@ -181,7 +179,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testRemoveAll()
     {
-        insertElements(prioq,0, 1, 0, 1, 0);
+        insertElements(prioq, 0, 1, 0, 1, 0);
 
         Assert.assertEquals(0, prioq.removeAllOccurrences(k2));
         Assert.assertEquals(3, prioq.removeAllOccurrences(k0));
@@ -213,13 +211,13 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         insertElements(prioq, 0, 1, 2, 1, 4);
 
         Assert.assertEquals(3, prioq.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         assertPrioQueueEquals(prioq, 0, 4);
     }
@@ -231,13 +229,13 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         insertElements(prioq, 0, 1, 2, 1, 0);
 
         Assert.assertEquals(2, prioq.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         assertPrioQueueEquals(prioq, 1, 1, 2);
     }
@@ -254,7 +252,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size
             Assert.assertEquals(5, prioq.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
@@ -262,7 +260,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
                         throw t;
                     return v == key1;
                 };
-                    }));
+            }));
 
             Assert.fail();
         }
@@ -326,15 +324,14 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         Arrays.sort(testArray);
         assertPrioQueueEquals(prioq, testArray);
 
-
         //C) try to iterate a void Prio queue
         count = 0;
         prioq.clear();
         Assert.assertEquals(0, prioq.size());
         Assert.assertTrue(prioq.isEmpty());
 
-        for (@SuppressWarnings("unused") final
-                KTypeCursor<KType> cursor : prioq)
+        for (@SuppressWarnings("unused")
+        final KTypeCursor<KType> cursor : prioq)
         {
             count++;
         }
@@ -420,6 +417,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
         final long sumResult = prioq.forEach(new KTypeProcedure<KType>() {
             long sum = 0L;
+
             @Override
             public void apply(final KType v)
             {
@@ -436,7 +434,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     {
         insertElements(prioq, 1, 2, 3, 4, 5, 6, 7);
         prioq.clear();
-        checkTrailingSpaceUninitialized();
+        checkConsistency();
     }
 
     /* */
@@ -477,7 +475,6 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         assertPrioQueueEquals(prioq, 1, 2, 3);
         assertPrioQueueEquals(cloned, 2, 3);
     }
-
 
     /* */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/

@@ -25,7 +25,6 @@ public class ObjectPool<E> {
      */
     protected int capacity;
 
-
     /**
      * Controls the way more objects are produced when the pool is empty.
      * The meaning of {@link ArraySizingStrategy}.grow() differs a bit in the
@@ -53,14 +52,14 @@ public class ObjectPool<E> {
      * @param growthPolicy
      */
     @SuppressWarnings("unchecked")
-    public ObjectPool(ObjectFactory<E> objFactory, int initialSize, ArraySizingStrategy growthPolicy) {
+    public ObjectPool(final ObjectFactory<E> objFactory, final int initialSize, final ArraySizingStrategy growthPolicy) {
 
         //set basic fields
         this.factory = objFactory;
         this.currentSize = initialSize;
         this.growthPolicy = growthPolicy;
 
-        assert  this.factory != null;
+        assert this.factory != null;
         assert this.currentSize > 0;
         assert this.growthPolicy != null;
 
@@ -69,12 +68,11 @@ public class ObjectPool<E> {
         //Construct
         this.arrayPool = (E[]) new Object[this.capacity];
         //allocate
-        for (int i = 0 ; i < arrayPool.length; i++) {
+        for (int i = 0; i < arrayPool.length; i++) {
 
             this.arrayPool[i] = this.factory.create();
         }
     }
-
 
     /**
      * Borrow an Object from  the pool. If there
@@ -90,13 +88,13 @@ public class ObjectPool<E> {
         if (this.currentSize <= 0) {
 
             //at least add 1 object...
-            int newCapacity = this.growthPolicy.grow(this.capacity, this.capacity, 1);
+            final int newCapacity = this.growthPolicy.grow(this.capacity, this.capacity, 1);
 
             //particular case for negative values: generate nbAddedObjects objects, keeping the same capacity.
             if (newCapacity < 0)
             {
 
-                int nbAddedObjects = Math.min(-newCapacity, this.capacity);
+                final int nbAddedObjects = Math.min(-newCapacity, this.capacity);
 
                 //construct and add the additional objects
                 for (int i = 0; i < nbAddedObjects; i++)
@@ -111,7 +109,7 @@ public class ObjectPool<E> {
             //reallocate if policy indeed authorized growth
             else if (newCapacity > this.capacity) {
 
-                Object[] newPoolArray = new Object[newCapacity];
+                final Object[] newPoolArray = new Object[newCapacity];
 
                 //construct and add the additional objects
                 for (int i = 0; i < (newCapacity - this.capacity); i++) {
@@ -152,7 +150,10 @@ public class ObjectPool<E> {
      * since such object is supposed to be "freed".
      * @param releasedObject
      */
-    public void release(E releasedObject) {
+    public void release(final E releasedObject) {
+
+        //apply reset in all cases
+        this.factory.reset(releasedObject);
 
         //only authorize if size < capacity.
         //this could happen if by mistake several instances of the same object has been

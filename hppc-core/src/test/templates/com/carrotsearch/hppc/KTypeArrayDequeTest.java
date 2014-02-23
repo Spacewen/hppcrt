@@ -50,14 +50,14 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @After
-    public void checkTrailingSpaceUninitialized()
+    public void checkConsistency()
     {
         if (deque != null)
         {
             for (int i = deque.tail; i < deque.head; i = Intrinsics.oneRight(i, deque.buffer.length))
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                Assert.assertTrue(Intrinsics.<KType>defaultKTypeValue() == deque.buffer[i]);
+                Assert.assertTrue(Intrinsics.<KType> defaultKTypeValue() == deque.buffer[i]);
                 /*! #end !*/
             }
         }
@@ -345,13 +345,13 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         deque.addLast(newArray(k0, k1, k2, k1, k4));
 
         Assert.assertEquals(3, deque.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertListEquals(deque.toArray(), 0, 4);
     }
@@ -369,20 +369,22 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size
             Assert.assertEquals(5, deque.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
-                    if (v == key2) throw t;
+                    if (v == key2)
+                        throw t;
                     return v == key1;
                 };
-                    }));
+            }));
             Assert.fail();
         }
         catch (final RuntimeException e)
         {
             // Make sure it's really our exception...
-            if (e != t) throw e;
+            if (e != t)
+                throw e;
         }
 
         // And check if the deque is in consistent state.
@@ -440,7 +442,8 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         count = 0;
         deque.clear();
-        for (@SuppressWarnings("unused") final KTypeCursor<KType> cursor : deque)
+        for (@SuppressWarnings("unused")
+        final KTypeCursor<KType> cursor : deque)
         {
             count++;
         }
@@ -476,7 +479,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         deque.addLast(sequence);
 
         int index = sequence.size() - 1;
-        for (final Iterator<KTypeCursor<KType>> i = deque.descendingIterator(); i.hasNext(); )
+        for (final Iterator<KTypeCursor<KType>> i = deque.descendingIterator(); i.hasNext();)
         {
             final KTypeCursor<KType> cursor = i.next();
             TestUtils.assertEquals2(sequence.buffer[index], cursor.value);
@@ -498,6 +501,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         final IntHolder count = new IntHolder();
         deque.forEach(new KTypeProcedure<KType>() {
             int index = 0;
+
             @Override
             public void apply(final KType v)
             {
@@ -517,6 +521,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         final IntHolder count = new IntHolder();
         deque.descendingForEach(new KTypeProcedure<KType>() {
             int index = sequence.size();
+
             @Override
             public void apply(final KType v)
             {
@@ -578,6 +583,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
         Assert.assertArrayEquals(ad.toArray(), deque.toArray());
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -596,6 +602,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         this.deque.head = this.deque.tail = this.deque.buffer.length / 2;
         testAgainstArrayDeque();
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -626,6 +633,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         Assert.assertEquals(l1.hashCode(), l2.hashCode());
         Assert.assertEquals(l1, l2);
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -634,8 +642,9 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     {
         final KTypeArrayDeque<Integer> l1 = KTypeArrayDeque.from(1, 2, 3);
         final Integer[] result = l1.toArray(Integer.class);
-        Assert.assertArrayEquals(new Integer [] {1, 2, 3}, result); // dummy
+        Assert.assertArrayEquals(new Integer[] { 1, 2, 3 }, result); // dummy
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -645,8 +654,9 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
     {
         final KTypeArrayDeque<KType> l1 = KTypeArrayDeque.from(k1, k2, k3);
         final Object[] result = l1.toArray();
-        Assert.assertArrayEquals(new Object [] {k1, k2, k3}, result); // dummy
+        Assert.assertArrayEquals(new Object[] { k1, k2, k3 }, result); // dummy
     }
+
     /*! #end !*/
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -959,7 +969,8 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
                 Assert.assertEquals(startingPoolSize, testContainer.valueIteratorPool.size());
                 Assert.assertEquals(checksum, guard);
 
-            } catch (final Exception e)
+            }
+            catch (final Exception e)
             {
                 //iterator is NOT returned to its pool because of the exception
                 Assert.assertEquals(startingPoolSize - 1, testContainer.valueIteratorPool.size());

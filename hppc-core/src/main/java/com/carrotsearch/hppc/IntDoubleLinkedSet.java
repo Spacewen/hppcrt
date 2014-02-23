@@ -28,12 +28,12 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Dense array of set elements.
      */
-    public int [] dense = EmptyArrays.EMPTY_INT_ARRAY;
+    public int[] dense = EmptyArrays.EMPTY_INT_ARRAY;
 
     /**
      * Sparse, element value-indexed array pointing back at {@link #dense}.
      */
-    public int [] sparse = EmptyArrays.EMPTY_INT_ARRAY;
+    public int[] sparse = EmptyArrays.EMPTY_INT_ARRAY;
 
     /**
      * Current number of elements stored in the set ({@link #dense}).
@@ -51,7 +51,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
 
     protected final IntArrayList arrayListWrapper;
 
-    protected final  IteratorPool<IntCursor, IntArrayList.ValueIterator> valueIteratorPool;
+    protected final IteratorPool<IntCursor, IntArrayList.ValueIterator> valueIteratorPool;
 
     /**
      * Create with default sizing strategy and initial dense capacity of
@@ -62,7 +62,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      */
     public IntDoubleLinkedSet()
     {
-        this(DEFAULT_CAPACITY, 0);
+        this(IntDoubleLinkedSet.DEFAULT_CAPACITY, 0);
     }
 
     /**
@@ -70,7 +70,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * 
      * @see BoundedProportionalArraySizingStrategy
      */
-    public IntDoubleLinkedSet(int denseCapacity, int sparseCapacity)
+    public IntDoubleLinkedSet(final int denseCapacity, final int sparseCapacity)
     {
         this(denseCapacity, sparseCapacity, new BoundedProportionalArraySizingStrategy());
     }
@@ -78,7 +78,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Create with a custom dense array resizing strategy.
      */
-    public IntDoubleLinkedSet(int denseCapacity, int sparseCapacity, ArraySizingStrategy resizer)
+    public IntDoubleLinkedSet(final int denseCapacity, final int sparseCapacity, final ArraySizingStrategy resizer)
     {
         assert denseCapacity >= 0 : "denseCapacity must be >= 0: " + denseCapacity;
         assert sparseCapacity >= 0 : "sparseCapacity must be >= 0: " + sparseCapacity;
@@ -88,7 +88,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
 
         //this is not really used, it is just there to provide a
         //IntArrayList iterator-like interface to IntDoubleLinkedSet
-        arrayListWrapper = new IntArrayList(DEFAULT_CAPACITY);
+        arrayListWrapper = new IntArrayList(IntDoubleLinkedSet.DEFAULT_CAPACITY);
 
         ensureDenseCapacity(resizer.round(denseCapacity));
         ensureSparseCapacity(sparseCapacity);
@@ -103,12 +103,18 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                     }
 
                     @Override
-                    public void initialize( IntArrayList.ValueIterator obj) {
+                    public void initialize(final IntArrayList.ValueIterator obj) {
 
                         //Make the buffer points on the one of the IntDoubleLinkedSet
                         obj.cursor.index = -1;
                         obj.size = IntDoubleLinkedSet.this.size();
                         obj.buffer = IntDoubleLinkedSet.this.dense;
+                    }
+
+                    @Override
+                    public void reset(final IntArrayList.ValueIterator obj) {
+                        obj.buffer = null;
+
                     }
                 });
     }
@@ -116,10 +122,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Creates a set from elements of another container.
      */
-    public IntDoubleLinkedSet(IntContainer container)
+    public IntDoubleLinkedSet(final IntContainer container)
     {
-        this(container.size(), 1 + maxElement(container));
-        for (IntCursor cursor : container)
+        this(container.size(), 1 + IntDoubleLinkedSet.maxElement(container));
+        for (final IntCursor cursor : container)
         {
             addNoChecks(cursor.value);
         }
@@ -129,7 +135,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * Ensures the internal dense buffer has enough free slots to store
      * <code>expectedAdditions</code>.
      */
-    protected void ensureDenseCapacity(int expectedAdditions)
+    protected void ensureDenseCapacity(final int expectedAdditions)
     {
         final int bufferLen = (dense == null ? 0 : dense.length);
         final int elementsCount = size();
@@ -140,7 +146,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                     " return sensible new size: " + newSize + " <= "
                     + (elementsCount + expectedAdditions);
 
-            final int [] newBuffer = new int [newSize];
+            final int[] newBuffer = new int[newSize];
             if (bufferLen > 0)
             {
                 System.arraycopy(dense, 0, newBuffer, 0, elementsCount);
@@ -153,13 +159,13 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * Ensures the internal sparse buffer has enough free slots to store
      * index of <code>value</code>.
      */
-    protected void ensureSparseCapacity(int value)
+    protected void ensureSparseCapacity(final int value)
     {
         assert value >= 0 : "value must be >= 0: " + value;
 
         if (value >= sparse.length)
         {
-            final int [] newBuffer = new int [value + 1];
+            final int[] newBuffer = new int[value + 1];
             if (sparse.length > 0)
             {
                 System.arraycopy(sparse, 0, newBuffer, 0, sparse.length);
@@ -175,7 +181,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public int[] toArray(int[] target)
+    public int[] toArray(final int[] target)
     {
         System.arraycopy(dense, 0, target, 0, size());
         return target;
@@ -188,7 +194,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public boolean contains(int value)
+    public boolean contains(final int value)
     {
         int index;
         return value >= 0
@@ -198,7 +204,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public boolean add(int value)
+    public boolean add(final int value)
     {
         assert value >= 0 : "Double linked set supports values >= 0 only.";
 
@@ -219,7 +225,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * A faster version of {@link #add(int)} that does check or attempt to expand the
      * internal buffers. Assertions are still present.
      */
-    private void addNoChecks(int value)
+    private void addNoChecks(final int value)
     {
         assert value >= 0 : "Double linked set supports values >= 0 only.";
 
@@ -237,11 +243,13 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Adds two elements to the set.
      */
-    public int add(int e1, int e2)
+    public int add(final int e1, final int e2)
     {
         int count = 0;
-        if (add(e1)) count++;
-        if (add(e2)) count++;
+        if (add(e1))
+            count++;
+        if (add(e2))
+            count++;
         return count;
     }
 
@@ -253,11 +261,12 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * @return Returns the number of elements that were added to the set
      * (were not present in the set).
      */
-    public int add(int... elements)
+    public int add(final int... elements)
     {
         int count = 0;
-        for (int e : elements)
-            if (add(e)) count++;
+        for (final int e : elements)
+            if (add(e))
+                count++;
         return count;
     }
 
@@ -267,7 +276,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * @return Returns the number of elements actually added as a result of this
      * call (not previously present in the set).
      */
-    public int addAll(IntContainer container)
+    public int addAll(final IntContainer container)
     {
         return addAll((Iterable<IntCursor>) container);
     }
@@ -278,12 +287,13 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * @return Returns the number of elements actually added as a result of this
      * call (not previously present in the set).
      */
-    public int addAll(Iterable<? extends IntCursor> iterable)
+    public int addAll(final Iterable<? extends IntCursor> iterable)
     {
         int count = 0;
-        for (IntCursor cursor : iterable)
+        for (final IntCursor cursor : iterable)
         {
-            if (add(cursor.value)) count++;
+            if (add(cursor.value))
+                count++;
         }
 
         return count;
@@ -293,7 +303,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * 
      */
     @Override
-    public int removeAllOccurrences(int value)
+    public int removeAllOccurrences(final int value)
     {
         if (value >= 0 && value < sparse.length)
         {
@@ -315,12 +325,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * An alias for the (preferred) {@link #removeAllOccurrences}.
      */
-    public boolean remove(int key)
+    public boolean remove(final int key)
     {
         return removeAllOccurrences(key) == 1;
     }
-
-
 
     @Override
     public Iterator<IntCursor> iterator()
@@ -330,10 +338,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public <T extends IntProcedure> T forEach(T procedure)
+    public <T extends IntProcedure> T forEach(final T procedure)
     {
         final int max = size();
-        final int [] dense = this.dense;
+        final int[] dense = this.dense;
         for (int i = 0; i < max; i++)
         {
             procedure.apply(dense[i]);
@@ -343,10 +351,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public <T extends IntPredicate> T forEach(T predicate)
+    public <T extends IntPredicate> T forEach(final T predicate)
     {
         final int max = size();
-        final int [] dense = this.dense;
+        final int[] dense = this.dense;
         for (int i = 0; i < max; i++)
         {
             if (predicate.apply(dense[i]))
@@ -357,10 +365,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public int removeAll(IntLookupContainer c)
+    public int removeAll(final IntLookupContainer c)
     {
         int max = size(), removed = 0;
-        final int [] dense = this.dense;
+        final int[] dense = this.dense;
         for (int i = 0; i < max;)
         {
             if (c.contains(dense[i])) {
@@ -369,7 +377,8 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                 dense[i] = lastValue;
                 sparse[lastValue] = i;
                 removed++;
-            } else {
+            }
+            else {
                 i++;
             }
         }
@@ -378,10 +387,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public int removeAll(IntPredicate predicate)
+    public int removeAll(final IntPredicate predicate)
     {
         int max = size(), removed = 0;
-        final int [] dense = this.dense;
+        final int[] dense = this.dense;
         for (int i = 0; i < max;)
         {
             if (predicate.apply(dense[i])) {
@@ -390,7 +399,8 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                 dense[i] = lastValue;
                 sparse[lastValue] = i;
                 removed++;
-            } else {
+            }
+            else {
                 i++;
             }
         }
@@ -399,10 +409,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
-    public int retainAll(IntLookupContainer c)
+    public int retainAll(final IntLookupContainer c)
     {
         int max = size(), removed = 0;
-        final int [] dense = this.dense;
+        final int[] dense = this.dense;
         for (int i = 0; i < max;)
         {
             if (!c.contains(dense[i])) {
@@ -411,7 +421,8 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                 dense[i] = lastValue;
                 sparse[lastValue] = i;
                 removed++;
-            } else {
+            }
+            else {
                 i++;
             }
         }
@@ -423,11 +434,11 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
      * Create a set from a variable number of arguments or an array of <code>int</code>.
      * The elements are copied from the argument to the internal buffer.
      */
-    public static IntDoubleLinkedSet from(int... elements)
+    public static IntDoubleLinkedSet from(final int... elements)
     {
         final IntDoubleLinkedSet set =
-                new IntDoubleLinkedSet(elements.length, 1 + maxElement(elements));
-        for (int i : elements)
+                new IntDoubleLinkedSet(elements.length, 1 + IntDoubleLinkedSet.maxElement(elements));
+        for (final int i : elements)
             set.addNoChecks(i);
         return set;
     }
@@ -435,7 +446,7 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Create a set from elements of another container.
      */
-    public static IntDoubleLinkedSet from(IntContainer container)
+    public static IntDoubleLinkedSet from(final IntContainer container)
     {
         return new IntDoubleLinkedSet(container);
     }
@@ -451,10 +462,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Return the value of the maximum element (or zero) in a given container.
      */
-    private static int maxElement(IntContainer container)
+    private static int maxElement(final IntContainer container)
     {
         int max = 0;
-        for (IntCursor c : container)
+        for (final IntCursor c : container)
             max = Math.max(max, c.value);
         return max;
     }
@@ -462,10 +473,10 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     /**
      * Return the value of the maximum element (or zero) in a given container.
      */
-    private static int maxElement(int... elements)
+    private static int maxElement(final int... elements)
     {
         int max = 0;
-        for (int c : elements)
+        for (final int c : elements)
             max = Math.max(max, c);
         return max;
     }
@@ -478,12 +489,12 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     {
         try
         {
-            IntDoubleLinkedSet cloned = (IntDoubleLinkedSet) super.clone();
+            final IntDoubleLinkedSet cloned = (IntDoubleLinkedSet) super.clone();
             cloned.dense = dense.clone();
             cloned.sparse = sparse.clone();
             return cloned;
         }
-        catch (CloneNotSupportedException e)
+        catch (final CloneNotSupportedException e)
         {
             throw new RuntimeException(e);
         }

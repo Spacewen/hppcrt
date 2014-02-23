@@ -19,7 +19,7 @@ import com.carrotsearch.hppc.sorting.*;
 /*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
-implements KTypePriorityQueue<KType>, Cloneable
+        implements KTypePriorityQueue<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -96,6 +96,13 @@ implements KTypePriorityQueue<KType>, Cloneable
                         obj.size = KTypeHeapPriorityQueue.this.size();
                         obj.buffer = KTypeHeapPriorityQueue.this.buffer;
                     }
+
+                    @Override
+                    public void reset(final ValueIterator obj) {
+                        // for GC sake
+                        obj.buffer = null;
+
+                    }
                 });
     }
 
@@ -106,7 +113,7 @@ implements KTypePriorityQueue<KType>, Cloneable
      * @see BoundedProportionalArraySizingStrategy
      */
     public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp
-            /*! #else
+    /*! #else
     KTypeComparator<KType> comp
     #end !*/)
     {
@@ -196,6 +203,7 @@ implements KTypePriorityQueue<KType>, Cloneable
     /**
      * {@inheritDoc}
      */
+    @Override
     public int removeAll(final KTypePredicate<? super KType> predicate)
     {
         //remove by position
@@ -717,11 +725,11 @@ implements KTypePriorityQueue<KType>, Cloneable
             //swap k and its parent
             parent = k >> 1;
 
-        tmp = buff[k];
-        buff[k] = buff[parent];
-        buff[parent] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[parent];
+            buff[parent] = tmp;
 
-        k = parent;
+            k = parent;
         }
     }
 
@@ -745,11 +753,11 @@ implements KTypePriorityQueue<KType>, Cloneable
         {
             //swap k and its parent
             parent = k >> 1;
-        tmp = buff[k];
-        buff[k] = buff[parent];
-        buff[parent] = tmp;
+            tmp = buff[k];
+            buff[k] = buff[parent];
+            buff[parent] = tmp;
 
-        k = parent;
+            k = parent;
         }
     }
 

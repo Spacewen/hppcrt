@@ -58,8 +58,8 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeOpenHashSet<KType>
-extends AbstractKTypeCollection<KType>
-implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
+        extends AbstractKTypeCollection<KType>
+        implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 {
     /**
      * Minimum capacity for the map.
@@ -83,7 +83,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      * </p>
      * @see #allocated
      */
-    public KType [] keys;
+    public KType[] keys;
 
     /**
      * Information if an entry (slot) in the {@link #keys} table is allocated
@@ -91,7 +91,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      * 
      * @see #assigned
      */
-    public boolean [] allocated;
+    public boolean[] allocated;
 
     /**
      * Cached number of assigned slots in {@link #allocated}.
@@ -125,7 +125,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      */
     protected int perturbation;
 
-
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
      * Custom hashing strategy : if != null,
@@ -139,7 +138,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * Creates a hash set with the default capacity of {@value #DEFAULT_CAPACITY},
      * load factor of {@value #DEFAULT_LOAD_FACTOR}.
-`     */
+    `     */
     public KTypeOpenHashSet()
     {
         this(KTypeOpenHashSet.DEFAULT_CAPACITY, KTypeOpenHashSet.DEFAULT_LOAD_FACTOR);
@@ -159,8 +158,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      */
     public KTypeOpenHashSet(final int initialCapacity, final float loadFactor)
     {
-        assert loadFactor > 0 && loadFactor <= 1
-                : "Load factor must be between (0, 1].";
+        assert loadFactor > 0 && loadFactor <= 1 : "Load factor must be between (0, 1].";
 
         this.loadFactor = loadFactor;
 
@@ -225,10 +223,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(e, keys[slot], strategy)
-                    /*! #else
-                Intrinsics.equalsKType(e, keys[slot])
-                #end !*/)
+            Intrinsics.equalsKTypeHashStrategy(e, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(e, keys[slot])
+            #end !*/)
             {
                 return false;
             }
@@ -240,7 +238,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         // fill in the last element and rehash.
         if (assigned == resizeAt) {
             expandAndAdd(e, slot);
-        } else {
+        }
+        else {
             assigned++;
             allocated[slot] = true;
             keys[slot] = e;
@@ -254,8 +253,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     public int add(final KType e1, final KType e2)
     {
         int count = 0;
-        if (add(e1)) count++;
-        if (add(e2)) count++;
+        if (add(e1))
+            count++;
+        if (add(e2))
+            count++;
         return count;
     }
 
@@ -271,7 +272,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     {
         int count = 0;
         for (final KType e : elements)
-            if (add(e)) count++;
+            if (add(e))
+                count++;
         return count;
     }
 
@@ -297,7 +299,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         int count = 0;
         for (final KTypeCursor<? extends KType> cursor : iterable)
         {
-            if (add(cursor.value)) count++;
+            if (add(cursor.value))
+                count++;
         }
         return count;
     }
@@ -313,8 +316,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         // Try to allocate new buffers first. If we OOM, it'll be now without
         // leaving the data structure in an inconsistent state.
-        final KType   [] oldKeys      = this.keys;
-        final boolean [] oldAllocated = this.allocated;
+        final KType[] oldKeys = this.keys;
+        final boolean[] oldAllocated = this.allocated;
 
         allocateBuffers(HashContainerUtils.nextCapacity(keys.length));
 
@@ -326,8 +329,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         oldKeys[freeSlot] = pendingKey;
 
         // Rehash all stored keys into the new buffers.
-        final KType []   keys = this.keys;
-        final boolean [] allocated = this.allocated;
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<KType> strategy = this.hashStrategy;
         /*! #end !*/
@@ -354,7 +357,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         }
     }
 
-
     /**
      * Allocate internal buffers for a given capacity.
      * 
@@ -362,8 +364,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      */
     private void allocateBuffers(final int capacity)
     {
-        final KType [] keys = Intrinsics.newKTypeArray(capacity);
-        final boolean [] allocated = new boolean [capacity];
+        final KType[] keys = Intrinsics.newKTypeArray(capacity);
+        final boolean[] allocated = new boolean[capacity];
 
         this.keys = keys;
         this.allocated = allocated;
@@ -416,10 +418,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
-                Intrinsics.equalsKType(key, keys[slot])
-                #end !*/)
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
             {
                 assigned--;
                 shiftConflictingKeys(slot);
@@ -534,10 +536,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
-                    Intrinsics.equalsKType(key, keys[slot])
-                    #end !*/)
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
             {
                 lastSlot = slot;
                 return true;
@@ -583,8 +585,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     {
         int h = 0;
 
-        final KType [] keys = this.keys;
-        final boolean [] states = this.allocated;
+        final KType[] keys = this.keys;
+        final boolean[] states = this.allocated;
         for (int i = states.length; --i >= 0;)
         {
             if (states[i])
@@ -609,7 +611,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
      * then, both maps are compared as follows: <pre>
      * {@inheritDoc}</pre>
      */
-    @SuppressWarnings({ "unchecked"})
+    @SuppressWarnings({ "unchecked" })
     /*! #else  !*/
     /**
      * {@inheritDoc}
@@ -620,10 +622,11 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     {
         if (obj != null)
         {
-            if (obj == this) return true;
+            if (obj == this)
+                return true;
 
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            if(obj instanceof KTypeOpenHashSet<?> &&
+            if (obj instanceof KTypeOpenHashSet<?> &&
                     !Intrinsics.equalsKType(this.hashStrategy, ((KTypeOpenHashSet<KType>) obj).hashStrategy)) {
 
                 return false;
@@ -690,7 +693,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     /**
      * internal pool of EntryIterator
      */
-    protected final  IteratorPool<KTypeCursor<KType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeCursor<KType>, EntryIterator>(
+    protected final IteratorPool<KTypeCursor<KType>, EntryIterator> entryIteratorPool = new IteratorPool<KTypeCursor<KType>, EntryIterator>(
             new ObjectFactory<EntryIterator>() {
 
                 @Override
@@ -702,6 +705,12 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
                 @Override
                 public void initialize(final EntryIterator obj) {
                     obj.cursor.index = -1;
+                }
+
+                @Override
+                public void reset(final EntryIterator obj) {
+                    // nothing
+
                 }
             });
 
@@ -722,8 +731,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     @Override
     public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
     {
-        final KType [] keys = this.keys;
-        final boolean [] states = this.allocated;
+        final KType[] keys = this.keys;
+        final boolean[] states = this.allocated;
 
         for (int i = 0; i < states.length; i++)
         {
@@ -777,8 +786,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     @Override
     public <T extends KTypePredicate<? super KType>> T forEach(final T predicate)
     {
-        final KType [] keys = this.keys;
-        final boolean [] states = this.allocated;
+        final KType[] keys = this.keys;
+        final boolean[] states = this.allocated;
 
         for (int i = 0; i < states.length; i++)
         {
@@ -798,8 +807,8 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     @Override
     public int removeAll(final KTypePredicate<? super KType> predicate)
     {
-        final KType [] keys = this.keys;
-        final boolean [] allocated = this.allocated;
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
 
         final int before = assigned;
         for (int i = 0; i < allocated.length;)
@@ -900,7 +909,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy);
     }
 
-
     /**
      * Create a new hash set with full parameter control, using a specific hash strategy, with no key perturbations (see
      * {@link #computePerturbationValue(int)}).
@@ -929,6 +937,5 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     }
 
     /* #end */
-
 
 }

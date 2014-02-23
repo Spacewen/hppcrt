@@ -142,16 +142,20 @@ public class KTypeArrayDeque<KType>
                     @Override
                     public ValueIterator create()
                     {
-
                         return new ValueIterator();
                     }
 
                     @Override
                     public void initialize(final ValueIterator obj)
                     {
-
                         obj.cursor.index = Intrinsics.oneLeft(KTypeArrayDeque.this.head, KTypeArrayDeque.this.buffer.length);
                         obj.remaining = KTypeArrayDeque.this.size();
+                    }
+
+                    @Override
+                    public void reset(final ValueIterator obj) {
+                        // nothing
+
                     }
                 });
 
@@ -161,7 +165,6 @@ public class KTypeArrayDeque<KType>
                     @Override
                     public DescendingValueIterator create()
                     {
-
                         return new DescendingValueIterator();
                     }
 
@@ -171,6 +174,11 @@ public class KTypeArrayDeque<KType>
 
                         obj.cursor.index = KTypeArrayDeque.this.tail;
                         obj.remaining = KTypeArrayDeque.this.size();
+                    }
+
+                    @Override
+                    public void reset(final DescendingValueIterator obj) {
+                        // nothing
                     }
                 });
     }
@@ -756,6 +764,7 @@ public class KTypeArrayDeque<KType>
      * </pre>
      * @return
      */
+    @Override
     public ValueIterator iterator()
     {
         //return new ValueIterator();
@@ -779,6 +788,7 @@ public class KTypeArrayDeque<KType>
      * </pre>
      * @return
      */
+    @Override
     public DescendingValueIterator descendingIterator()
     {
         //return new DescendingValueIterator();
