@@ -174,13 +174,14 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testRemove()
     {
-        list.add(asArray(0, 1, 2, 3, 4));
+        list.add(asArray(0, 1, 2, 3, 4, 5, 6, 7, 8));
 
-        list.remove(0);
-        list.remove(2);
-        list.remove(1);
+        Assert.assertEquals(0, castType(list.remove(0)));
+        Assert.assertEquals(3, castType(list.remove(2)));
+        Assert.assertEquals(2, castType(list.remove(1)));
+        Assert.assertEquals(6, castType(list.remove(3)));
 
-        TestUtils.assertListEquals(list.toArray(), 1, 4);
+        TestUtils.assertListEquals(list.toArray(), 1, 4, 5, 7, 8);
     }
 
     /* */

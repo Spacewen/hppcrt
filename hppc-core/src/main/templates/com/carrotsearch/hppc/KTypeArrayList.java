@@ -629,9 +629,9 @@ public class KTypeArrayList<KType>
     }
 
     /**
-     * Compare index-aligned objects.
+     * Compare index-aligned KTypeIndexedContainer objects
      */
-    private boolean allIndexesEqual(
+    final protected boolean allIndexesEqual(
             final KTypeIndexedContainer<KType> b1,
             final KTypeIndexedContainer<KType> b2, final int length)
     {

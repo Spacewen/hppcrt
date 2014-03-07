@@ -250,31 +250,163 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testIndexOf()
+    {
+        deque.addLast(asArray(0, 1, 2, 1, 0, 8, 7, 4, 3, 2));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        deque.add((KType) null);
+        Assert.assertEquals(10, deque.indexOf(null));
+        /*! #end !*/
+
+        Assert.assertEquals(0, deque.indexOf(k0));
+        Assert.assertEquals(8, deque.indexOf(k3));
+        Assert.assertEquals(-1, deque.indexOf(k9));
+        Assert.assertEquals(2, deque.indexOf(k2));
+        Assert.assertEquals(5, deque.indexOf(k8));
+        Assert.assertEquals(7, deque.indexOf(k4));
+    }
+
+    /* */
+    @Test
+    public void testLastIndexOf()
+    {
+        deque.addLast(asArray(0, 1, 2, 1, 0, 8, 3, 4, 8, 2));
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        deque.add((KType) null);
+        Assert.assertEquals(10, deque.lastIndexOf(null));
+        /*! #end !*/
+
+        Assert.assertEquals(4, deque.lastIndexOf(k0));
+        Assert.assertEquals(6, deque.lastIndexOf(k3));
+        Assert.assertEquals(-1, deque.indexOf(k9));
+        Assert.assertEquals(9, deque.lastIndexOf(k2));
+        Assert.assertEquals(8, deque.lastIndexOf(k8));
+    }
+
+    /* */
+    @Test
+    public void testSet()
+    {
+        deque.addLast(asArray(0, 1, 2));
+
+        TestUtils.assertEquals2(0, deque.set(0, k3));
+        TestUtils.assertEquals2(1, deque.set(1, k4));
+        TestUtils.assertEquals2(2, deque.set(2, k5));
+
+        TestUtils.assertListEquals(deque.toArray(), 3, 4, 5);
+    }
+
+    /* */
+    @Test
+    public void testGetAndGrowth()
+    {
+        final int maxGrowth = 10;
+        final int count = 500;
+
+        deque = new KTypeArrayDeque<KType>(0,
+                new BoundedProportionalArraySizingStrategy(5, maxGrowth, 2));
+
+        for (int i = 0; i < count; i++)
+            deque.add(cast(i));
+
+        Assert.assertEquals(count, deque.size());
+
+        for (int i = 0; i < count; i++)
+            TestUtils.assertEquals2(cast(i), deque.get(i));
+
+        Assert.assertTrue("Buffer size: 510 <= " + deque.buffer.length,
+                deque.buffer.length <= count + maxGrowth);
+    }
+
+    /* */
+    @Test
+    public void testRemove()
+    {
+        deque.addLast(asArray(0, 1, 2, 3, 4, 5, 6, 7, 8));
+
+        Assert.assertEquals(0, castType(deque.remove(0)));
+        Assert.assertEquals(3, castType(deque.remove(2)));
+        Assert.assertEquals(2, castType(deque.remove(1)));
+        Assert.assertEquals(6, castType(deque.remove(3)));
+
+        TestUtils.assertListEquals(deque.toArray(), 1, 4, 5, 7, 8);
+    }
+
+    /* */
+    @Test
     public void testRemoveFirstOccurrence()
     {
         final int modulo = 10;
         final int count = 10000;
         sequence.clear();
+
         for (int i = 0; i < count; i++)
         {
-            deque.addLast(cast(i % modulo));
-            sequence.add(cast(i % modulo));
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                deque.addFirst(cast(i % modulo));
+                sequence.insert(0, cast(i % modulo));
+            }
+            else {
+                deque.addLast(cast(i % modulo));
+                sequence.add(cast(i % modulo));
+            }
         }
 
+        //at that point, both IndexedContainers are the same
+        TestUtils.assertListEquals(deque.toArray(), sequence.toArray());
+
         final Random rnd = new Random(0xdeadbeef);
+
+        //remove values randomly
         for (int i = 0; i < 500; i++)
         {
             final KType k = cast(rnd.nextInt(modulo));
-            Assert.assertEquals(
-                    deque.removeFirstOccurrence(k) >= 0,
-                    sequence.removeFirstOccurrence(k) >= 0);
+
+            //both ArrayList and ArrayDequeue returns the same index:
+            Assert.assertEquals(" at i = " + i,
+                    sequence.removeFirstOccurrence(k),
+                    deque.removeFirstOccurrence(k));
         }
 
         TestUtils.assertListEquals(deque.toArray(), sequence.toArray());
 
+        //non-existent element
         Assert.assertTrue(0 > deque.removeFirstOccurrence(cast(modulo + 1)));
+
+        //now existing
         deque.addLast(cast(modulo + 1));
         Assert.assertTrue(0 <= deque.removeFirstOccurrence(cast(modulo + 1)));
+    }
+
+    /* */
+    @Test
+    public void testIndexedContainerEquals()
+    {
+        final int modulo = 10;
+        final int count = 10000;
+        sequence.clear();
+
+        for (int i = 0; i < count; i++)
+        {
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                deque.addFirst(cast(i % modulo));
+                sequence.insert(0, cast(i % modulo));
+            }
+            else {
+                deque.addLast(cast(i % modulo));
+                sequence.add(cast(i % modulo));
+            }
+        }
+
+        //both elements by elements are equal
+        TestUtils.assertListEquals(deque.toArray(), sequence.toArray());
+
+        //The array list and dequeue are indeed equal
+        Assert.assertTrue(deque.equals(sequence));
     }
 
     /* */
@@ -284,24 +416,42 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         final int modulo = 10;
         final int count = 10000;
         sequence.clear();
+
         for (int i = 0; i < count; i++)
         {
-            deque.addLast(cast(i % modulo));
-            sequence.add(cast(i % modulo));
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                deque.addFirst(cast(i % modulo));
+                sequence.insert(0, cast(i % modulo));
+            }
+            else {
+                deque.addLast(cast(i % modulo));
+                sequence.add(cast(i % modulo));
+            }
         }
 
+        //at that point, both IndexedContainers are the same
+        TestUtils.assertListEquals(deque.toArray(), sequence.toArray());
+
         final Random rnd = new Random(0x11223344);
+
+        //remove values randomly
         for (int i = 0; i < 500; i++)
         {
             final KType k = cast(rnd.nextInt(modulo));
-            Assert.assertEquals(
-                    deque.removeLastOccurrence(k) >= 0,
-                    sequence.removeLastOccurrence(k) >= 0);
+
+            //both ArrayList and ArrayDequeue returns the same index:
+            Assert.assertEquals(" at i = " + i,
+                    sequence.removeLastOccurrence(k),
+                    deque.removeLastOccurrence(k));
         }
 
         TestUtils.assertListEquals(deque.toArray(), sequence.toArray());
 
+        //non existent element
         Assert.assertTrue(0 > deque.removeLastOccurrence(cast(modulo + 1)));
+
+        //now existing
         deque.addFirst(cast(modulo + 1));
         Assert.assertTrue(0 <= deque.removeLastOccurrence(cast(modulo + 1)));
     }
@@ -541,6 +691,7 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
         final int modulo = 100;
 
         final ArrayDeque<KType> ad = new ArrayDeque<KType>();
+
         for (int i = 0; i < rounds; i++)
         {
             final KType k = cast(rnd.nextInt(modulo));

@@ -13,7 +13,8 @@ import static com.carrotsearch.hppc.Internals.*;
  * An array-backed deque (double-ended queue)  of KTypes. A single array is used to store and
  * manipulate all elements. Reallocations are governed by a {@link ArraySizingStrategy}
  * and may be expensive if they move around really large chunks of memory.
- *
+ * This dequeue is also a KTypeIndexedContainer, where index 0 is the head of the queue, and 
+ * size() - 1 index is the last element. 
 #if ($TemplateOptions.KTypeGeneric)
  * A brief comparison of the API against the Java Collections framework:
  * <table class="nice" summary="Java Collections ArrayDeque and HPPC ObjectArrayDeque, related methods.">
@@ -48,7 +49,7 @@ import static com.carrotsearch.hppc.Internals.*;
  */
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeArrayDeque<KType>
-        extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, Cloneable
+        extends AbstractKTypeCollection<KType> implements KTypeDeque<KType>, KTypeIndexedContainer<KType>, Cloneable
 {
     /**
      * Default capacity if no other capacity is given in the constructor.
@@ -380,28 +381,38 @@ public class KTypeArrayDeque<KType>
 
     /**
      * {@inheritDoc}
+     * The returned position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
      */
     @Override
     public int removeFirstOccurrence(final KType e1)
     {
+        int pos = -1;
+
         final int index = bufferIndexOf(e1);
-        if (index >= 0)
+
+        if (index >= 0) {
+
+            pos = bufferIndexToPosition(index);
             removeAtBufferIndex(index);
-        return index;
+        }
+
+        return pos;
     }
 
     /**
-     * Return the index of the first (counting from head) element equal to
+     * Return the index of the first element equal to
      * <code>e1</code>. The index points to the {@link #buffer} array.
      * 
      * @param e1 The element to look for.
-     * @return Returns the index of the first element equal to <code>e1</code>
+     * @return Returns the index in {@link #buffer} of the first element equal to <code>e1</code>
      * or <code>-1</code> if not found.
      */
     public int bufferIndexOf(final KType e1)
     {
         final int last = tail;
         final int bufLen = buffer.length;
+
         for (int i = head; i != last; i = Intrinsics.oneRight(i, bufLen))
         {
             if (Intrinsics.equalsKType(e1, buffer[i]))
@@ -413,22 +424,31 @@ public class KTypeArrayDeque<KType>
 
     /**
      * {@inheritDoc}
+     * The returned position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
      */
     @Override
     public int removeLastOccurrence(final KType e1)
     {
+        int pos = -1;
+
         final int index = lastBufferIndexOf(e1);
-        if (index >= 0)
+
+        if (index >= 0) {
+
+            pos = bufferIndexToPosition(index);
             removeAtBufferIndex(index);
-        return index;
+        }
+
+        return pos;
     }
 
     /**
-     * Return the index of the last (counting from tail) element equal to
+     * Return the index of the last element equal to
      * <code>e1</code>. The index points to the {@link #buffer} array.
      * 
      * @param e1 The element to look for.
-     * @return Returns the index of the first element equal to <code>e1</code>
+     * @return Returns the index in {@link #buffer} of the first element equal to <code>e1</code>
      * or <code>-1</code> if not found.
      */
     public int lastBufferIndexOf(final KType e1)
@@ -444,6 +464,32 @@ public class KTypeArrayDeque<KType>
         }
 
         return -1;
+    }
+
+    /**
+     * KTypeIndexedContainer methods
+     */
+
+    /**
+     * {@inheritDoc}
+     * The returned position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
+     */
+    @Override
+    public int indexOf(final KType e1) {
+
+        return bufferIndexToPosition(bufferIndexOf(e1));
+    }
+
+    /**
+     * {@inheritDoc}
+     * The returned position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
+     */
+    @Override
+    public int lastIndexOf(final KType e1) {
+
+        return bufferIndexToPosition(lastBufferIndexOf(e1));
     }
 
     /**
@@ -486,7 +532,7 @@ public class KTypeArrayDeque<KType>
 
     /**
      * Removes the element at <code>index</code> in the internal
-     * {#link {@link #buffer}} array, returning its value.
+     * {@link #buffer} array.
      * 
      * @param index Index of the element to remove. The index must be located between
      * {@link #head} and {@link #tail} in modulo {@link #buffer} arithmetic.
@@ -560,10 +606,7 @@ public class KTypeArrayDeque<KType>
 
     /**
      * {@inheritDoc}
-     * 
      * <p>The internal array buffers are not released as a result of this call.</p>
-     * 
-     * @see #release()
      */
     @Override
     public void clear()
@@ -808,7 +851,7 @@ public class KTypeArrayDeque<KType>
     /**
      * Applies <code>procedure</code> to a slice of the deque,
      * <code>fromIndex</code>, inclusive, to <code>toIndex</code>,
-     * exclusive.
+     * exclusive, indices are in {@link #buffer} array.
      */
     private void forEach(final KTypeProcedure<? super KType> procedure, final int fromIndex, final int toIndex)
     {
@@ -881,6 +924,7 @@ public class KTypeArrayDeque<KType>
      * Applies <code>predicate</code> to a slice of the deque,
      * <code>toIndex</code>, exclusive, down to <code>fromIndex</code>, inclusive
      * or until the predicate returns <code>false</code>.
+     * Indices are in {@link #buffer} array.
      */
     private void descendingForEach(final KTypePredicate<? super KType> predicate,
             final int fromIndex, final int toIndex)
@@ -1010,44 +1054,74 @@ public class KTypeArrayDeque<KType>
             {
                 final KTypeDeque<Object> other = (KTypeDeque<Object>) obj;
 
-                if (other.size() == this.size())
-                {
-                    final int fromIndex = head;
-                    final KType[] buffer = this.buffer;
-                    int i = fromIndex;
+                if (other.size() != this.size()) {
 
-                    //request a pooled iterator
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    final Iterator<KTypeCursor<Object>> it = other.iterator();
-                    /*! #else
-                    final Iterator<KTypeCursor> it = other.iterator();
-                    #end !*/
-
-                    while (it.hasNext())
-                    {
-                        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                        final KTypeCursor<Object> c = it.next();
-                        /*! #else
-                        final KTypeCursor c = it.next();
-                        #end !*/
-                        if (!Intrinsics.equalsKType(c.value, buffer[i]))
-                        {
-                            //if iterator was pooled, recycled it
-                            if (it instanceof AbstractIterator<?>)
-                            {
-                                ((AbstractIterator<?>) it).release();
-                            }
-
-                            return false;
-                        }
-                        i = Intrinsics.oneRight(i, buffer.length);
-                    }
-
-                    return true;
+                    return false;
                 }
+
+                final int fromIndex = head;
+                final KType[] buffer = this.buffer;
+                int i = fromIndex;
+
+                //request a pooled iterator
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                final Iterator<KTypeCursor<Object>> it = other.iterator();
+                /*! #else
+                final Iterator<KTypeCursor> it = other.iterator();
+                #end !*/
+
+                while (it.hasNext())
+                {
+                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    final KTypeCursor<Object> c = it.next();
+                    /*! #else
+                    final KTypeCursor c = it.next();
+                    #end !*/
+                    if (!Intrinsics.equalsKType(c.value, buffer[i]))
+                    {
+                        //if iterator was pooled, recycled it
+                        if (it instanceof AbstractIterator<?>)
+                        {
+                            ((AbstractIterator<?>) it).release();
+                        }
+
+                        return false;
+                    }
+                    i = Intrinsics.oneRight(i, buffer.length);
+                }
+
+                return true;
+
+            } //end if KTypeDeque
+            else if (obj instanceof KTypeIndexedContainer<?>)
+            {
+                final KTypeIndexedContainer<?> other = (KTypeIndexedContainer<?>) obj;
+                return other.size() == this.size() &&
+                        allIndexesEqual(this, (KTypeIndexedContainer<KType>) other, this.size());
             }
         }
         return false;
+    }
+
+    /**
+     * Compare index-aligned KTypeIndexedContainer objects
+     */
+    private boolean allIndexesEqual(
+            final KTypeIndexedContainer<KType> b1,
+            final KTypeIndexedContainer<KType> b2, final int length)
+    {
+        for (int i = 0; i < length; i++)
+        {
+            final KType o1 = b1.get(i);
+            final KType o2 = b2.get(i);
+
+            if (!Intrinsics.equalsKType(o1, o2))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
@@ -1131,5 +1205,133 @@ public class KTypeArrayDeque<KType>
             compactBeforeSorting();
             KTypeSort.quicksort(buffer, head, tail, comp);
         }
+    }
+
+    /**
+     * KTypeIndexedContainer methods
+     */
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void add(final KType e1) {
+        addLast(e1);
+    }
+
+    /**
+     * Beware: This operation is not supported.
+     */
+    @Override
+    public void insert(final int index, final KType e1) {
+        throw new UnsupportedOperationException("insert(final int index, final KType e1) operation is not supported on KTypeArrayDeque");
+    }
+
+    /**
+     * {@inheritDoc}
+     * The position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
+     */
+    @Override
+    public KType set(final int index, final KType e1) {
+
+        final int indexInBuffer = positionToBufferIndex(index);
+
+        final KType previous = buffer[indexInBuffer];
+
+        buffer[indexInBuffer] = e1;
+
+        return previous;
+    }
+
+    /**
+     * {@inheritDoc}
+     * The position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
+     */
+    @Override
+    public KType get(final int index) {
+
+        return buffer[positionToBufferIndex(index)];
+    }
+
+    /**
+     * {@inheritDoc}
+     * The position is relative to the head,
+     * i.e w.r.t the {@link KTypeIndexedContainer}, index 0 is the head of the queue, size() - 1 is the last element position. 
+     */
+    @Override
+    public KType remove(final int index) {
+
+        final int indexInBuffer = positionToBufferIndex(index);
+
+        final KType previous = buffer[indexInBuffer];
+
+        removeAtBufferIndex(indexInBuffer);
+
+        return previous;
+    }
+
+    /**
+     * Beware: This operation is not supported.
+     */
+    @Override
+    public void removeRange(final int fromIndex, final int toIndex) {
+
+        throw new UnsupportedOperationException("removeRange(final int fromIndex, final int toIndex) operation is not supported on KTypeArrayDeque");
+    }
+
+    /**
+     * convert the internal {@link #buffer} index to equivalent {@link #KTypeIndexedContainer}
+     * position.
+     * @param bufferIndex
+     * @return
+     */
+    private int bufferIndexToPosition(final int bufferIndex) {
+
+        int pos = -1;
+
+        if (bufferIndex >= 0) {
+
+            pos = bufferIndex - head;
+
+            if (pos < 0) {
+
+                //fold it
+                pos += buffer.length;
+            }
+        }
+
+        return pos;
+    }
+
+    /**
+     * convert the {@link #KTypeIndexedContainer}
+     * position to the internal {@link #buffer} index.
+     * position.
+     * @param bufferIndex
+     * @return
+     */
+    private int positionToBufferIndex(final int position) {
+
+        int bufferIndex = -1;
+
+        if (position >= 0) {
+
+            if (tail == head) {
+
+                return -1;
+            }
+
+            bufferIndex = position + head;
+
+            if (bufferIndex >= buffer.length) {
+
+                //fold it
+                bufferIndex -= buffer.length;
+            }
+        }
+
+        return bufferIndex;
     }
 }
