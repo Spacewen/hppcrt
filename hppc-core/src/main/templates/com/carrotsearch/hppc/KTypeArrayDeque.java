@@ -1050,6 +1050,9 @@ public class KTypeArrayDeque<KType>
     {
         if (obj != null)
         {
+            if (obj == this)
+                return true;
+
             if (obj instanceof KTypeDeque<?>)
             {
                 final KTypeDeque<Object> other = (KTypeDeque<Object>) obj;
@@ -1070,13 +1073,16 @@ public class KTypeArrayDeque<KType>
                 final Iterator<KTypeCursor> it = other.iterator();
                 #end !*/
 
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                KTypeCursor<Object> c;
+                /*! #else
+                KTypeCursor c;
+                #end !*/
+
                 while (it.hasNext())
                 {
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    final KTypeCursor<Object> c = it.next();
-                    /*! #else
-                    final KTypeCursor c = it.next();
-                    #end !*/
+                    c = it.next();
+
                     if (!Intrinsics.equalsKType(c.value, buffer[i]))
                     {
                         //if iterator was pooled, recycled it

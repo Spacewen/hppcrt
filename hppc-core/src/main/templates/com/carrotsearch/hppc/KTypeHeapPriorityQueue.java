@@ -561,7 +561,12 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     }
 
     /**
-     * {@inheritDoc}
+     * this instance and obj can only be equal if either: <pre>
+     * (both don't have set comparators)
+     * or
+     * (both have equal comparators defined by {@link #comparator}.equals(obj.comparator))</pre>
+     * then, both heaps are compared as follows: <pre>
+     * {@inheritDoc}</pre>
      */
     @Override
 /* #if ($TemplateOptions.KTypeGeneric) */
@@ -571,31 +576,58 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     {
         if (obj != null)
         {
+            if (obj == this)
+                return true;
+
             //we can only compare both KTypeHeapPriorityQueue,
             //that has the same comparison function reference
             if (obj instanceof KTypeHeapPriorityQueue<?>)
             {
-                final KTypeHeapPriorityQueue<?> other = (KTypeHeapPriorityQueue<?>) obj;
+                final KTypeHeapPriorityQueue<KType> other = (KTypeHeapPriorityQueue<KType>) obj;
+
+                if (other.size() != this.size()) {
+
+                    return false;
+                }
+
+                final int size = this.elementsCount;
+                final KType[] buffer = this.buffer;
+                final KType[] otherbuffer = other.buffer;
 
                 //both heaps must have the same comparison criteria
-                final boolean sameComp = (other.comparator == null && this.comparator == null) || //Comparable or natural ordering
-                        (other.comparator != null && other.comparator == this.comparator);
+                if (this.comparator == null && other.comparator == null) {
 
-                if (other.size() == this.size() && sameComp)
-                {
-                    final int size = this.elementsCount;
                     for (int i = 1; i <= size; i++)
                     {
-                        if (!Intrinsics.equalsKType(this.buffer[i], other.buffer[i]))
+                        if (!Intrinsics.isCompEqualKTypeUnchecked(buffer[i], otherbuffer[i]))
                         {
                             return false;
                         }
                     }
 
                     return true;
-                } //end if size identical
+                }
+                else if (this.comparator != null && this.comparator.equals(other.comparator)) {
+
+                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                    final Comparator<KType> comp = this.comparator;
+                    /*! #else
+                    KTypeComparator<KType> comp = this.comparator;
+                    #end !*/
+
+                    for (int i = 1; i <= size; i++)
+                    {
+                        if (comp.compare(buffer[i], otherbuffer[i]) != 0)
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
             } //end if KTypeHeapPriorityQueue<?>
         }
+
         return false;
     }
 

@@ -491,11 +491,176 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     }
 
     @Test
+    public void testEqualsComparable()
+    {
+        final Random prng = new Random(45872243156464L);
+
+        final int COUNT = (int) 100e3;
+
+        //A) fill COUNT random values in prio-queue
+        final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(74);
+        final KTypeHeapPriorityQueue<KType> testPQ2 = new KTypeHeapPriorityQueue<KType>((int) 1e6);
+
+        for (int i = 0; i < COUNT; i++)
+        {
+            //use a Random number on a small enough range so that it can be exactly represented
+            //in Float or Double with no conversion error back and forth.
+            final int randomInt = prng.nextInt(1000 * 1000);
+
+            testPQ.insert(cast(randomInt));
+            testPQ2.insert(cast(randomInt));
+        } //end for
+
+        Assert.assertEquals(COUNT, testPQ.size());
+        Assert.assertEquals(COUNT, testPQ2.size());
+
+        //B) compare both
+        Assert.assertTrue(testPQ.equals(testPQ2));
+
+    }
+
+    @Test
+    public void testEqualsComparator()
+    {
+        //Inverse natural ordering comparator
+        final KTypeComparator<KType> compIndepinstance = new KTypeComparator<KType>() {
+
+            @Override
+            public int compare(final KType e1, final KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = 1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = -1;
+                }
+
+                return res;
+            }
+        };
+
+        //Inverse natural ordering comparator
+        final KTypeComparator<KType> compIndepinstance2 = new KTypeComparator<KType>() {
+
+            @Override
+            public int compare(final KType e1, final KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = 1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = -1;
+                }
+
+                return res;
+            }
+        };
+
+        //Inverse natural ordering comparator
+        final KTypeComparator<KType> compAlwaysSame = new KTypeComparator<KType>() {
+
+            @Override
+            public boolean equals(final Object obj) {
+
+                return true;
+            }
+
+            @Override
+            public int compare(final KType e1, final KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = 1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = -1;
+                }
+
+                return res;
+            }
+        };
+
+        //Inverse natural ordering comparator
+        final KTypeComparator<KType> compAlwaysSame2 = new KTypeComparator<KType>() {
+
+            @Override
+            public boolean equals(final Object obj) {
+
+                return true;
+            }
+
+            @Override
+            public int compare(final KType e1, final KType e2)
+            {
+                int res = 0;
+
+                if (castType(e1) < castType(e2))
+                {
+                    res = 1;
+                }
+                else if (castType(e1) > castType(e2))
+                {
+                    res = -1;
+                }
+
+                return res;
+            }
+        };
+
+        final Random prng = new Random(74172243156464L);
+
+        final int COUNT = (int) 100e3;
+
+        //A) fill COUNT random values in prio-queue
+        final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(compIndepinstance, 471);
+        final KTypeHeapPriorityQueue<KType> testPQSameInstance = new KTypeHeapPriorityQueue<KType>(compIndepinstance, 92365);
+        final KTypeHeapPriorityQueue<KType> testPQOtherInstance = new KTypeHeapPriorityQueue<KType>(compIndepinstance2, 1545);
+        final KTypeHeapPriorityQueue<KType> testPQSame = new KTypeHeapPriorityQueue<KType>(compAlwaysSame, 10);
+        final KTypeHeapPriorityQueue<KType> testPQSame2 = new KTypeHeapPriorityQueue<KType>(compAlwaysSame2, 874122);
+
+        for (int i = 0; i < COUNT; i++)
+        {
+            //use a Random number on a small enough range so that it can be exactly represented
+            //in Float or Double with no conversion error back and forth.
+            final int randomInt = prng.nextInt(1000 * 1000);
+
+            testPQ.insert(cast(randomInt));
+            testPQSameInstance.insert(cast(randomInt));
+            testPQOtherInstance.insert(cast(randomInt));
+            testPQSame.insert(cast(randomInt));
+            testPQSame2.insert(cast(randomInt));
+
+        } //end for
+
+        //B) compare both
+
+        //same instance , by reference
+        Assert.assertTrue(testPQ.equals(testPQSameInstance));
+
+        //different instances, diff by default
+        Assert.assertFalse(testPQ.equals(testPQOtherInstance));
+
+        //different instances, but properly compared because instances are equals() = true
+        Assert.assertTrue(testPQSame.equals(testPQSame2));
+    }
+
+    @Test
     public void testSyntheticComparable()
     {
         final Random prng = new Random(45874131463156464L);
 
-        final int COUNT = (int) 2e6;
+        final int COUNT = (int) 1e6;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(10);
@@ -581,7 +746,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
         final Random prng = new Random(98754131654131L);
 
-        final int COUNT = (int) 2e6;
+        final int COUNT = (int) 1e6;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(comp, 10);

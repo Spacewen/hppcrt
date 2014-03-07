@@ -706,7 +706,12 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     }
 
     /**
-     * {@inheritDoc}
+     * this instance and obj can only be equal if either: <pre>
+     * (both don't have set comparators)
+     * or
+     * (both have equal comparators defined by {@link #comparator}.equals(obj.comparator))</pre>
+     * then, both heaps are compared as follows: <pre>
+     * {@inheritDoc}</pre>
      */
     @Override
     /* #if ($TemplateOptions.KTypeGeneric) */
@@ -716,41 +721,100 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     {
         if (obj != null)
         {
+            if (obj == this)
+                return true;
+
             //we can only compare both KTypeHeapPriorityQueue,
             //that has the same comparison function reference
-            if (obj instanceof KTypeIndexedHeapPriorityQueue<?>)
-            {
-                final KTypeIndexedHeapPriorityQueue<?> other = (KTypeIndexedHeapPriorityQueue<?>) obj;
+            if (!(obj instanceof KTypeIndexedHeapPriorityQueue<?>))
+                return false;
 
-                //both heaps must have the same comparison criteria
-                final boolean sameComp = (other.comparator == null && this.comparator == null) || //Comparable or natural ordering
-                        (other.comparator != null && other.comparator == this.comparator);
+            final KTypeIndexedHeapPriorityQueue<KType> other = (KTypeIndexedHeapPriorityQueue<KType>) obj;
 
-                if (other.size() == this.size() && sameComp)
+            if (other.size() != this.size())
+                return false;
+
+            //Iterate over the smallest pq buffer of the two.
+            int[] pqBuffer, otherPqBuffer;
+            KType[] buffer, otherBuffer;
+
+            if (this.pq.length < other.pq.length) {
+
+                pqBuffer = this.pq;
+                otherPqBuffer = other.pq;
+                buffer = this.buffer;
+                otherBuffer = other.buffer;
+            }
+            else {
+
+                pqBuffer = other.pq;
+                otherPqBuffer = this.pq;
+                buffer = other.buffer;
+                otherBuffer = this.buffer;
+            }
+
+            final int pqBufferSize = pqBuffer.length;
+            final KType currentValue, otherValue;
+            int currentIndex, otherIndex;
+
+            //Both have null comparators
+            if (this.comparator == null && other.comparator == null) {
+
+                for (int i = 0; i < pqBufferSize; i++)
                 {
-                    //by index
-                    int pos = 0;
-                    for (int i = 0; i < this.pq.length; i++)
+                    currentIndex = pqBuffer[i];
+
+                    if (currentIndex > 0)
                     {
-                        pos = pq[i];
+                        //check that currentIndex exists in otherBuffer at the same i
+                        otherIndex = otherPqBuffer[i];
 
-                        if (pos > 0 && !other.containsIndex(i))
-                        {
+                        if (otherIndex <= 0)
                             return false;
-                        }
 
-                        final KType otherElement = (KType) other.getIndex(i);
-
-                        if (!Intrinsics.equalsKType(this.buffer[i], otherElement))
+                        //compare both elements with Comparable, or natural ordering
+                        if (!Intrinsics.isCompEqualKTypeUnchecked(buffer[currentIndex], otherBuffer[otherIndex]))
                         {
                             return false;
                         }
                     }
+                }
 
-                    return true;
-                } //end if size identical
-            } //end if KTypeHeapPriorityQueue<?>
+                return true;
+
+            }
+            else if (this.comparator != null && this.comparator.equals(other.comparator)) {
+
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                final Comparator<KType> comp = this.comparator;
+                /*! #else
+                KTypeComparator<KType> comp = this.comparator;
+                #end !*/
+
+                for (int i = 0; i < pqBufferSize; i++)
+                {
+                    currentIndex = pqBuffer[i];
+
+                    if (currentIndex > 0)
+                    {
+                        //check that currentIndex exists in otherBuffer
+                        otherIndex = otherPqBuffer[i];
+
+                        if (otherIndex <= 0)
+                            return false;
+
+                        //compare both elements with Comparator
+                        if (comp.compare(buffer[i], otherBuffer[i]) != 0)
+                        {
+                            return false;
+                        }
+                    }
+                } //end for 
+
+                return true;
+            } //end else comparator
         }
+
         return false;
     }
 

@@ -684,6 +684,9 @@ public class KTypeLinkedList<KType>
     {
         if (obj != null)
         {
+            if (obj == this)
+                return true;
+
             final long[] pointers = this.beforeAfterPointers;
             final KType[] buffer = this.buffer;
 
@@ -713,6 +716,59 @@ public class KTypeLinkedList<KType>
                     //increment both
                     currentPos = Intrinsics.getLinkAfter(pointers[currentPos]);
                     currentPosOther = Intrinsics.getLinkAfter(pointersOther[currentPosOther]);
+                }
+
+                return true;
+            }
+            else if (obj instanceof KTypeDeque<?>)
+            {
+                final KTypeDeque<Object> other = (KTypeDeque<Object>) obj;
+
+                if (other.size() != this.size())
+                {
+                    return false;
+                }
+
+                //compare index/index
+                int currentPos = Intrinsics.getLinkAfter(pointers[KTypeLinkedList.HEAD_POSITION]);
+
+                //request a pooled iterator
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                final Iterator<KTypeCursor<Object>> it = other.iterator();
+                /*! #else
+                final Iterator<KTypeCursor> it = other.iterator();
+                #end !*/
+
+                /*! #if ($TemplateOptions.KTypeGeneric) !*/
+                KTypeCursor<Object> c;
+                /*! #else
+                KTypeCursor c;
+                #end !*/
+
+                //iterate over the linkedList
+                while (currentPos != KTypeLinkedList.TAIL_POSITION)
+                {
+                    c = it.next();
+
+                    if (!Intrinsics.equalsKType(buffer[currentPos], c.value))
+                    {
+                        //if iterator was pooled, recycled it
+                        if (it instanceof AbstractIterator<?>)
+                        {
+                            ((AbstractIterator<?>) it).release();
+                        }
+
+                        return false;
+                    }
+
+                    //increment both
+                    currentPos = Intrinsics.getLinkAfter(pointers[currentPos]);
+                } //end while 
+
+                //if iterator was pooled, recycled it
+                if (it instanceof AbstractIterator<?>)
+                {
+                    ((AbstractIterator<?>) it).release();
                 }
 
                 return true;

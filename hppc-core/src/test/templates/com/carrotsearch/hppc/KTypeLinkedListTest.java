@@ -2186,6 +2186,92 @@ public class KTypeLinkedListTest<KType> extends AbstractKTypeTest<KType>
         } //end for test runs
     }
 
+    /* */
+    @Test
+    public void testEquals()
+    {
+        final int modulo = 127;
+        final int count = 15000;
+
+        final KTypeLinkedList<KType> list2 = KTypeLinkedList.newInstance();
+
+        for (int i = 0; i < count; i++)
+        {
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                list.addFirst(cast(i % modulo));
+                list2.addFirst(cast(i % modulo));
+            }
+            else {
+                list.addLast(cast(i % modulo));
+                list2.addLast(cast(i % modulo));
+            }
+        }
+
+        //both elements by elements are equal
+        TestUtils.assertListEquals(list.toArray(), list2.toArray());
+
+        //Both dequeue are indeed equal
+        Assert.assertTrue(list.equals(list2));
+    }
+
+    /* */
+    @Test
+    public void testIndexedContainerEquals()
+    {
+        final int modulo = 127;
+        final int count = 10000;
+        sequence.clear();
+
+        for (int i = 0; i < count; i++)
+        {
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                list.addFirst(cast(i % modulo));
+                sequence.insert(0, cast(i % modulo));
+            }
+            else {
+                list.addLast(cast(i % modulo));
+                sequence.add(cast(i % modulo));
+            }
+        }
+
+        //both elements by elements are equal
+        TestUtils.assertListEquals(list.toArray(), sequence.toArray());
+
+        //The array list and dequeue are indeed equal
+        Assert.assertTrue(list.equals(sequence));
+    }
+
+    /* */
+    @Test
+    public void testDequeContainerEquals()
+    {
+        final int modulo = 127;
+        final int count = 15000;
+
+        final KTypeArrayDeque<KType> deque2 = KTypeArrayDeque.newInstance();
+
+        for (int i = 0; i < count; i++)
+        {
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                list.addFirst(cast(i % modulo));
+                deque2.addFirst(cast(i % modulo));
+            }
+            else {
+                list.addLast(cast(i % modulo));
+                deque2.addLast(cast(i % modulo));
+            }
+        }
+
+        //both elements by elements are equal
+        TestUtils.assertListEquals(list.toArray(), deque2.toArray());
+
+        //Both Dequeues are indeed equal: explicitely cast it in KTypeDeque
+        Assert.assertTrue(list.equals((KTypeDeque<KType>) deque2));
+    }
+
     /**
      * Test natural ordering in the deque
      * @param expected

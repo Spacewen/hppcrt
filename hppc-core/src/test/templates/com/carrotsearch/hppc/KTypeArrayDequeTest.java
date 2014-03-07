@@ -383,9 +383,38 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
 
     /* */
     @Test
+    public void testEquals()
+    {
+        final int modulo = 127;
+        final int count = 15000;
+
+        final KTypeArrayDeque<KType> deque2 = KTypeArrayDeque.newInstance();
+
+        for (int i = 0; i < count; i++)
+        {
+            //add in head an in queue indifferently
+            if (i % 3 == 0) {
+                deque.addFirst(cast(i % modulo));
+                deque2.addFirst(cast(i % modulo));
+            }
+            else {
+                deque.addLast(cast(i % modulo));
+                deque2.addLast(cast(i % modulo));
+            }
+        }
+
+        //both elements by elements are equal
+        TestUtils.assertListEquals(deque.toArray(), deque2.toArray());
+
+        //Both dequeue are indeed equal
+        Assert.assertTrue(deque.equals(deque2));
+    }
+
+    /* */
+    @Test
     public void testIndexedContainerEquals()
     {
-        final int modulo = 10;
+        final int modulo = 127;
         final int count = 10000;
         sequence.clear();
 

@@ -11,7 +11,9 @@ import static com.carrotsearch.hppc.Internals.*;
 
 /**
  * An extension to {@link KTypeArrayList} adding stack-related utility methods. The top of
- * the stack is at the <code>{@link #size()} - 1</code> element.
+ * the stack is at the <code>{@link #size()} - 1</code> buffer position.
+ * However, this stack is also a KTypeIndexedContainer, for which index 0 is the top of the stack, 
+ * and index size() -1 is the bottom of the stack.
  * 
 #if ($TemplateOptions.KTypeGeneric)
  * A brief comparison of the API against the Java Collections framework:
@@ -248,7 +250,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Add a range of array elements to the stack.
      */
-    public void push(final KType [] elements, final int start, final int len)
+    public void push(final KType[] elements, final int start, final int len)
     {
         assert start >= 0 && len >= 0;
 
@@ -444,6 +446,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
+    @Override
     public void sort(
             final int beginIndex, final int endIndex,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -488,6 +491,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
      */
+    @Override
     public void sort(
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
             final Comparator<KType>
@@ -527,5 +531,30 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
         cloned.addAll(this);
 
         return cloned;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    /* #if ($TemplateOptions.KTypeGeneric) */
+    @SuppressWarnings("unchecked")
+    /* #end */
+    public boolean equals(final Object obj)
+    {
+        if (obj != null)
+        {
+            if (obj == this)
+                return true;
+
+            if (obj instanceof KTypeIndexedContainer<?>)
+            {
+                final KTypeIndexedContainer<?> other = (KTypeIndexedContainer<?>) obj;
+
+                return other.size() == this.size() &&
+                        allIndexesEqual(this, (KTypeIndexedContainer<KType>) other, this.size());
+            }
+        }
+        return false;
     }
 }

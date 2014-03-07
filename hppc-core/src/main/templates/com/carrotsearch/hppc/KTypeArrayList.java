@@ -592,6 +592,9 @@ public class KTypeArrayList<KType>
     {
         if (obj != null)
         {
+            if (obj == this)
+                return true;
+
             if (obj instanceof KTypeArrayList<?>)
             {
                 final KTypeArrayList<?> other = (KTypeArrayList<?>) obj;
