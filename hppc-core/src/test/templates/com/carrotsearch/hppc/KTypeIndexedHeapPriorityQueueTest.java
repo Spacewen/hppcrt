@@ -1606,14 +1606,15 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
     private boolean isMinHeapComparable(final KTypeIndexedHeapPriorityQueue<KType> prio, final int k)
     {
         final int N = prio.elementsCount;
+        final KType[] buffer = prio.buffer;
 
         if (k > N)
             return true;
         final int left = 2 * k, right = 2 * k + 1;
 
-        if (left <= N && Intrinsics.isCompSupKTypeUnchecked(prio.buffer[k], prio.buffer[left]))
+        if (left <= N && Intrinsics.isCompSupKTypeUnchecked(buffer[k], buffer[left]))
             return false;
-        if (right <= N && Intrinsics.isCompSupKTypeUnchecked(prio.buffer[k], prio.buffer[right]))
+        if (right <= N && Intrinsics.isCompSupKTypeUnchecked(buffer[k], buffer[right]))
             return false;
         //recursively test
         return isMinHeapComparable(prio, left) && isMinHeapComparable(prio, right);
@@ -1623,6 +1624,7 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
     private boolean isMinHeapComparator(final KTypeIndexedHeapPriorityQueue<KType> prio, final int k)
     {
         final int N = prio.elementsCount;
+        final KType[] buffer = prio.buffer;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final Comparator<KType> comp = prio.comparator;
@@ -1634,9 +1636,9 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
             return true;
         final int left = 2 * k, right = 2 * k + 1;
 
-        if (left <= N && comp.compare(prio.buffer[k], prio.buffer[left]) > 0)
+        if (left <= N && comp.compare(buffer[k], buffer[left]) > 0)
             return false;
-        if (right <= N && comp.compare(prio.buffer[k], prio.buffer[right]) > 0)
+        if (right <= N && comp.compare(buffer[k], buffer[right]) > 0)
             return false;
         //recursively test
         return isMinHeapComparator(prio, left) && isMinHeapComparator(prio, right);

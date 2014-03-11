@@ -900,6 +900,9 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     @Override
     public String toString()
     {
+        final KType[] buffer = this.buffer;
+        final int[] pq = this.pq;
+
         final StringBuilder buff = new StringBuilder();
         buff.append("[");
 
@@ -917,7 +920,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
 
                 buff.append(i);
                 buff.append("=>");
-                buff.append(this.buffer[pq[i]]);
+                buff.append(buffer[pq[i]]);
                 first = false;
             }
         }
@@ -1195,6 +1198,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     private boolean isMinHeapComparable(final int k)
     {
         final int N = elementsCount;
+        final KType[] buffer = this.buffer;
 
         if (k > N)
             return true;
@@ -1212,6 +1216,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     private boolean isMinHeapComparator(final int k)
     {
         final int N = elementsCount;
+        final KType[] buffer = this.buffer;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final Comparator<KType> comp = this.comparator;
