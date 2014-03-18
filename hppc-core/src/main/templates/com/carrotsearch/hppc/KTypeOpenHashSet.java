@@ -58,8 +58,8 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeOpenHashSet<KType>
-        extends AbstractKTypeCollection<KType>
-        implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
+extends AbstractKTypeCollection<KType>
+implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 {
     /**
      * Minimum capacity for the map.
@@ -131,7 +131,7 @@ public class KTypeOpenHashSet<KType>
      * comparisons and hash codes of keys will be computed
      * with the strategy methods instead of the native Object equals() and hashCode() methods.
      */
-    protected HashingStrategy<KType> hashStrategy = null;
+    protected HashingStrategy<? super KType> hashStrategy = null;
 
     /*! #end !*/
 
@@ -182,7 +182,7 @@ public class KTypeOpenHashSet<KType>
      * Creates a hash set with the given capacity, load factor, and hash strategy.
      * Providing a null strategy is equivalent at setting no strategy at all.
      */
-    public KTypeOpenHashSet(final int initialCapacity, final float loadFactor, final HashingStrategy<KType> strategy)
+    public KTypeOpenHashSet(final int initialCapacity, final float loadFactor, final HashingStrategy<? super KType> strategy)
     {
         this(initialCapacity, loadFactor);
 
@@ -215,7 +215,7 @@ public class KTypeOpenHashSet<KType>
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<KType> strategy = this.hashStrategy;
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
         int slot = Internals.rehashSpecificHash(e, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(e, perturbation) & mask;
@@ -223,8 +223,8 @@ public class KTypeOpenHashSet<KType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(e, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(e, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(e, keys[slot])
             #end !*/)
             {
@@ -332,7 +332,7 @@ public class KTypeOpenHashSet<KType>
         final KType[] keys = this.keys;
         final boolean[] allocated = this.allocated;
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<KType> strategy = this.hashStrategy;
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
         final int mask = allocated.length - 1;
         for (int i = oldAllocated.length; --i >= 0;)
@@ -409,7 +409,7 @@ public class KTypeOpenHashSet<KType>
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<KType> strategy = this.hashStrategy;
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
         int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
@@ -418,8 +418,8 @@ public class KTypeOpenHashSet<KType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -443,7 +443,7 @@ public class KTypeOpenHashSet<KType>
         int slotPrev, slotOther;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<KType> strategy = this.hashStrategy;
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
 
         while (true)
@@ -528,7 +528,7 @@ public class KTypeOpenHashSet<KType>
         final int mask = allocated.length - 1;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<KType> strategy = this.hashStrategy;
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
         int slot = Internals.rehashSpecificHash(key, perturbation, this.hashStrategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
@@ -536,8 +536,8 @@ public class KTypeOpenHashSet<KType>
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
+                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -904,7 +904,7 @@ public class KTypeOpenHashSet<KType>
      * Create a new hash set with full parameter control, using a specific hash strategy.
      * A strategy = null is equivalent at providing no strategy at all.
      */
-    public static <KType> KTypeOpenHashSet<KType> newInstance(final int initialCapacity, final float loadFactor, final HashingStrategy<KType> strategy)
+    public static <KType> KTypeOpenHashSet<KType> newInstance(final int initialCapacity, final float loadFactor, final HashingStrategy<? super KType> strategy)
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy);
     }
@@ -916,7 +916,7 @@ public class KTypeOpenHashSet<KType>
      * This may lead to increased performance, but only use when sure the container will not
      * be used for direct copying of keys to another hash container.
      */
-    public static <KType> KTypeOpenHashSet<KType> newInstanceWithoutPerturbations(final int initialCapacity, final float loadFactor, final HashingStrategy<KType> strategy)
+    public static <KType> KTypeOpenHashSet<KType> newInstanceWithoutPerturbations(final int initialCapacity, final float loadFactor, final HashingStrategy<? super KType> strategy)
     {
         return new KTypeOpenHashSet<KType>(initialCapacity, loadFactor, strategy) {
             @Override
@@ -931,7 +931,7 @@ public class KTypeOpenHashSet<KType>
      * Return the current {@link HashingStrategy} in use, or {@code null} if none was set.
      * @return
      */
-    public HashingStrategy<KType> strategy()
+    public HashingStrategy<? super KType> strategy()
     {
         return this.hashStrategy;
     }

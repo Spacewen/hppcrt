@@ -441,7 +441,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
      * Sort the stack of <code>KType</code>s from [beginIndex, endIndex[
      * where [beginIndex, endIndex[ is counted from the top of the stack, i.e top is = index 0, bottom is endIndex[. That way,
      * the smallest elements are at the top of the stack.
-     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<? super KType></code> #end
      * <p><b>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
@@ -450,9 +450,9 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     public void sort(
             final int beginIndex, final int endIndex,
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            final Comparator<KType>
+            final Comparator<? super KType>
             /*! #else
-            KTypeComparator<KType>
+            KTypeComparator<? super KType>
             #end !*/
             comp)
     {
@@ -486,7 +486,7 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     /**
      * Sort by dual-pivot quicksort an entire stack of <code>KType</code>s, the way
      * the smallest elements are at the top of the stack.
-     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * It uses a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<? super KType></code> #end
      * <p><b>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
@@ -494,9 +494,9 @@ public class KTypeStack<KType> extends KTypeArrayList<KType>
     @Override
     public void sort(
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
-            final Comparator<KType>
+            final Comparator<? super KType>
             /*! #else
-            KTypeComparator<KType>
+            KTypeComparator<? super KType>
             #end !*/
             comp)
     {

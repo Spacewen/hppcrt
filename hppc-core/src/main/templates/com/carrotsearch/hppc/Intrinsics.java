@@ -150,7 +150,7 @@ public final class Intrinsics
      * Compare two Objects for equivalence, using a {@link HashingStrategy}. Null references return <code>true</code>.
      * A null {@link HashingStrategy} is equivalent of calling {@link #equalsKType(Object e1, Object e2)}.
      */
-    public static <T> boolean equalsKTypeHashStrategy(final T e1, final T e2, final HashingStrategy<T> customEquals)
+    public static <T> boolean equalsKTypeHashStrategy(final T e1, final T e2, final HashingStrategy<? super T> customEquals)
     {
         return (e1 == null ? e2 == null : (customEquals ==null? e1.equals(e2) :customEquals.equals(e1, e2)));
     }

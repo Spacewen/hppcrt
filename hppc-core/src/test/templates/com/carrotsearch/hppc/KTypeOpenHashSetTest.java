@@ -818,7 +818,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         }
     }
 
-    private KTypeOpenHashSet<KType> createSetWithRandomData(final int size, final HashingStrategy<KType> strategy, final long randomSeed)
+    private KTypeOpenHashSet<KType> createSetWithRandomData(final int size, final HashingStrategy<? super KType> strategy, final long randomSeed)
     {
         final Random prng = new Random(randomSeed);
 

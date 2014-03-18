@@ -1627,9 +1627,9 @@ public class KTypeIndexedHeapPriorityQueueTest<KType> extends AbstractKTypeTest<
         final KType[] buffer = prio.buffer;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final Comparator<KType> comp = prio.comparator;
+        final Comparator<? super KType> comp = prio.comparator;
         /*! #else
-        KTypeComparator<KType> comp = prio.comparator;
+        KTypeComparator<? super KType> comp = prio.comparator;
         #end !*/
 
         if (k > N)

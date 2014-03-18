@@ -1315,9 +1315,9 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         final int N = q.elementsCount;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final Comparator<KType> comp = q.comparator;
+        final Comparator<? super KType> comp = q.comparator;
         /*! #else
-        KTypeComparator<KType> comp = q.comparator;
+        KTypeComparator<? super KType> comp = q.comparator;
         #end !*/
 
         if (k > N)

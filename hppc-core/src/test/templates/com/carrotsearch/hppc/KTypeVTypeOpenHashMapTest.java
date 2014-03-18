@@ -1216,7 +1216,8 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
         }
     }
 
-    private KTypeVTypeOpenHashMap<KType, VType> createMapWithRandomData(final int size, final HashingStrategy<KType> strategy, final long randomSeed) {
+    private KTypeVTypeOpenHashMap<KType, VType> createMapWithRandomData(final int size, final HashingStrategy<? super KType> strategy, final long randomSeed)
+    {
 
         final Random prng = new Random(randomSeed);
 

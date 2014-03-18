@@ -46,9 +46,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
      * If null, natural ordering is used.
      */
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-    protected Comparator<KType> comparator;
+    protected Comparator<? super KType> comparator;
     /*! #else
-    protected KTypeComparator<KType> comparator;
+    protected KTypeComparator<? super KType> comparator;
     #end !*/
 
     /**
@@ -64,9 +64,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     /**
      * Create with a Comparator, an initial capacity, and a custom buffer resizing strategy.
      */
-    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp,
+    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<? super KType> comp,
             /*! #else
-            KTypeComparator<KType> comp,
+            KTypeComparator<? super KType> comp,
             #end !*/final int initialCapacity, final ArraySizingStrategy resizer)
     {
         this.comparator = comp;
@@ -112,9 +112,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
      * 
      * @see BoundedProportionalArraySizingStrategy
      */
-    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp
+    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<? super KType> comp
     /*! #else
-    KTypeComparator<KType> comp
+    KTypeComparator<? super KType> comp
     #end !*/)
     {
         this(comp, KTypeHeapPriorityQueue.DEFAULT_CAPACITY);
@@ -142,9 +142,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
      * 
      * @see BoundedProportionalArraySizingStrategy
      */
-    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<KType> comp,
+    public KTypeHeapPriorityQueue(/*! #if ($TemplateOptions.KTypeGeneric) !*/final Comparator<? super KType> comp,
             /*! #else
-            KTypeComparator<KType> comp,
+            KTypeComparator<? super KType> comp,
             #end !*/final int initialCapacity)
     {
         this(comp, initialCapacity, new BoundedProportionalArraySizingStrategy());
@@ -610,9 +610,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
                 else if (this.comparator != null && this.comparator.equals(other.comparator)) {
 
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    final Comparator<KType> comp = this.comparator;
+                    final Comparator<? super KType> comp = this.comparator;
                     /*! #else
-                    KTypeComparator<KType> comp = this.comparator;
+                    KTypeComparator<? super KType> comp = this.comparator;
                     #end !*/
 
                     for (int i = 1; i <= size; i++)
@@ -713,9 +713,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         KType tmp;
         int child;
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final Comparator<KType> comp = this.comparator;
+        final Comparator<? super KType> comp = this.comparator;
         /*! #else
-        KTypeComparator<KType> comp = this.comparator;
+        KTypeComparator<? super KType> comp = this.comparator;
         #end !*/
 
         while ((k << 1) <= N)
@@ -776,9 +776,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         final KType[] buffer = this.buffer;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final Comparator<KType> comp = this.comparator;
+        final Comparator<? super KType> comp = this.comparator;
         /*! #else
-        KTypeComparator<KType> comp = this.comparator;
+        KTypeComparator<? super KType> comp = this.comparator;
         #end !*/
 
         while (k > 1 && comp.compare(buffer[k >> 1], buffer[k]) > 0)
@@ -857,9 +857,9 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         final KType[] buffer = this.buffer;
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final Comparator<KType> comp = this.comparator;
+        final Comparator<? super KType> comp = this.comparator;
         /*! #else
-        KTypeComparator<KType> comp = this.comparator;
+        KTypeComparator<? super KType> comp = this.comparator;
         #end !*/
 
         if (k > N)

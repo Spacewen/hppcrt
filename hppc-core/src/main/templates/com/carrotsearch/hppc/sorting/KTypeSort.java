@@ -62,7 +62,7 @@ public final class KTypeSort
     ////////////////////////////
     /**
      * Sort by  dual-pivot quicksort an array of <code>KType</code>s from [beginIndex, endIndex[
-     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<? super KType></code> #end
      * <p><b>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
@@ -85,7 +85,7 @@ public final class KTypeSort
 
     /**
      * Sort by  dual-pivot quicksort an entire array of <code>KType</code>s
-     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<KType></code> #end
+     * using a #if ($TemplateOptions.KTypeGeneric) <code>Comparator</code> #else <code>KTypeComparator<? super KType></code> #end
      * <p><b>
      * This routine uses Dual-pivot Quicksort, from [Yaroslavskiy 2009] #if ($TemplateOptions.KTypeGeneric), so is NOT stable. #end
      * </b></p>
