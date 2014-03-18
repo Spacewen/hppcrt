@@ -20,7 +20,6 @@ import com.carrotsearch.hppc.procedures.*;
  * Tests for {@link KTypeVTypeOpenHashMap}.
  */
 // ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
-// ${TemplateOptions.doNotGenerateVType("BOOLEAN")}
 /* ! ${TemplateOptions.generatedAnnotation} ! */
 public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<KType>
 {
@@ -30,7 +29,6 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
     protected VType value3 = vcast(3);
 
     public volatile long guard;
-
     @BeforeClass
     public static void configure()
     {
@@ -1700,7 +1698,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
     @Test
     public void testPreallocatedSize()
     {
-        final Random randomVK = new Random();
+        final Random randomVK = new Random(16465131545L);
         //Test that the container do not resize if less that the initial size
 
         final int NB_TEST_RUNS = 50;
@@ -1741,6 +1739,188 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeTest<K
 
             Assert.assertEquals(PREALLOCATED_SIZE, newMap.size());
         } //end for test runs
+    }
+
+    @Test
+    public void testForEachProcedureWithException()
+    {
+        final Random randomVK = new Random(9521455645L);
+
+        //Test that the container do not resize if less that the initial size
+
+        //1) Choose a map to build
+        /*! #if ($TemplateOptions.isKType("GENERIC", "int", "long", "float", "double")) !*/
+        final int NB_ELEMENTS = 15000;
+        /*!
+            #elseif ($TemplateOptions.isKType("short", "char"))
+             int NB_ELEMENTS = 4000;
+            #else
+              int NB_ELEMENTS = 126;
+            #end !*/
+
+        final KTypeVTypeOpenHashMap<KType, VType> newMap = KTypeVTypeOpenHashMap.newInstance();
+
+        //add a randomized number of key/values pairs
+        for (int i = 0 ; i < NB_ELEMENTS; i++) {
+
+            newMap.put(cast(randomVK.nextInt((int)(0.7 * NB_ELEMENTS))), vcast(randomVK.nextInt()));
+        }
+
+        //List the keys in the order of the internal buffer :
+        final ArrayList<Integer> keyList = new ArrayList<Integer>();
+        final ArrayList<Integer> valueList = new ArrayList<Integer>();
+
+        for (int i = 0 ; i < newMap.allocated.length; i++) {
+
+            if (newMap.allocated[i]) {
+
+                keyList.add(castType(newMap.keys[i]));
+                valueList.add(vcastType(newMap.values[i]));
+            }
+        }
+
+        //Test forEach predicate and stop at each key in turn.
+        final ArrayList<Integer> keyListTest = new ArrayList<Integer>();
+        final ArrayList<Integer> valueListTest = new ArrayList<Integer>();
+
+        for (int i = 0; i < keyList.size(); i++)
+        {
+            final int currentPairIndexSizeToIterate = i + 1;
+
+            keyListTest.clear();
+            valueListTest.clear();
+
+            //Run for each
+            try
+            {
+                newMap.forEach(new KTypeVTypeProcedure<KType, VType>() {
+
+                    @Override
+                    public void apply(final KType key, final VType value)
+                    {
+                        keyListTest.add(castType(key));
+                        valueListTest.add(vcastType(value));
+
+                        //when the stopping key/value pair is encountered, add to list and stop iteration
+                        if (castType(key) == keyList.get(currentPairIndexSizeToIterate - 1))
+                        {
+                            //interrupt iteration by an exception
+                            throw new RuntimeException("Interrupted treatment by test");
+                        }
+                    }
+                });
+            }
+            catch (final RuntimeException e)
+            {
+
+                if (!e.getMessage().equals("Interrupted treatment by test"))
+                {
+
+                    throw e;
+                }
+            }
+            finally
+            {
+                //despite the exception, the procedure terminates cleanly
+
+                //check that keyList/keyListTest and valueList/valueListTest are identical for the first
+                //currentPairIndexToIterate + 1 elements
+                Assert.assertEquals(currentPairIndexSizeToIterate, keyListTest.size());
+                Assert.assertEquals(currentPairIndexSizeToIterate, valueListTest.size());
+
+                for (int j = 0; j < currentPairIndexSizeToIterate; j++)
+                {
+                    Assert.assertEquals(keyList.get(j), keyListTest.get(j));
+                    Assert.assertEquals(valueList.get(j), valueListTest.get(j));
+                }
+            }
+
+        } //end for each index
+    }
+
+    @Test
+    public void testForEachPredicate()
+    {
+        final Random randomVK = new Random(897154957L);
+
+        //Test that the container do not resize if less that the initial size
+
+        //1) Choose a map to build
+        /*! #if ($TemplateOptions.isKType("GENERIC", "int", "long", "float", "double")) !*/
+        final int NB_ELEMENTS = 15000;
+        /*!
+            #elseif ($TemplateOptions.isKType("short", "char"))
+             int NB_ELEMENTS = 4000;
+            #else
+              int NB_ELEMENTS = 126;
+            #end !*/
+
+        final KTypeVTypeOpenHashMap<KType, VType> newMap = KTypeVTypeOpenHashMap.newInstance();
+
+        //add a randomized number of key/values pairs
+        for (int i = 0 ; i < NB_ELEMENTS; i++) {
+
+            newMap.put(cast(randomVK.nextInt((int)(0.7 * NB_ELEMENTS))), vcast(randomVK.nextInt()));
+        }
+
+        //List the keys in the order of the internal buffer :
+        final ArrayList<Integer> keyList = new ArrayList<Integer>();
+        final ArrayList<Integer> valueList = new ArrayList<Integer>();
+
+        for (int i = 0 ; i < newMap.allocated.length; i++) {
+
+            if (newMap.allocated[i]) {
+
+                keyList.add(castType(newMap.keys[i]));
+                valueList.add(vcastType(newMap.values[i]));
+            }
+        }
+
+        //Test forEach predicate and stop at each key in turn.
+        final ArrayList<Integer> keyListTest = new ArrayList<Integer>();
+        final ArrayList<Integer> valueListTest = new ArrayList<Integer>();
+
+        for (int i = 0; i < keyList.size(); i++)
+        {
+            final int currentPairIndexSizeToIterate = i + 1;
+
+            keyListTest.clear();
+            valueListTest.clear();
+
+            //Run for each with predicate
+            newMap.forEach(new KTypeVTypePredicate<KType, VType>() {
+
+                @Override
+                public boolean apply(final KType key, final VType value)
+                {
+                    keyListTest.add(castType(key));
+                    valueListTest.add(vcastType(value));
+
+                    //when the stopping key/value pair is encountered, add to list and stop iteration
+                    if (castType(key) == keyList.get(currentPairIndexSizeToIterate - 1))
+                    {
+                        //interrupt iteration
+                        return false;
+                    }
+
+                    return true;
+                }
+            });
+
+            //despite the exception, the procedure terminates cleanly
+
+            //check that keyList/keyListTest and valueList/valueListTest are identical for the first
+            //currentPairIndexToIterate + 1 elements
+            Assert.assertEquals(currentPairIndexSizeToIterate, keyListTest.size());
+            Assert.assertEquals(currentPairIndexSizeToIterate, valueListTest.size());
+
+            for (int j = 0; j < currentPairIndexSizeToIterate; j++)
+            {
+                Assert.assertEquals(keyList.get(j), keyListTest.get(j));
+                Assert.assertEquals(valueList.get(j), valueListTest.get(j));
+            }
+
+        } //end for each index
     }
 
     private KTypeVTypeOpenHashMap<KType, VType> createMapWithOrderedData(final int size)

@@ -89,6 +89,16 @@ extends Iterable<KTypeVTypeCursor<KType, VType>>
     public <T extends KTypeVTypeProcedure<? super KType, ? super VType>> T forEach(T procedure);
 
     /**
+     * Applies a <code>predicate</code> to container elements, as long as the predicate
+     * returns <code>true</code>. The iteration is interrupted otherwise.
+     * Returns the argument (any
+     * subclass of {@link KTypeVTypePredicate}. This lets the caller to call methods of the argument
+     * by chaining the call (even if the argument is an anonymous type) to retrieve computed values,
+     * for example.
+     */
+    <T extends KTypeVTypePredicate<? super KType, ? super VType>> T forEach(T predicate);
+
+    /**
      * Clear all keys and values in the container.
      */
     public void clear();

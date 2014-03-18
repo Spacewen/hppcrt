@@ -1050,6 +1050,30 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public <T extends KTypeVTypePredicate<? super KType, ? super VType>> T forEach(final T predicate)
+    {
+        final KType[] keys = this.keys;
+        final VType[] values = this.values;
+        final boolean[] states = this.allocated;
+
+        for (int i = 0; i < states.length; i++)
+        {
+            if (states[i])
+            {
+                if (!predicate.apply(keys[i], values[i]))
+                {
+                    break;
+                }
+            }
+        } //end for
+
+        return predicate;
+    }
+
+    /**
      * Returns a specialized view of the keys of this associated container.
      * The view additionally implements {@link ObjectLookupContainer}.
      */
