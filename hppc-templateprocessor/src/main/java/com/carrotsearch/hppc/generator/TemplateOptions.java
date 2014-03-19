@@ -49,12 +49,12 @@ public class TemplateOptions
 
     public boolean isKType(final String... strKind)
     {
-        //return true if it matches any type of the list
+        //return true if it matches any type of the list, case insensitively while
+        //only accepting valid Type strings
         for (final String kind : strKind)
         {
-            if (Type.valueOf(kind) == this.ktype)
+            if (this.ktype == Type.valueOf(kind.toUpperCase()))
             {
-
                 return true;
             }
         }
@@ -87,7 +87,9 @@ public class TemplateOptions
         //return true if it matches any type of the list
         for (final String kind : strKind)
         {
-            if (Type.valueOf(kind) == this.vtype)
+            //return true if it matches any type of the list, case insensitively while
+            //only accepting valid Type strings
+            if (this.vtype == Type.valueOf(kind.toUpperCase()))
             {
                 return true;
             }
@@ -148,9 +150,12 @@ public class TemplateOptions
         this.doNotGenerateKType = false;
 
         //if any of the notGeneratingType is this.ktype, then do not generate
+        //return true if it matches any type of the list, case insensitively while
+        //only accepting valid Type strings
         for (final String  notToBeGenerated : notGeneratingType) {
 
-            if (Type.valueOf(notToBeGenerated) == this.ktype) {
+            if (this.ktype == Type.valueOf(notToBeGenerated.toUpperCase()))
+            {
 
                 this.doNotGenerateKType = true;
                 return;
@@ -170,7 +175,7 @@ public class TemplateOptions
         //if any of the notGeneratingType is this.ktype, then do not generate
         for (final String notToBeGenerated : notGeneratingType)
         {
-            if (Type.valueOf(notToBeGenerated) == this.vtype)
+            if (this.vtype == Type.valueOf(notToBeGenerated.toUpperCase()))
             {
                 this.doNotGenerateVType = true;
                 return;
@@ -233,21 +238,21 @@ public class TemplateOptions
     /**
      * Returns the current time in ISO format.
      */
-     public String getTimeNow()
-     {
-         final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
-         return format.format(new Date());
-     }
+    public String getTimeNow()
+    {
+        final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.ENGLISH);
+        return format.format(new Date());
+    }
 
-     public String getSourceFile()
-     {
-         return sourceFile.getName();
-     }
+    public String getSourceFile()
+    {
+        return sourceFile.getName();
+    }
 
-     public String getGeneratedAnnotation()
-     {
-         return "@javax.annotation.Generated(date = \"" +
-                 getTimeNow() + "\", value = \"HPPC generated from: " +
-                 sourceFile.getName() + "\")";
-     }
+    public String getGeneratedAnnotation()
+    {
+        return "@javax.annotation.Generated(date = \"" +
+                getTimeNow() + "\", value = \"HPPC generated from: " +
+                sourceFile.getName() + "\")";
+    }
 }

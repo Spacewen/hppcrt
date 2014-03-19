@@ -1048,7 +1048,7 @@ public class KTypeArrayListTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPreallocatedSize()
     {
-        final Random randomVK = new Random();
+        final Random randomVK = new Random(315451248541L);
         //Test that the container do not resize if less that the initial size
 
         final int NB_TEST_RUNS = 50;

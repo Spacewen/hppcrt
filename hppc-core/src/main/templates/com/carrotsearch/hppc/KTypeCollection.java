@@ -15,7 +15,7 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
      * @param e Element to be removed from this collection, if present.
      * @return The number of removed elements as a result of this call.
      */
-    public int removeAllOccurrences(KType e);
+    int removeAllOccurrences(KType e);
 
     /**
      * Removes all elements in this collection that are present
@@ -24,7 +24,7 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
      * 
      * @return Returns the number of removed elements.
      */
-    public int removeAll(KTypeLookupContainer<? extends KType> c);
+    int removeAll(KTypeLookupContainer<? extends KType> c);
 
     /**
      * Removes all elements in this collection for which the
@@ -32,7 +32,7 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
      * 
      * @return Returns the number of removed elements.
      */
-    public int removeAll(KTypePredicate<? super KType> predicate);
+    int removeAll(KTypePredicate<? super KType> predicate);
 
     /**
      * Keeps all elements in this collection that are present
@@ -41,7 +41,7 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
      * 
      * @return Returns the number of removed elements.
      */
-    public int retainAll(KTypeLookupContainer<? extends KType> c);
+    int retainAll(KTypeLookupContainer<? extends KType> c);
 
     /**
      * Keeps all elements in this collection for which the
@@ -49,10 +49,10 @@ public interface KTypeCollection<KType> extends KTypeContainer<KType>
      * 
      * @return Returns the number of removed elements.
      */
-    public int retainAll(KTypePredicate<? super KType> predicate);
+    int retainAll(KTypePredicate<? super KType> predicate);
 
     /**
      * Removes all elements from this collection.
      */
-    public void clear();
+    void clear();
 }
