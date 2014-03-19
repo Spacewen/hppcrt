@@ -6,5 +6,5 @@ package com.carrotsearch.hppc.predicates;
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeIndexedPredicate<KType>
 {
-    public boolean apply(int index, KType value);
+    boolean apply(int index, KType value);
 }

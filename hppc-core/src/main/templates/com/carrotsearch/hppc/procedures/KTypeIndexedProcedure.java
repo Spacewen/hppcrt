@@ -6,5 +6,5 @@ package com.carrotsearch.hppc.procedures;
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeIndexedProcedure<KType>
 {
-    public void apply(int index, KType value);
+    void apply(int index, KType value);
 }

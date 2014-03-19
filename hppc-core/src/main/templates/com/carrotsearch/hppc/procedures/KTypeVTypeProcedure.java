@@ -7,5 +7,5 @@ package com.carrotsearch.hppc.procedures;
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeVTypeProcedure<KType, VType>
 {
-    public void apply(KType key, VType value);
+    void apply(KType key, VType value);
 }
