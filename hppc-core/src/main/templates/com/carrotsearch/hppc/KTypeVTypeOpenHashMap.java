@@ -68,7 +68,7 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeOpenHashMap<KType, VType>
-implements KTypeVTypeMap<KType, VType>, Cloneable
+        implements KTypeVTypeMap<KType, VType>, Cloneable
 {
     /**
      * Minimum capacity for the map.
@@ -270,8 +270,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -349,6 +349,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         return false;
     }
 
+    /*! #if ($TemplateOptions.VTypeNumeric) !*/
     /**
      * <a href="http://trove4j.sourceforge.net">Trove</a>-inspired API method. An equivalent
      * of the following code:
@@ -371,7 +372,9 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param additionValue The value to add to the existing value if <code>key</code> exists.
      * @return Returns the current value associated with <code>key</code> (after changes).
      */
+    /*! #end !*/
     /*! #if ($TemplateOptions.VTypeNumeric)
+    @Override
     public VType putOrAdd(KType key, VType putValue, VType additionValue)
     {
         assert assigned < allocated.length;
@@ -414,6 +417,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
     #end !*/
 
+    /*! #if ($TemplateOptions.VTypeNumeric) !*/
     /**
      * An equivalent of calling
      * <pre>
@@ -434,7 +438,9 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * @param additionValue The value to put or add to the existing value if <code>key</code> exists.
      * @return Returns the current value associated with <code>key</code> (after changes).
      */
+    /*! #end !*/
     /*! #if ($TemplateOptions.VTypeNumeric)
+    @Override
     public VType addTo(KType key, VType additionValue)
     {
         return putOrAdd(key, additionValue, additionValue);
@@ -552,8 +558,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -697,8 +703,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -815,8 +821,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -1096,7 +1102,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * A view of the keys inside this hash map.
      */
     public final class KeysContainer
-    extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
+            extends AbstractKTypeCollection<KType> implements KTypeLookupContainer<KType>
     {
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
                 KTypeVTypeOpenHashMap.this;
@@ -1445,9 +1451,9 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         @SuppressWarnings("unchecked")
         final/* #end */
         KTypeVTypeOpenHashMap<KType, VType> cloned =
-        new KTypeVTypeOpenHashMap<KType, VType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
-                /* #if ($TemplateOptions.KTypeGeneric) */
-                , this.hashStrategy
+                new KTypeVTypeOpenHashMap<KType, VType>((int) (this.keys.length * this.loadFactor) + 1, this.loadFactor
+                        /* #if ($TemplateOptions.KTypeGeneric) */
+                        , this.hashStrategy
                 /* #end */);
 
         cloned.putAll(this);

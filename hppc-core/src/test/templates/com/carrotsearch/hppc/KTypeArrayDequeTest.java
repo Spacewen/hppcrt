@@ -49,12 +49,24 @@ public class KTypeArrayDequeTest<KType> extends AbstractKTypeTest<KType>
             sequence.add(cast(i));
     }
 
+    /**
+     * Move one index to the right, wrapping around buffer of size modulus
+     * Code is actually inlined in generated code
+     */
+    /*! #if ($TemplateOptions.inline("oneRight","(index, modulus)", "(index + 1 == modulus) ? 0 : index + 1")) !*/
+    private int oneRight(final int index, final int modulus)
+    {
+        return (index + 1 == modulus) ? 0 : index + 1;
+    }
+
+    /*! #end !*/
+
     @After
     public void checkConsistency()
     {
         if (deque != null)
         {
-            for (int i = deque.tail; i < deque.head; i = Intrinsics.oneRight(i, deque.buffer.length))
+            for (int i = deque.tail; i < deque.head; i = oneRight(i, deque.buffer.length))
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 Assert.assertTrue(Intrinsics.<KType> defaultKTypeValue() == deque.buffer[i]);

@@ -1,7 +1,17 @@
 package com.carrotsearch.hppc.generator;
 
-import java.io.*;
-import java.util.*;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,7 +19,6 @@ import org.apache.commons.collections.ExtendedProperties;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.RuntimeInstance;
-
 
 /**
  * Template processor for HPPC templates.
@@ -96,17 +105,20 @@ public final class TemplateProcessor
             if (!f.generated)
             {
                 deleted++;
-                if (verbose) System.out.println("Deleted: " + f.file);
+                if (verbose)
+                    System.out.println("Deleted: " + f.file);
                 f.file.delete();
             }
 
-            if (f.generated) generated++;
+            if (f.generated)
+                generated++;
 
             if (f.updated)
             {
                 updated++;
-                if (verbose) System.out.println("Updated: "
-                        + relativePath(f.file, this.outputDir));
+                if (verbose)
+                    System.out.println("Updated: "
+                            + relativePath(f.file, this.outputDir));
             }
         }
 
@@ -178,6 +190,10 @@ public final class TemplateProcessor
                 timeVelocity += (t1 = System.currentTimeMillis()) - t0;
                 input = filterIntrinsics(f, input, templateOptions);
                 timeIntrinsics += (t0 = System.currentTimeMillis()) - t1;
+                //Compute inlines
+                input = filterInlines(f, input, templateOptions);
+
+                //convert signatures
                 input = filterTypeClassRefs(f, input, templateOptions);
                 timeTypeClassRefs += (t1 = System.currentTimeMillis()) - t0;
                 input = filterComments(f, input, templateOptions);
@@ -193,7 +209,7 @@ public final class TemplateProcessor
                 outputs.remove(output);
 
                 System.out.println("INFO : output from template '" + f.fullPath +
-                        "' with KTYpe = " + templateOptions.getKType() + " and VType =  " +
+                        "' with KType = " + templateOptions.getKType() + " and VType =  " +
                         (templateOptions.hasVType() ? templateOptions.getVType().toString() : "null") + " was bypassed...");
             }
         }
@@ -212,6 +228,7 @@ public final class TemplateProcessor
         while (true)
         {
             final Matcher m = p.matcher(input);
+
             if (m.find())
             {
                 sb.append(input.substring(0, m.start()));
@@ -261,13 +278,13 @@ public final class TemplateProcessor
                 {
                     sb.append(templateOptions.isKTypeGeneric()
                             ? "Internals.<KType[]>newArray(" + params.get(0) + ")"
-                                    : "new " + templateOptions.getKType().getType() + " [" + params.get(0) + "]");
+                            : "new " + templateOptions.getKType().getType() + " [" + params.get(0) + "]");
                 }
                 else if ("newVTypeArray".equals(method))
                 {
                     sb.append(templateOptions.isVTypeGeneric()
                             ? "Internals.<VType[]>newArray(" + params.get(0) + ")"
-                                    : "new " + templateOptions.getVType().getType() + " [" + params.get(0) + "]");
+                            : "new " + templateOptions.getVType().getType() + " [" + params.get(0) + "]");
                 }
                 else if ("equalsKType".equals(method))
                 {
@@ -275,6 +292,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
                                 params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.doubleToLongBits(%1$s) == Double.doubleToLongBits(%2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.floatToIntBits(%1$s) == Float.floatToIntBits(%2$s))", params.toArray()));
                     }
                     else
                     {
@@ -286,6 +311,14 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s))", params.toArray()));
                     }
                     else if (templateOptions.isKTypeNumeric())
                     {
@@ -303,6 +336,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s))", params.toArray()));
                     }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s))", params.toArray()));
+                    }
                     else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s - %2$s)", params.toArray()));
@@ -318,6 +359,14 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) > 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s) > 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s) > 0)", params.toArray()));
                     }
                     else if (templateOptions.isKTypeNumeric())
                     {
@@ -335,6 +384,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) > 0)", params.toArray()));
                     }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s) > 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s) > 0)", params.toArray()));
+                    }
                     else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s > %2$s)", params.toArray()));
@@ -350,6 +407,14 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) < 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s) < 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s) < 0)", params.toArray()));
                     }
                     else if (templateOptions.isKTypeNumeric())
                     {
@@ -367,6 +432,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) < 0)", params.toArray()));
                     }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.compare(%1$s , %2$s) < 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.compare(%1$s , %2$s) < 0)", params.toArray()));
+                    }
                     else if (templateOptions.isKTypeNumeric())
                     {
                         sb.append(String.format("(%1$s < %2$s)", params.toArray()));
@@ -383,6 +456,14 @@ public final class TemplateProcessor
                     {
                         sb.append(String.format("((%1$s).compareTo(%2$s) == 0)", params.toArray()));
                     }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.doubleToLongBits(%1$s) == Double.doubleToLongBits(%2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.floatToIntBits(%1$s) == Float.floatToIntBits(%2$s))", params.toArray()));
+                    }
                     else
                     {
                         sb.append(String.format("(%1$s == %2$s)", params.toArray()));
@@ -393,6 +474,14 @@ public final class TemplateProcessor
                     if (templateOptions.isKTypeGeneric())
                     {
                         sb.append(String.format("(((Comparable<? super KType>)%1$s).compareTo(%2$s) == 0)", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.doubleToLongBits(%1$s) == Double.doubleToLongBits(%2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.floatToIntBits(%1$s) == Float.floatToIntBits(%2$s))", params.toArray()));
                     }
                     else
                     {
@@ -418,47 +507,18 @@ public final class TemplateProcessor
                         sb.append(String.format("((%1$s) == null ? (%2$s) == null : (%1$s).equals((%2$s)))",
                                 params.toArray()));
                     }
+                    else if (templateOptions.vtype == Type.DOUBLE)
+                    {
+                        sb.append(String.format("(Double.doubleToLongBits(%1$s) == Double.doubleToLongBits(%2$s))", params.toArray()));
+                    }
+                    else if (templateOptions.vtype == Type.FLOAT)
+                    {
+                        sb.append(String.format("(Float.floatToIntBits(%1$s) == Float.floatToIntBits(%2$s))", params.toArray()));
+                    }
                     else
                     {
                         sb.append(String.format("((%1$s) == (%2$s))", params.toArray()));
                     }
-                }
-                else if ("oneLeft".equals(method))
-                {
-                    // (index >= 1) ? index - 1 : modulus - 1;
-                    sb.append(String.format("((%1$s >= 1) ? (%1$s - 1): (%2$s - 1))",
-                            params.toArray()));
-                }
-                else if ("oneRight".equals(method))
-                {
-                    // (index + 1 == modulus) ? 0 : index + 1;
-                    sb.append(String.format("((%1$s + 1 == %2$s) ? 0: (%1$s + 1))",
-                            params.toArray()));
-                }
-                else if ("getLinkNodeValue".equals(method))
-                {
-                    sb.append(String.format("(((long) (%1$s) << 32) | (%2$s))",
-                            params.toArray()));
-                }
-                else if ("getLinkBefore".equals(method))
-                {
-                    sb.append(String.format("((int) ((%1$s) >> 32))",
-                            params.toArray()));
-                }
-                else if ("getLinkAfter".equals(method))
-                {
-                    sb.append(String.format("((int) ((%1$s) & 0x00000000FFFFFFFFL))",
-                            params.toArray()));
-                }
-                else if ("setLinkBeforeNodeValue".equals(method))
-                {
-                    sb.append(String.format("(((long) (%2$s) << 32) | ((%1$s) & 0x00000000FFFFFFFFL))",
-                            params.toArray()));
-                }
-                else if ("setLinkAfterNodeValue".equals(method))
-                {
-                    sb.append(String.format("((%2$s) | ((%1$s) & 0xFFFFFFFF00000000L))",
-                            params.toArray()));
                 }
                 else
                 {
@@ -473,6 +533,125 @@ public final class TemplateProcessor
         }
 
         return sb.toString();
+    }
+
+    private String filterInlines(final TemplateFile f, final String input,
+            final TemplateOptions templateOptions)
+    {
+        String formattedInput = new String(input);
+        final StringBuffer sb = new StringBuffer();
+
+        //Make 1 pass per call name of localInlinesMap
+        for (final String callName : templateOptions.localInlinesMap.keySet()) {
+
+            //Rebuild matchers by admitting spaces between "." (this . foo )
+            final String[] splittedCallName = callName.split(".");
+
+            String callNamePattern = callName;
+
+            if (splittedCallName.length > 1) {
+
+                callNamePattern = "";
+
+                //Re-collapse without spaces
+                for (int j = 0; j < splittedCallName.length - 1; j++) {
+
+                    splittedCallName[j].trim();
+                    callNamePattern += splittedCallName[j] + ".";
+                }
+
+                callNamePattern += splittedCallName[splittedCallName.length - 1].trim();
+            } //end if splittedCallName.length > 1
+
+            final Pattern p = Pattern.compile(callNamePattern, Pattern.MULTILINE | Pattern.DOTALL);
+
+            //flush
+            sb.setLength(0);
+
+            while (true)
+            {
+                final Matcher m = p.matcher(formattedInput);
+
+                //end if found matcher
+                if (m.find())
+                {
+                    sb.append(formattedInput.substring(0, m.start()));
+
+                    //parsing of the arguments
+                    int bracketCount = 0;
+                    int last = m.end() + 1;
+                    final ArrayList<String> params = new ArrayList<String>();
+
+                    outer: for (int i = m.end(); i < formattedInput.length(); i++)
+                    {
+                        switch (formattedInput.charAt(i))
+                        {
+                            case '(':
+                                bracketCount++;
+                                break;
+                            case ')':
+                                bracketCount--;
+                                if (bracketCount == 0)
+                                {
+                                    params.add(formattedInput.substring(last, i).trim());
+                                    formattedInput = formattedInput.substring(i + 1);
+                                    break outer;
+                                }
+                                break;
+                            case ',':
+                                if (bracketCount == 1)
+                                {
+                                    params.add(formattedInput.substring(last, i));
+                                    last = i + 1;
+                                }
+                                break;
+                        }
+                    }
+
+                    //fill-in the arguments depending of the type
+                    String bodyPattern = "";
+
+                    if (templateOptions.ktype == Type.GENERIC) {
+
+                        bodyPattern = templateOptions.localInlinesMap.get(callName).genericBody;
+                    }
+                    else if (templateOptions.ktype == Type.BOOLEAN) {
+
+                        bodyPattern = templateOptions.localInlinesMap.get(callName).booleanBody;
+                    }
+                    else if (templateOptions.ktype == Type.FLOAT) {
+
+                        bodyPattern = templateOptions.localInlinesMap.get(callName).floatBody;
+                    }
+                    else if (templateOptions.ktype == Type.DOUBLE) {
+
+                        bodyPattern = templateOptions.localInlinesMap.get(callName).doubleBody;
+                    }
+                    else {
+
+                        bodyPattern = templateOptions.localInlinesMap.get(callName).integerBody;
+                    }
+
+                    //apply replacement, if not null
+                    if (bodyPattern != null) {
+                        sb.append(String.format("(" + bodyPattern + ")", params.toArray()));
+                    }
+
+                } //else m.find()
+                else
+                {
+                    //not found, append the contents directly
+                    sb.append(formattedInput);
+                    break;
+                }
+            } //end while true
+
+            //re-process the same input for each method call
+            formattedInput = sb.toString();
+
+        } //end for call names
+
+        return formattedInput.toString();
     }
 
     private String filterComments(final TemplateFile f, final String input,
@@ -515,8 +694,12 @@ public final class TemplateProcessor
             while (bracketCount > 0 && end < input.length())
             {
                 switch (input.charAt(end++)) {
-                    case '<': bracketCount++; break;
-                    case '>': bracketCount--; break;
+                    case '<':
+                        bracketCount++;
+                        break;
+                    case '>':
+                        bracketCount--;
+                        break;
                 }
             }
             sb.append(input.substring(fromIndex, next));
@@ -564,7 +747,8 @@ public final class TemplateProcessor
 
                 if (arg.length() > 0)
                 {
-                    if (b.length() > 0) b.append(", ");
+                    if (b.length() > 0)
+                        b.append(", ");
                     b.append(arg.trim());
                 }
             }
@@ -596,19 +780,19 @@ public final class TemplateProcessor
 
             input = input.replaceAll("(KTypeVType)([A-Z][a-zA-Z]*)(<.+?>)?",
                     (k.isGeneric() ? "Object" : k.getBoxedType()) +
-                    (v.isGeneric() ? "Object" : v.getBoxedType()) +
-                    "$2" +
-                    (options.isAnyGeneric() ? "$3" : ""));
+                            (v.isGeneric() ? "Object" : v.getBoxedType()) +
+                            "$2" +
+                            (options.isAnyGeneric() ? "$3" : ""));
 
             input = input.replaceAll("(VType)([A-Z][a-zA-Z]*)",
-                    (v.isGeneric() ? "Object" : v.getBoxedType()) +  "$2");
+                    (v.isGeneric() ? "Object" : v.getBoxedType()) + "$2");
 
             if (!v.isGeneric())
                 input = input.replaceAll("VType", v.getType());
         }
 
         input = input.replaceAll("(KType)([A-Z][a-zA-Z]*)(<.+?>)?",
-                k.isGeneric() ? "Object" + "$2$3": k.getBoxedType() + "$2");
+                k.isGeneric() ? "Object" + "$2$3" : k.getBoxedType() + "$2");
 
         if (!k.isGeneric())
             input = input.replaceAll("KType", k.getType());
@@ -653,7 +837,7 @@ public final class TemplateProcessor
     {
         try
         {
-            final byte [] contents = new byte [(int) file.length()];
+            final byte[] contents = new byte[(int) file.length()];
             final DataInputStream dataInputStream = new DataInputStream(new FileInputStream(
                     file));
             dataInputStream.readFully(contents);
@@ -685,9 +869,10 @@ public final class TemplateProcessor
 
     private String targetFileName(String relativePath, final TemplateOptions templateOptions)
     {
-        if (templateOptions.hasVType()) relativePath = relativePath.replace("KTypeVType",
-                templateOptions.getKType().getBoxedType()
-                + templateOptions.getVType().getBoxedType());
+        if (templateOptions.hasVType())
+            relativePath = relativePath.replace("KTypeVType",
+                    templateOptions.getKType().getBoxedType()
+                            + templateOptions.getVType().getBoxedType());
 
         relativePath = relativePath.replace("KType", templateOptions.getKType()
                 .getBoxedType());
@@ -715,7 +900,8 @@ public final class TemplateProcessor
      */
     private List<OutputFile> collectOutputFiles(final List<OutputFile> list, final File dir)
     {
-        if (!dir.exists()) return list;
+        if (!dir.exists())
+            return list;
 
         for (final File file : dir.listFiles(new FilenameFilter()
         {
@@ -743,7 +929,7 @@ public final class TemplateProcessor
      */
     private List<TemplateFile> collectTemplateFiles(final List<TemplateFile> list,
             final File dir)
-            {
+    {
         for (final File file : dir.listFiles(new FilenameFilter()
         {
             @Override
@@ -763,7 +949,7 @@ public final class TemplateProcessor
             list.add(new TemplateFile(file));
         }
         return list;
-            }
+    }
 
     static File canonicalFile(final File target)
     {
@@ -785,31 +971,39 @@ public final class TemplateProcessor
 
         if (litteral.equals("byte")) {
             defaultValue = "(byte)0";
-        } else if (litteral.equals( "char")) {
+        }
+        else if (litteral.equals("char")) {
             defaultValue = "\'\\u0000\'";
-        }else if (litteral.equals( "short")) {
+        }
+        else if (litteral.equals("short")) {
             defaultValue = "(short)0";
-        }else if (litteral.equals( "int")) {
+        }
+        else if (litteral.equals("int")) {
             defaultValue = "0";
-        }else if (litteral.equals( "long")) {
+        }
+        else if (litteral.equals("long")) {
             defaultValue = "0L";
-        }else if (litteral.equals( "float")) {
+        }
+        else if (litteral.equals("float")) {
             defaultValue = "0f";
-        }else if (litteral.equals( "double")) {
+        }
+        else if (litteral.equals("double")) {
             defaultValue = "0.0D";
-        }else if (litteral.equals( "boolean")) {
+        }
+        else if (litteral.equals("boolean")) {
             defaultValue = "false";
-        } else {
+        }
+        else {
             defaultValue = "null";
         }
 
-        return "(" + defaultValue  + ")";
+        return "(" + defaultValue + ")";
     }
 
     /**
      * Command line entry point.
      */
-    public static void main(final String [] args)
+    public static void main(final String[] args)
     {
         final TemplateProcessor processor = new TemplateProcessor();
         processor.setTemplatesDir(new File(args[0]));

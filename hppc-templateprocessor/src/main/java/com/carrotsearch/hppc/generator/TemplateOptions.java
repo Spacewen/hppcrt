@@ -3,6 +3,7 @@ package com.carrotsearch.hppc.generator;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
 
@@ -20,6 +21,26 @@ public class TemplateOptions
     public HashSet<String> definesSet = new HashSet<String>();
 
     public File sourceFile;
+
+    public static class LocalInlineBodies {
+
+        public LocalInlineBodies(final String genericBody, final String integerBody, final String floatBody, final String doubleBody, final String booleanBody) {
+
+            this.genericBody = genericBody;
+            this.integerBody = integerBody;
+            this.floatBody = floatBody;
+            this.doubleBody = doubleBody;
+            this.booleanBody = booleanBody;
+        }
+
+        public String genericBody;
+        public String integerBody;
+        public String floatBody;
+        public String doubleBody;
+        public String booleanBody;
+    }
+
+    public HashMap<String, LocalInlineBodies> localInlinesMap = new HashMap<String, LocalInlineBodies>();
 
     public TemplateOptions(final Type ktype)
     {
@@ -44,7 +65,7 @@ public class TemplateOptions
 
     public boolean isKTypeBoolean()
     {
-        return (ktype == Type.BOOLEAN);
+        return (this.ktype == Type.BOOLEAN);
     }
 
     public boolean isKType(final String... strKind)
@@ -113,7 +134,6 @@ public class TemplateOptions
         return getVType() == Type.GENERIC;
     }
 
-
     public boolean isAllGeneric()
     {
         return isKTypeGeneric() && isVTypeGeneric();
@@ -141,7 +161,8 @@ public class TemplateOptions
 
     public Type getVType()
     {
-        if (vtype == null) throw new RuntimeException("VType is null.");
+        if (vtype == null)
+            throw new RuntimeException("VType is null.");
         return vtype;
     }
 
@@ -152,7 +173,7 @@ public class TemplateOptions
         //if any of the notGeneratingType is this.ktype, then do not generate
         //return true if it matches any type of the list, case insensitively while
         //only accepting valid Type strings
-        for (final String  notToBeGenerated : notGeneratingType) {
+        for (final String notToBeGenerated : notGeneratingType) {
 
             if (this.ktype == Type.valueOf(notToBeGenerated.toUpperCase()))
             {
@@ -233,6 +254,53 @@ public class TemplateOptions
         }
 
         return true;
+    }
+
+    public boolean inline(final String callName, String args, String universalCallBody) {
+
+        //Rebuild the arguments with a pattern understandable by the matcher
+        args = args.replace("(", "");
+        args = args.replace(")", "");
+
+        final String[] argsArray = args.split(",");
+
+        for (int i = 0; i < argsArray.length; i++) {
+
+            universalCallBody = universalCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
+        }
+
+        this.localInlinesMap.put(callName,
+                new LocalInlineBodies(universalCallBody,
+                        universalCallBody,
+                        universalCallBody,
+                        universalCallBody,
+                        universalCallBody));
+
+        return false;
+    }
+
+    public boolean inlineGenericAndPrimitive(final String callName, String args, String genericCallBody, String primitiveCallBody) {
+
+        //Rebuild the arguments with a pattern understandable by the matcher
+        args = args.replace("(", "");
+        args = args.replace(")", "");
+
+        final String[] argsArray = args.split(",");
+
+        for (int i = 0; i < argsArray.length; i++) {
+
+            genericCallBody = genericCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
+            primitiveCallBody = primitiveCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
+        }
+
+        this.localInlinesMap.put(callName,
+                new LocalInlineBodies(genericCallBody,
+                        primitiveCallBody,
+                        primitiveCallBody,
+                        primitiveCallBody,
+                        primitiveCallBody));
+
+        return false;
     }
 
     /**

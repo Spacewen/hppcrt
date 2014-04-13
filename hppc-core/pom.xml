@@ -110,7 +110,10 @@
             <id>generate.sources</id>
             <phase>generate-sources</phase>
             <configuration>
-              <target>
+                <fork>true</fork>
+                <meminitial>256m</meminitial>
+                <maxmem>1024m</maxmem>
+              <target> 
                 <property name="classpath" refid="maven.plugin.classpath" />
                 <echo file="${project.basedir}/.builder.classpath">${classpath}</echo>
                 <ant antfile="${basedir}/build.xml" />
@@ -225,7 +228,6 @@
       <plugin>
         <groupId>com.carrotsearch.randomizedtesting</groupId>
         <artifactId>junit4-maven-plugin</artifactId>
-        <version>2.0.15</version>
         <executions>
           <execution>
             <id>junit4-tests</id>
@@ -274,7 +276,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.3</version>
         <configuration>
           <reportPlugins>
             <plugin>
