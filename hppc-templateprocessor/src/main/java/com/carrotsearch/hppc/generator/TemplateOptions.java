@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Template options for velocity directives in templates.
@@ -266,7 +268,9 @@ public class TemplateOptions
 
         for (int i = 0; i < argsArray.length; i++) {
 
-            universalCallBody = universalCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
+            universalCallBody = " " + universalCallBody + " ";
+            universalCallBody = universalCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
+                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
         }
 
         this.localInlinesMap.put(callName,
@@ -289,12 +293,18 @@ public class TemplateOptions
 
         for (int i = 0; i < argsArray.length; i++) {
 
-            genericCallBody = genericCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
-            primitiveCallBody = primitiveCallBody.replace(argsArray[i].trim(), "%" + (i + 1) + "$s");
+            genericCallBody = " " + genericCallBody + " ";
+            genericCallBody = genericCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
+                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
+
+            primitiveCallBody = " " + primitiveCallBody + " ";
+            primitiveCallBody = primitiveCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
+                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
         }
 
         this.localInlinesMap.put(callName,
-                new LocalInlineBodies(genericCallBody,
+                new LocalInlineBodies(
+                        genericCallBody,
                         primitiveCallBody,
                         primitiveCallBody,
                         primitiveCallBody,
@@ -320,7 +330,7 @@ public class TemplateOptions
     public String getGeneratedAnnotation()
     {
         return "@javax.annotation.Generated(date = \"" +
-                getTimeNow() + "\", value = \"HPPC generated from: " +
+                getTimeNow() + "\", value = \"HPPC-RT generated from: " +
                 sourceFile.getName() + "\")";
     }
 }
