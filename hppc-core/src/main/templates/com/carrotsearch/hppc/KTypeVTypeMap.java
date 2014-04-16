@@ -12,9 +12,9 @@ public interface KTypeVTypeMap<KType, VType>
 {
     /**
      * Place a given key and value in the container.
-     * 
-     * @return The value previously stored under the given key in the map is returned, or else
-     * the default value if no previous value existed.
+     * @return Returns the value previously stored under the given key in the map if an equal key is part of the map, <b>and replaces the existing
+     *  value only </b> with the argument value. If no previous key existed,
+     * the default value is returned and the (key, value) pair is inserted.
      */
     VType put(KType key, VType value);
 

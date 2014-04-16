@@ -235,7 +235,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
 
         // Fit in the byte key range.
         final int capacity = 0x80;
-        final int max = capacity - 1;
+        final int max = capacity - 2;
         for (int i = 0; i < max; i++)
         {
             set.add(cast(i));
@@ -258,7 +258,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     {
         set = new KTypeOpenHashSet<KType>(1, 1f);
         final int capacity = 0x80;
-        final int max = capacity - 1;
+        final int max = capacity - 2;
         for (int i = 0; i < max; i++)
         {
             set.add(cast(i));

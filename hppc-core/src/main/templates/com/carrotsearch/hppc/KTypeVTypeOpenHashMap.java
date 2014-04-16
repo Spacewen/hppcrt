@@ -3,6 +3,7 @@ package com.carrotsearch.hppc;
 import java.util.*;
 
 import com.carrotsearch.hppc.cursors.*;
+import com.carrotsearch.hppc.hash.MurmurHash3;
 import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
 
@@ -209,7 +210,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         this.allocated = new boolean[internalCapacity];
 
         //Take advantage of the rounding so that the resize occur a bit later than expected.
-        this.resizeAt = (int) Math.max(2, internalCapacity * loadFactor - 2);
+        //allocate so that there is at least one slot that remains allocated = false
+        //this is compulsory to guarantee proper stop in searching loops
+        this.resizeAt = Math.max(3, (int) (internalCapacity * loadFactor)) - 2;
 
         this.perturbation = computePerturbationValue(internalCapacity);
     }
@@ -262,21 +265,27 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
 
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+        final VType[] values = this.values;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            KTypeVTypeOpenHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
                 final VType oldValue = values[slot];
                 values[slot] = value;
+
                 return oldValue;
             }
 
@@ -383,16 +392,21 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         #if($TemplateOptions.KTypeGeneric)
             final HashingStrategy<? super KType> strategy = this.hashStrategy;
-            int slot = rehashSpecificHash(key, perturbation, strategy) & mask;
+            int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
         #else
             int slot = rehash(key, perturbation) & mask;
         #end
+        
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+        final VType[] values = this.values;
 
         while (allocated[slot])
         {
             if (
                  #if($TemplateOptions.KTypeGeneric)
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+                    KTypeVTypeOpenHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
                 #else
                     key == keys[slot]
                 #end
@@ -475,10 +489,13 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         final KType[] keys = this.keys;
         final VType[] values = this.values;
         final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
         final int mask = allocated.length - 1;
+
         for (int i = oldAllocated.length; --i >= 0;)
         {
             if (oldAllocated[i])
@@ -487,7 +504,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 final VType v = oldValues[i];
 
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                int slot = Internals.rehashSpecificHash(k, perturbation, strategy) & mask;
+                int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(k, perturbation, strategy) & mask;
                 /*! #else
                 int slot = rehash(k, perturbation) & mask;
                 #end !*/
@@ -518,7 +535,10 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         this.values = values;
         this.allocated = allocated;
 
-        this.resizeAt = Math.max(2, (int) Math.ceil(capacity * loadFactor)) - 1;
+        //allocate so that there is at least one slot that remains allocated = false
+        //this is compulsory to guarantee proper stop in searching loops
+        this.resizeAt = Math.max(3, (int) (capacity * loadFactor)) - 2;
+
         this.perturbation = computePerturbationValue(capacity);
     }
 
@@ -550,15 +570,19 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
-        final int wrappedAround = slot;
+
+        final KType[] keys = this.keys;
+        final VType[] values = this.values;
+        final boolean[] allocated = this.allocated;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            KTypeVTypeOpenHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
@@ -569,8 +593,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 return v;
             }
             slot = (slot + 1) & mask;
-            if (slot == wrappedAround)
-                break;
         }
 
         return this.defaultValue;
@@ -589,6 +611,11 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
 
+        final KType[] keys = this.keys;
+        final VType[] values = this.values;
+        final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+
         while (true)
         {
             slotCurr = ((slotPrev = slotCurr) + 1) & mask;
@@ -596,7 +623,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             while (allocated[slotCurr])
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                slotOther = Internals.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
+                slotOther = KTypeVTypeOpenHashMap.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
                 /*! #else
                 slotOther = rehash(keys[slotCurr], perturbation) & mask;
                 #end !*/
@@ -695,15 +722,19 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
-        final int wrappedAround = slot;
+
+        final KType[] keys = this.keys;
+        final VType[] values = this.values;
+        final boolean[] allocated = this.allocated;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            KTypeVTypeOpenHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
@@ -712,8 +743,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             }
 
             slot = (slot + 1) & mask;
-            if (slot == wrappedAround)
-                break;
         }
         return this.defaultValue;
     }
@@ -814,14 +843,19 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = KTypeVTypeOpenHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else int slot = rehash(key, perturbation) & mask;
         #end !*/
-        final int wrappedAround = slot;
+
+        final KType[] keys = this.keys;
+        final VType[] values = this.values;
+        final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            KTypeVTypeOpenHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
@@ -830,8 +864,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 return true;
             }
             slot = (slot + 1) & mask;
-            if (slot == wrappedAround)
-                break;
         }
         lastSlot = -1;
         return false;
@@ -846,6 +878,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     public void clear()
     {
         assigned = 0;
+        lastSlot = -1;
 
         // States are always cleared.
         Internals.blankBooleanArray(allocated, 0, allocated.length);
@@ -1214,13 +1247,14 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         public KType[] toArray(final KType[] target)
         {
             final boolean[] alloc = owner.allocated;
+            final KType[] keys = owner.keys;
 
             int count = 0;
             for (int i = 0; i < keys.length; i++)
             {
                 if (alloc[i])
                 {
-                    target[count++] = owner.keys[i];
+                    target[count++] = keys[i];
                 }
             }
 
@@ -1390,13 +1424,14 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         public VType[] toArray(final VType[] target)
         {
             final boolean[] alloc = owner.allocated;
+            final VType[] values = owner.values;
 
             int count = 0;
             for (int i = 0; i < values.length; i++)
             {
                 if (alloc[i])
                 {
-                    target[count++] = owner.values[i];
+                    target[count++] = values[i];
                 }
             }
 
@@ -1423,6 +1458,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         {
             int i = cursor.index + 1;
             final int max = keys.length;
+
             while (i < max && !allocated[i])
             {
                 i++;
@@ -1618,4 +1654,38 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }
 
     /* #end */
+
+    /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeVTypeOpenHashMap.equalsKTypeHashStrategy",
+    "(e1,  e2, customEquals)", 
+    "(e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)))",
+    "")) !*/
+    /**
+    * Compare two Objects for equivalence, using a {@link HashingStrategy}. Null references return <code>true</code>.
+    * A null {@link HashingStrategy} is equivalent of calling {@link #equalsKType(Object e1, Object e2)}.
+    * This method is inlined in generated code
+    */
+    private static <T> boolean equalsKTypeHashStrategy(final T e1, final T e2, final HashingStrategy<? super T> customEquals)
+    {
+        return (e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)));
+    }
+
+    /*! #end !*/
+
+    /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeVTypeOpenHashMap.rehashSpecificHash",
+    "( o,  p, specificHash)", 
+    "o == null ? 0 : ( specificHash == null ? MurmurHash3.hash( o.hashCode() ^ p ) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p )))",
+    "")) !*/
+    /**
+     * if specificHash == null, equivalent to rehash()
+     * The actual code is inlined in generated code
+     * @param object
+     * @param p
+     * @param specificHash
+     * @return
+     */
+    private static <T> int rehashSpecificHash(final T o, final int p, final HashingStrategy<? super T> specificHash)
+    {
+        return o == null ? 0 : (specificHash == null ? MurmurHash3.hash(o.hashCode() ^ p) : (MurmurHash3.hash(specificHash.computeHashCode(o) ^ p)));
+    }
+    /*! #end !*/
 }

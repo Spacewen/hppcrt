@@ -3,6 +3,7 @@ package com.carrotsearch.hppc;
 import java.util.*;
 
 import com.carrotsearch.hppc.cursors.*;
+import com.carrotsearch.hppc.hash.MurmurHash3;
 import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
 
@@ -58,8 +59,8 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeOpenHashSet<KType>
-extends AbstractKTypeCollection<KType>
-implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
+        extends AbstractKTypeCollection<KType>
+        implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 {
     /**
      * Minimum capacity for the map.
@@ -172,7 +173,9 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         this.allocated = new boolean[internalCapacity];
 
         //Take advantage of the rounding so that the resize occur a bit later than expected.
-        this.resizeAt = (int) Math.max(2, internalCapacity * loadFactor - 2);
+        //allocate so that there is at least one slot that remains allocated = false
+        //this is compulsory to guarantee proper stop in searching loops
+        this.resizeAt = Math.max(3, (int) (internalCapacity * loadFactor)) - 2;
 
         this.perturbation = computePerturbationValue(internalCapacity);
     }
@@ -216,15 +219,19 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(e, perturbation, strategy) & mask;
+        int slot = KTypeOpenHashSet.rehashSpecificHash(e, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(e, perturbation) & mask;
         #end !*/
+
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(e, keys[slot], strategy)
-                    /*! #else
+            KTypeOpenHashSet.equalsKTypeHashStrategy(e, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(e, keys[slot])
             #end !*/)
             {
@@ -331,10 +338,13 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         // Rehash all stored keys into the new buffers.
         final KType[] keys = this.keys;
         final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
         final int mask = allocated.length - 1;
+
         for (int i = oldAllocated.length; --i >= 0;)
         {
             if (oldAllocated[i])
@@ -342,7 +352,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
                 final KType k = oldKeys[i];
 
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                int slot = Internals.rehashSpecificHash(k, perturbation, strategy) & mask;
+                int slot = KTypeOpenHashSet.rehashSpecificHash(k, perturbation, strategy) & mask;
                 /*! #else
                 int slot = rehash(k, perturbation) & mask;
                 #end !*/
@@ -370,7 +380,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         this.keys = keys;
         this.allocated = allocated;
 
-        this.resizeAt = Math.max(2, (int) Math.ceil(capacity * loadFactor)) - 1;
+        //allocate so that there is at least one slot that remains allocated = false
+        //this is compulsory to guarantee proper stop in searching loops
+        this.resizeAt = Math.max(3, (int) (capacity * loadFactor)) - 2;
+
         this.perturbation = computePerturbationValue(capacity);
     }
 
@@ -410,16 +423,19 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, strategy) & mask;
+        int slot = KTypeOpenHashSet.rehashSpecificHash(key, perturbation, strategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
 
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            KTypeOpenHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -446,6 +462,10 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
         /*! #end !*/
 
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+        final int perturbation = this.perturbation;
+
         while (true)
         {
             slotCurr = ((slotPrev = slotCurr) + 1) & mask;
@@ -453,7 +473,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
             while (allocated[slotCurr])
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                slotOther = Internals.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
+                slotOther = KTypeOpenHashSet.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
                 /*! #else
                 slotOther = rehash(keys[slotCurr], perturbation) & mask;
                 #end !*/
@@ -529,15 +549,19 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = Internals.rehashSpecificHash(key, perturbation, this.hashStrategy) & mask;
+        int slot = KTypeOpenHashSet.rehashSpecificHash(key, perturbation, this.hashStrategy) & mask;
         /*! #else
         int slot = rehash(key, perturbation) & mask;
         #end !*/
+
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+
         while (allocated[slot])
         {
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-                    Intrinsics.equalsKTypeHashStrategy(key, keys[slot], strategy)
-                    /*! #else
+            KTypeOpenHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
             Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
@@ -559,7 +583,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     public void clear()
     {
         assigned = 0;
-
+        lastSlot = -1;
         Internals.blankBooleanArray(allocated, 0, allocated.length);
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -587,6 +611,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
 
         final KType[] keys = this.keys;
         final boolean[] states = this.allocated;
+
         for (int i = states.length; --i >= 0;)
         {
             if (states[i])
@@ -937,5 +962,39 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     }
 
     /* #end */
+
+    /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeOpenHashSet.equalsKTypeHashStrategy",
+            "(e1,  e2, customEquals)", 
+            "(e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)))",
+            "")) !*/
+    /**
+     * Compare two Objects for equivalence, using a {@link HashingStrategy}. Null references return <code>true</code>.
+     * A null {@link HashingStrategy} is equivalent of calling {@link #equalsKType(Object e1, Object e2)}.
+     * This method is inlined in generated code
+     */
+    private static <T> boolean equalsKTypeHashStrategy(final T e1, final T e2, final HashingStrategy<? super T> customEquals)
+    {
+        return (e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)));
+    }
+
+    /*! #end !*/
+
+    /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeOpenHashSet.rehashSpecificHash",
+    "( o,  p, specificHash)", 
+    "o == null ? 0 : (specificHash == null? MurmurHash3.hash(o.hashCode() ^ p) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p)))",
+    "")) !*/
+    /**
+     * if specificHash == null, equivalent to rehash()
+     * The actual code is inlined in generated code
+     * @param object
+     * @param p
+     * @param specificHash
+     * @return
+     */
+    private static <T> int rehashSpecificHash(final T o, final int p, final HashingStrategy<? super T> specificHash)
+    {
+        return o == null ? 0 : (specificHash == null ? MurmurHash3.hash(o.hashCode() ^ p) : (MurmurHash3.hash(specificHash.computeHashCode(o) ^ p)));
+    }
+    /*! #end !*/
 
 }
