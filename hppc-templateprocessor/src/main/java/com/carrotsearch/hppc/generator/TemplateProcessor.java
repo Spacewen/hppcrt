@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.UnknownFormatConversionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -532,110 +533,119 @@ public final class TemplateProcessor
         //Make 1 pass per call name of localInlinesMap
         for (final String callName : templateOptions.localInlinesMap.keySet()) {
 
-            //Rebuild matchers by admitting spaces between "." (this . foo )
-            final String[] splittedCallName = callName.split(".");
+            String bodyPattern = "";
 
-            String callNamePattern = callName;
+            try {
+                //Rebuild matchers by admitting spaces between "." (this . foo )
+                final String[] splittedCallName = callName.split(".");
 
-            if (splittedCallName.length > 1) {
+                String callNamePattern = callName;
 
-                callNamePattern = "";
+                if (splittedCallName.length > 1) {
 
-                //Re-collapse without spaces
-                for (int j = 0; j < splittedCallName.length - 1; j++) {
+                    callNamePattern = "";
 
-                    splittedCallName[j].trim();
-                    callNamePattern += splittedCallName[j] + ".";
-                }
+                    //Re-collapse without spaces
+                    for (int j = 0; j < splittedCallName.length - 1; j++) {
 
-                callNamePattern += splittedCallName[splittedCallName.length - 1].trim();
-            } //end if splittedCallName.length > 1
+                        splittedCallName[j].trim();
+                        callNamePattern += splittedCallName[j] + ".";
+                    }
 
-            final Pattern p = Pattern.compile(callNamePattern, Pattern.MULTILINE | Pattern.DOTALL);
+                    callNamePattern += splittedCallName[splittedCallName.length - 1].trim();
+                } //end if splittedCallName.length > 1
 
-            //flush
-            sb.setLength(0);
+                final Pattern p = Pattern.compile(callNamePattern, Pattern.MULTILINE | Pattern.DOTALL);
 
-            while (true)
-            {
-                final Matcher m = p.matcher(formattedInput);
+                //flush
+                sb.setLength(0);
 
-                //end if found matcher
-                if (m.find())
+                while (true)
                 {
-                    sb.append(formattedInput.substring(0, m.start()));
+                    final Matcher m = p.matcher(formattedInput);
 
-                    //parsing of the arguments
-                    int bracketCount = 0;
-                    int last = m.end() + 1;
-                    final ArrayList<String> params = new ArrayList<String>();
-
-                    outer: for (int i = m.end(); i < formattedInput.length(); i++)
+                    //end if found matcher
+                    if (m.find())
                     {
-                        switch (formattedInput.charAt(i))
+                        sb.append(formattedInput.substring(0, m.start()));
+
+                        //parsing of the arguments
+                        int bracketCount = 0;
+                        int last = m.end() + 1;
+                        final ArrayList<String> params = new ArrayList<String>();
+
+                        outer: for (int i = m.end(); i < formattedInput.length(); i++)
                         {
-                            case '(':
-                                bracketCount++;
-                                break;
-                            case ')':
-                                bracketCount--;
-                                if (bracketCount == 0)
-                                {
-                                    params.add(formattedInput.substring(last, i).trim());
-                                    formattedInput = formattedInput.substring(i + 1);
-                                    break outer;
-                                }
-                                break;
-                            case ',':
-                                if (bracketCount == 1)
-                                {
-                                    params.add(formattedInput.substring(last, i));
-                                    last = i + 1;
-                                }
-                                break;
+                            switch (formattedInput.charAt(i))
+                            {
+                                case '(':
+                                    bracketCount++;
+                                    break;
+                                case ')':
+                                    bracketCount--;
+                                    if (bracketCount == 0)
+                                    {
+                                        params.add(formattedInput.substring(last, i).trim());
+                                        formattedInput = formattedInput.substring(i + 1);
+                                        break outer;
+                                    }
+                                    break;
+                                case ',':
+                                    if (bracketCount == 1)
+                                    {
+                                        params.add(formattedInput.substring(last, i));
+                                        last = i + 1;
+                                    }
+                                    break;
+                            }
                         }
+
+                        //fill-in the arguments depending of the type
+                        bodyPattern = "";
+
+                        if (templateOptions.ktype == Type.GENERIC) {
+
+                            bodyPattern = templateOptions.localInlinesMap.get(callName).genericBody;
+                        }
+                        else if (templateOptions.ktype == Type.BOOLEAN) {
+
+                            bodyPattern = templateOptions.localInlinesMap.get(callName).booleanBody;
+                        }
+                        else if (templateOptions.ktype == Type.FLOAT) {
+
+                            bodyPattern = templateOptions.localInlinesMap.get(callName).floatBody;
+                        }
+                        else if (templateOptions.ktype == Type.DOUBLE) {
+
+                            bodyPattern = templateOptions.localInlinesMap.get(callName).doubleBody;
+                        }
+                        else {
+
+                            bodyPattern = templateOptions.localInlinesMap.get(callName).integerBody;
+                        }
+
+                        //apply replacement, if not null
+                        if (bodyPattern != null) {
+
+                            sb.append(String.format("(" + bodyPattern + ")", params.toArray()));
+                        }
+
+                    } //else m.find()
+                    else
+                    {
+                        //not found, append the contents directly
+                        sb.append(formattedInput);
+                        break;
                     }
+                } //end while true
 
-                    //fill-in the arguments depending of the type
-                    String bodyPattern = "";
+                //re-process the same input for each method call
+                formattedInput = sb.toString();
 
-                    if (templateOptions.ktype == Type.GENERIC) {
-
-                        bodyPattern = templateOptions.localInlinesMap.get(callName).genericBody;
-                    }
-                    else if (templateOptions.ktype == Type.BOOLEAN) {
-
-                        bodyPattern = templateOptions.localInlinesMap.get(callName).booleanBody;
-                    }
-                    else if (templateOptions.ktype == Type.FLOAT) {
-
-                        bodyPattern = templateOptions.localInlinesMap.get(callName).floatBody;
-                    }
-                    else if (templateOptions.ktype == Type.DOUBLE) {
-
-                        bodyPattern = templateOptions.localInlinesMap.get(callName).doubleBody;
-                    }
-                    else {
-
-                        bodyPattern = templateOptions.localInlinesMap.get(callName).integerBody;
-                    }
-
-                    //apply replacement, if not null
-                    if (bodyPattern != null) {
-                        sb.append(String.format("(" + bodyPattern + ")", params.toArray()));
-                    }
-
-                } //else m.find()
-                else
-                {
-                    //not found, append the contents directly
-                    sb.append(formattedInput);
-                    break;
-                }
-            } //end while true
-
-            //re-process the same input for each method call
-            formattedInput = sb.toString();
+            }
+            catch (final UnknownFormatConversionException e) {
+                System.out.println("ERROR : filterInlines() : unable to format method body pattern : '" + bodyPattern + "'");
+            }
 
         } //end for call names
 

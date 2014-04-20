@@ -15,8 +15,8 @@
   <version>RT-0.6.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>HPPC Template Processor</name>
-  <description>Template Processor and Code Generation for HPPC.</description>
+  <name>HPPC-RT Template Processor</name>
+  <description>Template Processor and Code Generation for HPPC-RT.</description>
 
   <properties>
     <skip.deployment>true</skip.deployment>

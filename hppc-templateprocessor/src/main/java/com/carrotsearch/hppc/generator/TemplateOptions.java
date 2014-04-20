@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
  */
 public class TemplateOptions
 {
+    private static final Pattern JAVA_IDENTIFIER_PATTERN = Pattern.compile("\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*",
+            Pattern.MULTILINE | Pattern.DOTALL);
+
     public Type ktype;
     public Type vtype;
 
@@ -266,15 +269,11 @@ public class TemplateOptions
 
         final String[] argsArray = args.split(",");
 
-        for (int i = 0; i < argsArray.length; i++) {
-
-            universalCallBody = " " + universalCallBody + " ";
-            universalCallBody = universalCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
-                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
-        }
+        universalCallBody = reformatJavaArguments(universalCallBody, argsArray);
 
         this.localInlinesMap.put(callName,
-                new LocalInlineBodies(universalCallBody,
+                new LocalInlineBodies(
+                        universalCallBody,
                         universalCallBody,
                         universalCallBody,
                         universalCallBody,
@@ -291,16 +290,9 @@ public class TemplateOptions
 
         final String[] argsArray = args.split(",");
 
-        for (int i = 0; i < argsArray.length; i++) {
+        genericCallBody = reformatJavaArguments(genericCallBody, argsArray);
 
-            genericCallBody = " " + genericCallBody + " ";
-            genericCallBody = genericCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
-                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
-
-            primitiveCallBody = " " + primitiveCallBody + " ";
-            primitiveCallBody = primitiveCallBody.replaceAll("([\\s+\\W*])(\\Q" + argsArray[i].trim() + "\\E)([\\s+\\W*])",
-                    "$1" + Matcher.quoteReplacement(" %" + (i + 1) + "$s ") + "$3");
-        }
+        primitiveCallBody = reformatJavaArguments(primitiveCallBody, argsArray);
 
         this.localInlinesMap.put(callName,
                 new LocalInlineBodies(
@@ -332,5 +324,56 @@ public class TemplateOptions
         return "@javax.annotation.Generated(date = \"" +
                 getTimeNow() + "\", value = \"HPPC-RT generated from: " +
                 sourceFile.getName() + "\")";
+    }
+
+    /**
+     * Converts the human readable arguments listed in argsArray[] as equivalent %1%s, %2%s...etc positional arguments in the method body methodBodyStr
+     * @param methodBodyStr
+     * @param argsArray
+     * @return
+     */
+    private String reformatJavaArguments(String methodBodyStr, final String[] argsArray) {
+
+        for (int i = 0; i < argsArray.length; i++) {
+
+            final StringBuffer body = new StringBuffer();
+
+            while (true) {
+
+                final Matcher m = TemplateOptions.JAVA_IDENTIFIER_PATTERN.matcher(methodBodyStr);
+
+                if (m.find()) {
+
+                    //copy from the start of the (remaining) method body to start of the current find :
+                    body.append(methodBodyStr.substring(0, m.start()));
+
+                    //this java identifier is known, replace
+                    if (m.group().equals(argsArray[i].trim())) {
+
+                        //append replacement
+                        body.append("%" + (i + 1) + "$s");
+                    }
+                    else {
+
+                        //else append verbatim
+                        body.append(m.group());
+                    }
+
+                    //Truncate methodBodyStr to only keep the remaining string, after the current find :
+                    methodBodyStr = methodBodyStr.substring(m.end());
+
+                } //end if find
+                else {
+                    //append verbatim
+                    body.append(methodBodyStr);
+                    break;
+                }
+            } //end while
+
+            //re-run for the next argument with the whole previous computation
+            methodBodyStr = body.toString();
+        }  //end for each arguments
+
+        return methodBodyStr;
     }
 }

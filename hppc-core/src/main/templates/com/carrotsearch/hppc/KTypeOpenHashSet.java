@@ -203,7 +203,7 @@ public class KTypeOpenHashSet<KType>
      */
     public KTypeOpenHashSet(final KTypeContainer<KType> container)
     {
-        this((int) (container.size() * (1 + KTypeOpenHashSet.DEFAULT_LOAD_FACTOR)));
+        this(container.size());
         addAll(container);
     }
 
@@ -774,9 +774,14 @@ public class KTypeOpenHashSet<KType>
     @Override
     public KType[] toArray(final KType[] target)
     {
-        for (int i = 0, j = 0; i < keys.length; i++)
+        final KType[] keys = this.keys;
+        final boolean[] allocated = this.allocated;
+
+        for (int i = 0, j = 0; i < keys.length; i++) {
+
             if (allocated[i])
                 target[j++] = keys[i];
+        }
 
         return target;
     }
@@ -842,7 +847,7 @@ public class KTypeOpenHashSet<KType>
             {
                 if (predicate.apply(keys[i]))
                 {
-                    assigned--;
+                    this.assigned--;
                     shiftConflictingKeys(i);
                     // Repeat the check for the same i.
                     continue;
@@ -856,12 +861,10 @@ public class KTypeOpenHashSet<KType>
 
     /**
      * Create a set from a variable number of arguments or an array of <code>KType</code>.
-     * The elements are copied from the argument to the internal buffer.
      */
     public static <KType> KTypeOpenHashSet<KType> from(final KType... elements)
     {
-        final KTypeOpenHashSet<KType> set = new KTypeOpenHashSet<KType>(
-                (int) (elements.length * (1 + KTypeOpenHashSet.DEFAULT_LOAD_FACTOR)));
+        final KTypeOpenHashSet<KType> set = new KTypeOpenHashSet<KType>(elements.length);
         set.add(elements);
         return set;
     }
