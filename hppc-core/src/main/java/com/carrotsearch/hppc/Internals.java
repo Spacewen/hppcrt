@@ -29,6 +29,16 @@ final class Internals
      */
     final static boolean[] BLANKING_BOOLEAN_ARRAY = new boolean[Internals.BLANK_ARRAY_SIZE];
 
+    /**
+     * Batch blanking array with int == -1
+     */
+    final static int[] BLANKING_INT_ARRAY_MINUS_ONE = new int[Internals.BLANK_ARRAY_SIZE];
+
+    static {
+
+        Arrays.fill(Internals.BLANKING_INT_ARRAY_MINUS_ONE, -1);
+    }
+
     static int rehash(final Object o, final int p) {
         return o == null ? 0 : MurmurHash3.hash(o.hashCode() ^ p);
     }
@@ -158,6 +168,33 @@ final class Internals
                     startIndex + (nbChunks << Internals.BLANK_ARRAY_SIZE_IN_BIT_SHIFT) + rem, false);
         }
 
+    }
+
+    /**
+     * Method to blank any int[] array to -1 
+     * from [startIndex; endIndex[, equivalent to {@link Arrays}.fill(intArray, startIndex, endIndex, -1)
+     */
+    static void blankIntArrayMinusOne(final int[] intArray, final int startIndex, final int endIndex) {
+
+        assert startIndex <= endIndex;
+
+        final int size = endIndex - startIndex;
+        final int nbChunks = size >> Internals.BLANK_ARRAY_SIZE_IN_BIT_SHIFT;
+        //compute remainder
+        final int rem = size & (Internals.BLANK_ARRAY_SIZE - 1);
+
+        for (int i = 0; i < nbChunks; i++) {
+
+            System.arraycopy(Internals.BLANKING_INT_ARRAY_MINUS_ONE, 0,
+                    intArray, startIndex + (i << Internals.BLANK_ARRAY_SIZE_IN_BIT_SHIFT),
+                    Internals.BLANK_ARRAY_SIZE);
+        } //end for
+
+        //fill the reminder
+        if (rem > 0) {
+            Arrays.fill(intArray, startIndex + (nbChunks << Internals.BLANK_ARRAY_SIZE_IN_BIT_SHIFT),
+                    startIndex + (nbChunks << Internals.BLANK_ARRAY_SIZE_IN_BIT_SHIFT) + rem, -1);
+        }
     }
 
 }
