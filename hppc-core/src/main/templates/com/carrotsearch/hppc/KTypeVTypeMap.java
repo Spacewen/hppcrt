@@ -18,6 +18,21 @@ public interface KTypeVTypeMap<KType, VType>
      */
     VType put(KType key, VType value);
 
+    /**
+     * <a href="http://trove4j.sourceforge.net">Trove</a>-inspired API method. An equivalent
+     * of the following code:
+     * <pre>
+     * if (!map.containsKey(key)) 
+     *      map.put(key, value);
+     * </pre>
+     * 
+     * @param key The key of the value to check.
+     * @param value The value to put if <code>key</code> does not exist.
+     * @return <code>true</code> if <code>key</code> did not exist and <code>value</code>
+     * was placed in the map.
+     */
+    boolean putIfAbsent(final KType key, final VType value);
+
     /*! #if ($TemplateOptions.VTypeNumeric) !*/
     /**
      * An equivalent of calling

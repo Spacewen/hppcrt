@@ -337,17 +337,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }
 
     /**
-     * <a href="http://trove4j.sourceforge.net">Trove</a>-inspired API method. An equivalent
-     * of the following code:
-     * <pre>
-     * if (!map.containsKey(key)) map.put(value);
-     * </pre>
-     * 
-     * @param key The key of the value to check.
-     * @param value The value to put if <code>key</code> does not exist.
-     * @return <code>true</code> if <code>key</code> did not exist and <code>value</code>
-     * was placed in the map.
+     * {@inheritDoc}
      */
+    @Override
     public boolean putIfAbsent(final KType key, final VType value)
     {
         if (!containsKey(key))
@@ -755,14 +747,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      * first and then retrieve the key value if it exists.</p>
      * <pre>
      * if (map.containsKey(key))
-     *   value = map.lkey();
+     *    value = map.lkey();
      * </pre>
-     * 
-     * <p>This is equivalent to calling:</p>
-     * <pre>
-     * if (map.containsKey(key))
-     *   key = map.keys[map.lslot()];
-     * </pre>
+     * @see #containsKey
      */
     public KType lkey()
     {
@@ -787,19 +774,23 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /**
      * Sets the value corresponding to the key saved in the last
-     * call to {@link #containsKey}, if and only if the key exists
-     * in the map already.
+     * call to {@link #containsKey}, <b> if and only if the key exists
+     * in the map already.</b>
      * Precondition : {@link #containsKey} must have been called previously !
+     * @return Returns the previous value stored under the given key. Returns the default value
+     * if the value was not replaced (i.e the key doesn't exist in the map)
      * @see #containsKey
-     * @return Returns the previous value stored under the given key.
      */
-    public VType lset(final VType key)
+    public VType lset(final VType value)
     {
-        assert lastSlot >= 0 : "Call containsKey() first.";
-        assert allocated[lastSlot] : "Last call to exists did not have any associated value.";
+        VType previous = this.defaultValue;
 
-        final VType previous = values[lastSlot];
-        values[lastSlot] = key;
+        if (allocated[lastSlot]) {
+
+            previous = values[lastSlot];
+            values[lastSlot] = value;
+        }
+
         return previous;
     }
 
@@ -822,18 +813,18 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      * or {@link #lset}.</p>
      * <pre>
      * if (map.containsKey(key))
-     *   value = map.lget();
+     *      value = map.lget();
      * </pre>
      * or, to modify the value at the given key without looking up
      * its slot twice:
      * <pre>
      * if (map.containsKey(key))
-     *   map.lset(map.lget() + 1);
+     *      map.lset(map.lget() + 1);
      * </pre>
      * #if ($TemplateOptions.KTypeGeneric) or, to retrieve the key-equivalent object from the map:
      * <pre>
      * if (map.containsKey(key))
-     *   map.lkey();
+     *      map.lkey();
      * </pre>#end
      */
     @Override
