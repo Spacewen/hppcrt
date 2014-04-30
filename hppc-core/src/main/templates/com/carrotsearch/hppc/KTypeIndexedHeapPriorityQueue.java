@@ -17,7 +17,7 @@ import com.carrotsearch.hppc.sorting.*;
  * and change priority in O(log2(N)) time.
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
-/*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
+/*! #set( $DEBUG = false) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
         implements KTypeIndexedPriorityQueue<KType>, Cloneable
@@ -248,7 +248,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
                     qp[pos] = lastElementIndex;
 
                     //Not really needed
-                    /*! #if($TemplateOptions.isDefined("debug")) !*/
+                    /*! #if($DEBUG) !*/
                     qp[elementsCount] = -1;
                     /*! #end !*/
 
@@ -274,7 +274,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
             refreshPriorities();
         }
 
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert isMinHeap();
         assert isConsistent();
         /*! #end !*/
@@ -298,7 +298,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
 
         //This is not really needed to reset this,
         //but is useful to catch inconsistencies in assertions
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         Arrays.fill(qp, -1);
         /*! #end !*/
 
@@ -534,7 +534,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     @Override
     public KType getIndex(final int index)
     {
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert index >= pq.length || pq[index] > 0 : "Element of index " + " doesn't exist !";
         /*! #end !*/
 
@@ -602,7 +602,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
                 /*! #end !*/
 
                 //Not really needed, but usefull to catch inconsistencies
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 qp[deletedPos] = -1;
                 /*! #end !*/
 
@@ -613,20 +613,20 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
             {
                 //We are not removing the last element
 
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 assert (deletedPos > 0 && qp[deletedPos] == index) : String.format("pq[index] = %d, qp[pq[index]] = %d (index = %d)",
                         deletedPos, qp[deletedPos], index);
                 /*! #end !*/
 
                 final int lastElementIndex = qp[elementsCount];
 
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 assert (lastElementIndex >= 0 && pq[lastElementIndex] == elementsCount) : String.format("lastElementIndex = qp[elementsCount] = %d, pq[lastElementIndex] = %d, elementsCount = %d",
                         lastElementIndex, pq[lastElementIndex], elementsCount);
                 /*! #end !*/
 
                 //not needed, overwritten below :
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 qp[deletedPos] = -1;
                 /*! #end !*/
 
@@ -640,7 +640,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
                 pq[index] = 0;
 
                 //Not really needed, but usefull to catch inconsistencies
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 qp[elementsCount] = -1;
                 /*! #end !*/
 
@@ -653,7 +653,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
                 elementsCount--;
 
                 //after swapping positions
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 assert (pq[lastElementIndex] == deletedPos) : String.format("pq[lastElementIndex = %d] = %d, while deletedPos = %d, (index = %d)",
                         lastElementIndex, pq[lastElementIndex], deletedPos, index);
 
@@ -1139,7 +1139,7 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
         }
     }
 
-/*! #if($TemplateOptions.isDefined("debug")) !*/
+/*! #if($DEBUG) !*/
     /**
      * methods to test invariant in assert, not present in final generated code
      */
@@ -1237,5 +1237,5 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
     }
 
     //end ifdef debug
-    /*! #end !*/
+/*! #end !*/
 }

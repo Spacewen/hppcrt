@@ -21,20 +21,8 @@
  (fork of HPPC of Carrotsearch)
   Fundamental data structures (maps, sets, lists, stacks, queues, heaps, sorts) generated for
   combinations of object and primitive types to conserve JVM memory and speed
-  up execution. The Realtime fork intend of extending collections while tweaking optimization to remove any dynamic allocations at runtime.</description>
-
-  <!-- We'll use a snapshot version of junit4 plugin. -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>sonatype-snapshots</id>
-      <name>SonaType Snapshots Plugin Repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
+  up execution. The Realtime fork intend of extending collections while tweaking optimization to remove any dynamic allocations at runtime.
+</description>
   
   <!-- Dependencies. -->
   <dependencies>

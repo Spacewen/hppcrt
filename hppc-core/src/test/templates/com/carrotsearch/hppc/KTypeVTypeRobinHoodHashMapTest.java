@@ -16,7 +16,11 @@ import com.carrotsearch.hppc.procedures.*;
  */
 // ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 //${TemplateOptions.doNotGenerateVType("BOOLEAN")}
-/* ! ${TemplateOptions.generatedAnnotation} ! */
+/*! ${TemplateOptions.unDefine("ROBIN_HOOD_FOR_PRIMITIVES")} !*/
+/*! #set( $DEBUG = false) !*/
+// If RH is defined, RobinHood Hashing is in effect :
+/*! #set( $RH = $TemplateOptions.KTypeGeneric || $TemplateOptions.isDefined("ROBIN_HOOD_FOR_PRIMITIVES") ) !*/
+/*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeVTypeTest<KType, VType>
 {
 
@@ -45,7 +49,11 @@ public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeV
 
             for (int i = 0; i < map.keys.length; i++)
             {
-                if (map.allocated[i] == -1)
+                if (/*! #if ($RH) !*/
+                map.allocated[i] == -1
+                /*!#else
+                !map.allocated[i]
+                #end !*/)
                 {
                     //if not allocated, generic version if patched to null for GC sake
 
@@ -421,7 +429,9 @@ public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeV
 
             TestUtils.assertEquals2(cursor.value, map.values[cursor.index]);
             TestUtils.assertEquals2(cursor.key, map.keys[cursor.index]);
-            Assert.assertTrue(map.allocated[cursor.index] != -1);
+
+            Assert.assertTrue(map.allocated[cursor.index] /*! #if ($RH) !*/!= -1 /*! #end !*/);
+
         }
         Assert.assertEquals(count, map.size());
 
@@ -1693,7 +1703,7 @@ public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeV
 
         for (int i = 0; i < newMap.allocated.length; i++) {
 
-            if (newMap.allocated[i] != -1) {
+            if (newMap.allocated[i] /*! #if ($RH) !*/!= -1 /*! #end !*/) {
 
                 keyList.add(castType(newMap.keys[i]));
                 valueList.add(vcastType(newMap.values[i]));
@@ -1790,7 +1800,7 @@ public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeV
 
         for (int i = 0; i < newMap.allocated.length; i++) {
 
-            if (newMap.allocated[i] != -1) {
+            if (newMap.allocated[i] /*! #if ($RH) !*/!= -1 /*! #end !*/) {
 
                 keyList.add(castType(newMap.keys[i]));
                 valueList.add(vcastType(newMap.values[i]));

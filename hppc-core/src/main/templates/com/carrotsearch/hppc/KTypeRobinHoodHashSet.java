@@ -57,7 +57,10 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
-/*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
+/*! ${TemplateOptions.unDefine("ROBIN_HOOD_FOR_PRIMITIVES")} !*/
+/*! #set( $DEBUG = false) !*/
+// If RH is defined, RobinHood Hashing is in effect :
+/*! #set( $RH = $TemplateOptions.KTypeGeneric || $TemplateOptions.isDefined("ROBIN_HOOD_FOR_PRIMITIVES") ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeRobinHoodHashSet<KType>
         extends AbstractKTypeCollection<KType>
@@ -89,12 +92,18 @@ public class KTypeRobinHoodHashSet<KType>
 
     /**
      * Information if an entry (slot) in the {@link #values} table is allocated
-     * or empty, with a cached hash value :  If = -1, it means not allocated, else = HASH(keys[i]) & mask
-     * for every index i. 
-     * 
+     * or empty.
+     * #if ($RH)
+     * In addition it caches hash value :  If = -1, it means not allocated, else = HASH(keys[i]) & mask
+     * for every index i.
+     * #end
      * @see #assigned
      */
+    /*! #if ($RH) !*/
     public int[] allocated;
+    /*! #else
+    public boolean[] allocated;
+    #end !*/
 
     /**
      * Cached number of assigned slots in {@link #allocated}.
@@ -172,10 +181,14 @@ public class KTypeRobinHoodHashSet<KType>
         internalCapacity = HashContainerUtils.roundCapacity(internalCapacity);
 
         this.keys = Intrinsics.newKTypeArray(internalCapacity);
-        this.allocated = new int[internalCapacity];
 
-        //fill with -1
+        //fill with "not allocated" value
+        /*! #if ($RH) !*/
+        this.allocated = new int[internalCapacity];
         Internals.blankIntArrayMinusOne(this.allocated, 0, this.allocated.length);
+        /*! #else
+        this.allocated = new boolean[internalCapacity];
+        #end !*/
 
         //Take advantage of the rounding so that the resize occur a bit later than expected.
         //allocate so that there is at least one slot that remains allocated = false
@@ -230,16 +243,26 @@ public class KTypeRobinHoodHashSet<KType>
         #end !*/
 
         final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
         final int[] allocated = this.allocated;
+        /*! #else
+        final boolean[] allocated = this.allocated;
+        #end !*/
 
+        /*! #if ($RH) !*/
+        KType tmpKey;
+        int tmpAllocated;
         int initial_slot = slot;
-
         int dist = 0;
         int existing_distance = 0;
+        /*! #end !*/
 
-        while (allocated[slot] != -1)
+        while (allocated[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/)
         {
+            /*! #if ($RH) !*/
             existing_distance = probe_distance(slot, allocated);
+            /*! #end !*/
 
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
             KTypeRobinHoodHashSet.equalsKTypeHashStrategy(e, keys[slot], strategy)
@@ -249,18 +272,19 @@ public class KTypeRobinHoodHashSet<KType>
             {
                 return false;
             }
+            /*! #if ($RH) !*/
             else if (dist > existing_distance)
             {
                 //swap current (key, value, initial_slot) with slot places
-                final KType tmpKey = keys[slot];
+                tmpKey = keys[slot];
                 keys[slot] = e;
                 e = tmpKey;
 
-                final int tmpAllocated = allocated[slot];
+                tmpAllocated = allocated[slot];
                 allocated[slot] = initial_slot;
                 initial_slot = tmpAllocated;
 
-                /*! #if($TemplateOptions.isDefined("debug")) !*/
+                /*! #if($DEBUG) !*/
                 //Check invariants
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 assert allocated[slot] == (KTypeRobinHoodHashSet.rehashSpecificHash(keys[slot], perturbation, strategy) & mask);
@@ -273,9 +297,12 @@ public class KTypeRobinHoodHashSet<KType>
 
                 dist = existing_distance;
             }
+            /*! #end !*/
 
             slot = (slot + 1) & mask;
+            /*! #if ($RH) !*/
             dist++;
+            /*! #end !*/
         }
 
         // Check if we need to grow. If so, reallocate new data,
@@ -286,16 +313,23 @@ public class KTypeRobinHoodHashSet<KType>
         }
         else {
             assigned++;
+            /*! #if ($RH) !*/
             allocated[slot] = initial_slot;
+            /*! #else
+            allocated[slot] = true;
+            #end !*/
+
             keys[slot] = e;
 
-            /*! #if($TemplateOptions.isDefined("debug")) !*/
+            /*! #if ($RH) !*/
+            /*! #if($DEBUG) !*/
             //Check invariants
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
             assert allocated[slot] == (KTypeRobinHoodHashSet.rehashSpecificHash(keys[slot], perturbation, strategy) & mask);
             /*! #else
                     assert allocated[slot] == (rehash(keys[slot], perturbation) & mask);
             #end !*/
+            /*! #end !*/
             /*! #end !*/
         }
         return true;
@@ -366,92 +400,45 @@ public class KTypeRobinHoodHashSet<KType>
     private void expandAndAdd(final KType pendingKey, final int freeSlot)
     {
         assert assigned == resizeAt;
+
+        /*! #if ($RH) !*/
         assert allocated[freeSlot] == -1;
+        /*! #else
+        assert !allocated[freeSlot];
+         #end !*/
 
         // Try to allocate new buffers first. If we OOM, it'll be now without
         // leaving the data structure in an inconsistent state.
         final KType[] oldKeys = this.keys;
+
+        /*! #if ($RH) !*/
         final int[] oldAllocated = this.allocated;
+        /*! #else
+        final boolean[] oldAllocated = this.allocated;
+        #end !*/
 
         allocateBuffers(HashContainerUtils.nextCapacity(keys.length));
 
         // We have succeeded at allocating new data so insert the pending key/value at
         // the free slot in the old arrays before rehashing.
         lastSlot = -1;
-        assigned++;
+        assigned = 0;
 
-        int mask = oldAllocated.length - 1;
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final int initial_hashcode = (KTypeRobinHoodHashSet.rehashSpecificHash(pendingKey, perturbation, this.hashStrategy) & mask);
-        /*! #else
-            final int initial_hashcode = (rehash(pendingKey, perturbation) & mask);
+        //We don't care of the oldAllocated value, so long it means "allocated = true", since the whole set is rebuilt from scratch. 
+        /*! #if ($RH) !*/
+        oldAllocated[freeSlot] = 1;
+        /*!#else
+        oldAllocated[freeSlot] = true;
         #end !*/
 
-        oldAllocated[freeSlot] = initial_hashcode;
         oldKeys[freeSlot] = pendingKey;
 
-        // Rehash all stored keys into the new buffers.
-        final KType[] keys = this.keys;
-        final int[] allocated = this.allocated;
-        final int perturbation = this.perturbation;
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        /*! #end !*/
-        mask = allocated.length - 1;
-
+        //iterate all the old arrays to add in the newly allocated buffers
         for (int i = oldAllocated.length; --i >= 0;)
         {
-            if (oldAllocated[i] != -1)
+            if (oldAllocated[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
             {
-                KType key = oldKeys[i];
-
-                /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                int slot = KTypeRobinHoodHashSet.rehashSpecificHash(key, perturbation, strategy) & mask;
-                /*! #else
-                int slot = rehash(key, perturbation) & mask;
-                #end !*/
-
-                int initial_slot = slot;
-                int dist = 0;
-                int existing_distance = 0;
-
-                while (allocated[slot] != -1)
-                {
-                    existing_distance = probe_distance(slot, allocated);
-
-                    if (dist > existing_distance)
-                    {
-                        //swap current (key, value, initial_allocated) with slot places
-                        final KType tmpKey = keys[slot];
-                        keys[slot] = key;
-                        key = tmpKey;
-
-                        final int tmpAllocated = allocated[slot];
-                        allocated[slot] = initial_slot;
-                        initial_slot = tmpAllocated;
-
-                        /*! #if($TemplateOptions.isDefined("debug")) !*/
-                        //Check invariants
-                        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-                        assert allocated[slot] == (KTypeRobinHoodHashSet.rehashSpecificHash(keys[slot], perturbation, strategy) & mask);
-                        assert initial_slot == (KTypeRobinHoodHashSet.rehashSpecificHash(key, perturbation, strategy) & mask);
-                        /*! #else
-                            assert allocated[slot] == (rehash(keys[slot], perturbation) & mask);
-                            assert initial_slot == (rehash(key, perturbation) & mask);
-                        #end !*/
-                        /*! #end !*/
-
-                        dist = existing_distance;
-                    }
-
-                    slot = (slot + 1) & mask;
-                    dist++;
-                }
-
-                allocated[slot] = initial_slot;
-                keys[slot] = key;
+                this.add(oldKeys[i]);
             }
         }
     }
@@ -464,9 +451,13 @@ public class KTypeRobinHoodHashSet<KType>
     private void allocateBuffers(final int capacity)
     {
         final KType[] keys = Intrinsics.newKTypeArray(capacity);
-        final int[] allocated = new int[capacity];
 
+        /*! #if ($RH) !*/
+        final int[] allocated = new int[capacity];
         Internals.blankIntArrayMinusOne(allocated, 0, allocated.length);
+        /*! #else
+         final boolean[] allocated = new boolean[capacity];
+        #end !*/
 
         this.keys = keys;
         this.allocated = allocated;
@@ -536,14 +527,19 @@ public class KTypeRobinHoodHashSet<KType>
         /*! #end !*/
 
         final KType[] keys = this.keys;
+        /*! #if ($RH) !*/
         final int[] allocated = this.allocated;
+        /*! #else
+         final boolean[] allocated = this.allocated;
+        #end !*/
+
         final int perturbation = this.perturbation;
 
         while (true)
         {
             slotCurr = ((slotPrev = slotCurr) + 1) & mask;
 
-            while (allocated[slotCurr] != -1)
+            while (allocated[slotCurr] /*! #if ($RH) !*/!= -1 /*! #end !*/)
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 slotOther = KTypeRobinHoodHashSet.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask;
@@ -566,10 +562,17 @@ public class KTypeRobinHoodHashSet<KType>
                 slotCurr = (slotCurr + 1) & mask;
             }
 
-            if (allocated[slotCurr] == -1)
+            if (/*! #if ($RH) !*/
+            allocated[slotCurr] == -1
+            /*! #else
+            !allocated[slotCurr]
+            #end !*/)
+            {
                 break;
+            }
 
-            /*! #if($TemplateOptions.isDefined("debug")) !*/
+            /*! #if ($RH) !*/
+            /*! #if($DEBUG) !*/
             //Check invariants
             /*! #if ($TemplateOptions.KTypeGeneric) !*/
             assert allocated[slotCurr] == (KTypeRobinHoodHashSet.rehashSpecificHash(keys[slotCurr], perturbation, strategy) & mask);
@@ -579,15 +582,22 @@ public class KTypeRobinHoodHashSet<KType>
                 assert allocated[slotPrev] == (rehash(keys[slotPrev], perturbation) & mask);
             #end !*/
             /*! #end !*/
+            /*! #end !*/
 
             // Shift key/allocated pair.
-
-            // Shift key/value pair.
             keys[slotPrev] = keys[slotCurr];
+
+            /*! #if ($RH) !*/
             allocated[slotPrev] = allocated[slotCurr];
+            /*! #end !*/
         }
 
+        //means not allocated
+        /*! #if ($RH) !*/
         allocated[slotPrev] = -1;
+        /*! #else
+         allocated[slotPrev] = false;
+        #end !*/
 
         /* #if ($TemplateOptions.KTypeGeneric) */
         keys[slotPrev] = Intrinsics.<KType> defaultKTypeValue();
@@ -602,7 +612,12 @@ public class KTypeRobinHoodHashSet<KType>
     public KType lkey()
     {
         assert lastSlot >= 0 : "Call contains() first.";
+
+        /*! #if ($RH) !*/
         assert allocated[lastSlot] != -1 : "Last call to exists did not have any associated value.";
+        /*! #else
+         assert allocated[lastSlot] : "Last call to exists did not have any associated value.";
+        #end !*/
 
         return keys[lastSlot];
     }
@@ -632,8 +647,8 @@ public class KTypeRobinHoodHashSet<KType>
     @Override
     public boolean contains(final KType key)
     {
-        lastSlot = lookupSlot(key);
-        return lastSlot != -1;
+        this.lastSlot = lookupSlot(key);
+        return this.lastSlot != -1;
     }
 
     /**
@@ -644,11 +659,15 @@ public class KTypeRobinHoodHashSet<KType>
     @Override
     public void clear()
     {
-        assigned = 0;
-        lastSlot = -1;
+        this.assigned = 0;
+        this.lastSlot = -1;
 
         // States are always cleared.
+        /*! #if ($RH) !*/
         Internals.blankIntArrayMinusOne(allocated, 0, allocated.length);
+        /*! #else
+         Internals.blankBooleanArray(allocated, 0, allocated.length);
+        #end !*/
 
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         //Faster than Arrays.fill(keys, null); // Help the GC.
@@ -674,11 +693,16 @@ public class KTypeRobinHoodHashSet<KType>
         int h = 0;
 
         final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
         final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
 
         for (int i = states.length; --i >= 0;)
         {
-            if (states[i] != -1)
+            if (states[i]/*! #if ($RH) !*/!= -1 /*! #end !*/)
             {
                 /*! #if ($TemplateOptions.KTypeGeneric) !*/
                 //This hash is an intrinsic property of the container contents,
@@ -765,7 +789,14 @@ public class KTypeRobinHoodHashSet<KType>
             final int max = keys.length;
 
             int i = cursor.index + 1;
-            while (i < keys.length && allocated[i] == -1)
+
+            while (i < max &&
+                    /*! #if ($RH) !*/
+                    allocated[i] == -1
+            /*! #else
+            !allocated[i]
+            #end  !*/)
+
             {
                 i++;
             }
@@ -821,11 +852,16 @@ public class KTypeRobinHoodHashSet<KType>
     public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
     {
         final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
         final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
 
         for (int i = 0; i < states.length; i++)
         {
-            if (states[i] != -1)
+            if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
                 procedure.apply(keys[i]);
         }
 
@@ -839,12 +875,19 @@ public class KTypeRobinHoodHashSet<KType>
     public KType[] toArray(final KType[] target)
     {
         final KType[] keys = this.keys;
-        final int[] allocated = this.allocated;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
 
         for (int i = 0, j = 0; i < keys.length; i++) {
 
-            if (allocated[i] != -1)
+            if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
+            {
                 target[j++] = keys[i];
+            }
         }
 
         return target;
@@ -881,11 +924,16 @@ public class KTypeRobinHoodHashSet<KType>
     public <T extends KTypePredicate<? super KType>> T forEach(final T predicate)
     {
         final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
         final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
 
         for (int i = 0; i < states.length; i++)
         {
-            if (states[i] != -1)
+            if (states[i]/*! #if ($RH) !*/!= -1 /*! #end !*/)
             {
                 if (!predicate.apply(keys[i]))
                     break;
@@ -902,12 +950,18 @@ public class KTypeRobinHoodHashSet<KType>
     public int removeAll(final KTypePredicate<? super KType> predicate)
     {
         final KType[] keys = this.keys;
-        final int[] allocated = this.allocated;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
 
         final int before = assigned;
-        for (int i = 0; i < allocated.length;)
+
+        for (int i = 0; i < states.length;)
         {
-            if (allocated[i] != -1)
+            if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
             {
                 if (predicate.apply(keys[i]))
                 {
@@ -1041,38 +1095,43 @@ public class KTypeRobinHoodHashSet<KType>
         int slot = rehash(key, perturbation) & mask;
         #end !*/
 
+        /*! #if ($RH) !*/
         int dist = 0;
-        final KType[] keys = this.keys;
-        final int[] allocated = this.allocated;
+        /*! #end !*/
 
-        while (true)
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
         {
-            if (allocated[slot] == -1)
-            {
-                return -1;
-            }
-            if (dist > probe_distance(slot, allocated))
-            {
-                return -1;
-            }
-            else if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
             KTypeRobinHoodHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
-               Intrinsics.equalsKType(key, keys[slot])
+            Intrinsics.equalsKType(key, keys[slot])
             #end !*/)
             {
                 return slot;
             }
             slot = (slot + 1) & mask;
-            dist++;
 
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
         } //end while true
+
+        return -1;
     }
 
     /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeRobinHoodHashSet.equalsKTypeHashStrategy",
-            "(e1,  e2, customEquals)", 
-            "(e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)))",
-            "")) !*/
+      "(e1,  e2, customEquals)",
+      "(e1 == null ? e2 == null : (customEquals == null ? e1.equals(e2) : customEquals.equals(e1, e2)))",
+     "")) !*/
     /**
      * Compare two Objects for equivalence, using a {@link HashingStrategy}. Null references return <code>true</code>.
      * A null {@link HashingStrategy} is equivalent of calling {@link #equalsKType(Object e1, Object e2)}.
@@ -1086,7 +1145,7 @@ public class KTypeRobinHoodHashSet<KType>
     /*! #end !*/
 
     /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeRobinHoodHashSet.rehashSpecificHash",
-    "( o,  p, specificHash)", 
+    "( o,  p, specificHash)",
     "o == null ? 0 : (specificHash == null? MurmurHash3.hash(o.hashCode() ^ p) :(MurmurHash3.hash(specificHash.computeHashCode(o) ^ p)))",
     "")) !*/
     /**
@@ -1105,7 +1164,7 @@ public class KTypeRobinHoodHashSet<KType>
     /*! #end !*/
 
     /*! #if ($TemplateOptions.inline("probe_distance",
-    "(slot, alloc)", 
+    "(slot, alloc)",
     "slot < alloc[slot] ? slot + alloc.length - alloc[slot] : slot - alloc[slot]")) !*/
     /**
      * Resulting code in inlined in generated code
@@ -1114,7 +1173,7 @@ public class KTypeRobinHoodHashSet<KType>
 
         final int rh = alloc[slot];
 
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         //Check : cached hashed slot is == computed value
         /*! #if ($TemplateOptions.KTypeGeneric) !*/
         final int mask = alloc.length - 1;

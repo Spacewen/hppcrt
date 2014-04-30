@@ -14,9 +14,8 @@ import com.carrotsearch.hppc.sorting.*;
  * It assure O(log2(N)) complexity for insertion, deletion of min element,
  * and constant time to examine the first element.
  */
-
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
-/*! ${TemplateOptions.unDefine("debug", "DEBUG")} !*/
+/*! #set( $DEBUG = false) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType>
         implements KTypePriorityQueue<KType>, Cloneable
@@ -193,7 +192,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         //reestablish heap
         refreshPriorities();
 
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -246,7 +245,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
             refreshPriorities();
         }
 
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -468,7 +467,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
 
         //restore heap
         refreshPriorities();
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -497,7 +496,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
 
         //restore heap
         refreshPriorities();
-        /*! #if($TemplateOptions.isDefined("debug")) !*/
+        /*! #if($DEBUG) !*/
         assert isMinHeap();
         /*! #end !*/
 
@@ -817,7 +816,7 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
         }
     }
 
-/*! #if($TemplateOptions.isDefined("debug")) !*/
+    /*! #if($DEBUG) !*/
     /**
      * methods to test invariant in assert, not present in final generated code
      */
@@ -875,5 +874,5 @@ public class KTypeHeapPriorityQueue<KType> extends AbstractKTypeCollection<KType
     }
 
     //end of ifdef debug
-    /*! #end !*/
+/*! #end !*/
 }

@@ -18,14 +18,18 @@ import com.carrotsearch.hppc.procedures.KTypeProcedure;
 /**
  * Unit tests for {@link KTypeOpenHashSet}.
  */
-//${TemplateOptions.doNotGenerateKType("BOOLEAN")}
+/*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
+/*! ${TemplateOptions.unDefine("ROBIN_HOOD_FOR_PRIMITIVES")} !*/
+/*! #set( $DEBUG = false) !*/
+// If RH is defined, RobinHood Hashing is in effect :
+/*! #set( $RH = $TemplateOptions.KTypeGeneric || $TemplateOptions.isDefined("ROBIN_HOOD_FOR_PRIMITIVES") ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
 {
     /**
      * Per-test fresh initialized instance.
      */
-    public KTypeOpenHashSet<KType> set;
+    public KTypeRobinHoodHashSet<KType> set;
 
     public volatile long guard;
 
@@ -39,7 +43,7 @@ public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
     @Before
     public void initialize()
     {
-        set = KTypeOpenHashSet.newInstance();
+        set = KTypeRobinHoodHashSet.newInstance();
     }
 
     /**
@@ -56,7 +60,12 @@ public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
 
             for (int i = 0; i < set.keys.length; i++)
             {
-                if (!set.allocated[i])
+                if (/*! #if ($RH) !*/
+                set.allocated[i] == -1
+                /*!#else
+                !set.allocated[i]
+                #end !*/)
+
                 {
                     //if not allocated, generic version if patched to null for GC sake
                     /*! #if ($TemplateOptions.KTypeGeneric) !*/
@@ -231,7 +240,7 @@ public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testFullLoadFactor()
     {
-        set = new KTypeOpenHashSet<KType>(1, 1f);
+        set = new KTypeRobinHoodHashSet<KType>(1, 1f);
 
         // Fit in the byte key range.
         final int capacity = 0x80;
@@ -256,7 +265,7 @@ public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testBug_HPPC73_FullCapacityGet()
     {
-        set = new KTypeOpenHashSet<KType>(1, 1f);
+        set = new KTypeRobinHoodHashSet<KType>(1, 1f);
         final int capacity = 0x80;
         final int max = capacity - 2;
         for (int i = 0; i < max; i++)
@@ -561,7 +570,7 @@ public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
     {
         this.set.add(key1, key2, key3);
 
-        final KTypeOpenHashSet<KType> cloned = set.clone();
+        final KTypeRobinHoodHashSet<KType> cloned = set.clone();
         cloned.removeAllOccurrences(key1);
 
         TestUtils.assertSortedListEquals(set.toArray(), key1, key2, key3);
