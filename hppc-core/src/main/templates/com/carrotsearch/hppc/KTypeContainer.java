@@ -33,7 +33,8 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * }
      * </pre>
      */
-    public Iterator<KTypeCursor<KType>> iterator();
+    @Override
+    Iterator<KTypeCursor<KType>> iterator();
 
     /**
      * Lookup a given element in the container. This operation has no speed
@@ -42,20 +43,26 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * @return Returns <code>true</code> if this container has an element
      * equal to <code>e</code>.
      */
-    public boolean contains(KType e);
+    boolean contains(KType e);
 
     /**
      * Return the current number of elements in this container. The time for calculating
      * the container's size may take <code>O(n)</code> time, although implementing classes
      * should try to maintain the current size and return in constant time.
      */
-    public int size();
+    int size();
+
+    /**
+     * Return the maximum number of elements this container is guaranteed to hold without reallocating. 
+     * The time for calculating the container's capacity may take <code>O(n)</code> time.
+     */
+    int capacity();
 
     /**
      * True if there is no elements in the container,
      * equivalent to <code>size() == 0</code>
      */
-    public boolean isEmpty();
+    boolean isEmpty();
 
     /*! #if ($TemplateOptions.KTypeGeneric) !*/
     /**
@@ -65,7 +72,8 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * the number of elements of the container.</p>
      * The returned array is always a copy, regardless of the storage used by the container.
      */
-    public KType[] toArray(Class<? super KType> clazz);
+    KType[] toArray(Class<? super KType> clazz);
+
     /*! #end !*/
 
     /**
@@ -79,7 +87,8 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
     /*! #if ($TemplateOptions.KTypePrimitive)
     public KType [] toArray();
     #else !*/
-    public Object[] toArray();
+    Object[] toArray();
+
     /*! #end !*/
 
     /**
@@ -87,7 +96,7 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      * @param target The target array must be large enough to hold all elements, i.e >= {@link #size()}.
      * @return Returns the target argument for chaining.
      */
-    public KType[] toArray(KType[] target);
+    KType[] toArray(KType[] target);
 
     /**
      * Applies a <code>procedure</code> to all container elements. Returns the argument (any
@@ -100,11 +109,11 @@ public interface KTypeContainer<KType> extends Iterable<KTypeCursor<KType>>
      *      public void apply(int value) { count++; }}).count;
      * </pre>
      */
-    public <T extends KTypeProcedure<? super KType>> T forEach(T procedure);
+    <T extends KTypeProcedure<? super KType>> T forEach(T procedure);
 
     /**
      * Applies a <code>predicate</code> to container elements, as long as the predicate
      * returns <code>true</code>. The iteration is interrupted otherwise.
      */
-    public <T extends KTypePredicate<? super KType>> T forEach(T predicate);
+    <T extends KTypePredicate<? super KType>> T forEach(T predicate);
 }

@@ -587,6 +587,15 @@ public class KTypeLinkedList<KType>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return buffer.length - 2;
+    }
+
+    /**
      * Sets the number of stored elements to zero.
      */
     @Override

@@ -18,7 +18,7 @@ import com.carrotsearch.hppc.procedures.*;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public interface KTypeVTypeAssociativeContainer<KType, VType>
-extends Iterable<KTypeVTypeCursor<KType, VType>>
+        extends Iterable<KTypeVTypeCursor<KType, VType>>
 {
     /**
      * Returns a cursor over the entries (key-value pairs) in this map. The iterator is
@@ -51,6 +51,12 @@ extends Iterable<KTypeVTypeCursor<KType, VType>>
      * @return Returns the current size (number of assigned keys) in the container.
      */
     int size();
+
+    /**
+     * Return the maximum number of keys this container is guaranteed to hold without reallocating. 
+     * The time for calculating the container's capacity may take <code>O(n)</code> time.
+     */
+    int capacity();
 
     /**
      * @return Return <code>true</code> if this hash map contains no assigned keys.

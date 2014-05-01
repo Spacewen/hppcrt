@@ -501,6 +501,15 @@ public class KTypeArrayList<KType>
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return buffer.length;
+    }
+
+    /**
      * Trim the internal buffer to the current size.
      */
     /* #if ($TemplateOptions.KTypeGeneric) */

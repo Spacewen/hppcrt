@@ -688,6 +688,15 @@ public class KTypeRobinHoodHashSet<KType>
      * {@inheritDoc}
      */
     @Override
+    public int capacity() {
+
+        return resizeAt - 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int hashCode()
     {
         int h = 0;

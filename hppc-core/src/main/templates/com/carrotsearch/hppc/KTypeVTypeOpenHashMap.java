@@ -896,6 +896,15 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return resizeAt - 1;
+    }
+
+    /**
+     * {@inheritDoc}
      * 
      * <p>Note that an empty container may still contain many deleted keys (that occupy buffer
      * space). Adding even a single element to such a container may cause rehashing.</p>
@@ -1183,6 +1192,15 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             return owner.size();
         }
 
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
+        }
+
         @Override
         public void clear()
         {
@@ -1304,10 +1322,22 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
                 KTypeVTypeOpenHashMap.this;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int size()
         {
             return owner.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
         }
 
         @Override

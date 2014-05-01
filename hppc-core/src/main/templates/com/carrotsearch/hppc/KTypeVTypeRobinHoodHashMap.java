@@ -1033,6 +1033,15 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public int capacity()
+    {
+        return resizeAt - 1;
+    }
+
+    /**
+     * {@inheritDoc}
      * 
      * <p>Note that an empty container may still contain many deleted keys (that occupy buffer
      * space). Adding even a single element to such a container may cause rehashing.</p>
@@ -1339,6 +1348,9 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
             return predicate;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public KeysIterator iterator()
         {
@@ -1346,10 +1358,22 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
             return this.keyIteratorPool.borrow();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int size()
         {
             return owner.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
         }
 
         @Override
@@ -1485,10 +1509,22 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
         private final KTypeVTypeRobinHoodHashMap<KType, VType> owner =
                 KTypeVTypeRobinHoodHashMap.this;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int size()
         {
             return owner.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
         }
 
         @Override

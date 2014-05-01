@@ -605,6 +605,15 @@ public class KTypeArrayDeque<KType>
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return buffer.length;
+    }
+
+    /**
+     * {@inheritDoc}
      * <p>The internal array buffers are not released as a result of this call.</p>
      */
     @Override
@@ -1362,4 +1371,5 @@ public class KTypeArrayDeque<KType>
         return (index + 1 == modulus) ? 0 : index + 1;
     }
     /*! #end !*/
+
 }

@@ -181,6 +181,12 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
     }
 
     @Override
+    public int capacity()
+    {
+        return dense.length;
+    }
+
+    @Override
     public int[] toArray(final int[] target)
     {
         System.arraycopy(dense, 0, target, 0, size());
