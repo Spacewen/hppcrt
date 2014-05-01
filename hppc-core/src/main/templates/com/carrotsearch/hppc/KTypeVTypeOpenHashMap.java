@@ -249,7 +249,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
      */
     public KTypeVTypeOpenHashMap(final KTypeVTypeAssociativeContainer<KType, VType> container)
     {
-        this((int) (container.size() * (1 + KTypeVTypeOpenHashMap.DEFAULT_LOAD_FACTOR)));
+        this(container.size());
         putAll(container);
     }
 
