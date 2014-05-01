@@ -16,10 +16,10 @@ import com.carrotsearch.hppc.procedures.*;
  */
 // ${TemplateOptions.doNotGenerateKType("BOOLEAN")}
 //${TemplateOptions.doNotGenerateVType("BOOLEAN")}
-/*! ${TemplateOptions.unDefine("ROBIN_HOOD_FOR_PRIMITIVES")} !*/
+/*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
 /*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
-/*! #set( $RH = $TemplateOptions.KTypeGeneric || $TemplateOptions.isDefined("ROBIN_HOOD_FOR_PRIMITIVES") ) !*/
+/*! #set( $RH = $TemplateOptions.KTypeGeneric || $ROBIN_HOOD_FOR_PRIMITIVES ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeRobinHoodHashMapTest<KType, VType> extends AbstractKTypeVTypeTest<KType, VType>
 {

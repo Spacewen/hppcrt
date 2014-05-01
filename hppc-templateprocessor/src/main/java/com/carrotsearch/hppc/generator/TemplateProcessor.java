@@ -824,7 +824,12 @@ public final class TemplateProcessor
         ctx.put("TemplateOptions", options);
 
         final StringWriter sw = new StringWriter();
+
+        //reference the context itself into the TemplateOptions object
+        options.context = ctx;
+
         velocity.evaluate(ctx, sw, f.file.getName(), template);
+
         return sw.toString();
     }
 

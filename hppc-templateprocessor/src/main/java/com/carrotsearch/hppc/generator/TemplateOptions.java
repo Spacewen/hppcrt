@@ -4,10 +4,11 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.velocity.VelocityContext;
 
 /**
  * Template options for velocity directives in templates.
@@ -23,7 +24,11 @@ public class TemplateOptions
     public boolean doNotGenerateKType = false;
     public boolean doNotGenerateVType = false;
 
-    public HashSet<String> definesSet = new HashSet<String>();
+    /**
+     * Reference over the current Velocity context, so that 
+     * the current context could be set of get from the TemplateOptions object itself.
+     */
+    public VelocityContext context = null;
 
     public File sourceFile;
 
@@ -217,48 +222,6 @@ public class TemplateOptions
     public boolean isDoNotGenerateVType()
     {
         return this.doNotGenerateVType;
-    }
-
-    public void define(final String... defines)
-    {
-        for (final String def : defines)
-        {
-            this.definesSet.add(def);
-        }
-    }
-
-    public void unDefine(final String... defines)
-    {
-        for (final String def : defines)
-        {
-            this.definesSet.remove(def);
-        }
-    }
-
-    public boolean isDefined(final String... defines)
-    {
-        for (final String def : defines)
-        {
-            if (this.definesSet.contains(def))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public boolean isUnDefined(final String... defines)
-    {
-        for (final String def : defines)
-        {
-            if (this.definesSet.contains(def))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public boolean inline(final String callName, String args, String universalCallBody) {

@@ -67,10 +67,10 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  *         href="http://fastutil.dsi.unimi.it/">fastutil</a> project.
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
-/*! ${TemplateOptions.unDefine("ROBIN_HOOD_FOR_PRIMITIVES")} !*/
+/*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
 /*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
-/*! #set( $RH = $TemplateOptions.KTypeGeneric || $TemplateOptions.isDefined("ROBIN_HOOD_FOR_PRIMITIVES") ) !*/
+/*! #set( $RH = $TemplateOptions.KTypeGeneric || $ROBIN_HOOD_FOR_PRIMITIVES ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeRobinHoodHashMap<KType, VType>
         implements KTypeVTypeMap<KType, VType>, Cloneable
@@ -267,7 +267,7 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
      */
     public KTypeVTypeRobinHoodHashMap(final KTypeVTypeAssociativeContainer<KType, VType> container)
     {
-        this((int) (container.size() * (1 + KTypeVTypeRobinHoodHashMap.DEFAULT_LOAD_FACTOR)));
+        this(container.size());
         putAll(container);
     }
 
