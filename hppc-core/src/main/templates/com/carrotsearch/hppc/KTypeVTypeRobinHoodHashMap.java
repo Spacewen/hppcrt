@@ -68,9 +68,10 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
+/*! #set( $ROBIN_HOOD_FOR_GENERICS = true) !*/
 /*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
-/*! #set( $RH = $TemplateOptions.KTypeGeneric || $ROBIN_HOOD_FOR_PRIMITIVES ) !*/
+/*! #set( $RH = (($TemplateOptions.KTypeGeneric && $ROBIN_HOOD_FOR_GENERICS) || ($TemplateOptions.KTypeNumeric && $ROBIN_HOOD_FOR_PRIMITIVES)) ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeVTypeRobinHoodHashMap<KType, VType>
         implements KTypeVTypeMap<KType, VType>, Cloneable
@@ -701,18 +702,51 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
     @Override
     public VType remove(final KType key)
     {
-        final int slot = lookupSlot(key);
+        final int mask = allocated.length - 1;
 
-        if (slot == -1)
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
+        int slot = KTypeVTypeRobinHoodHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
+
+        /*! #if ($RH) !*/
+        int dist = 0;
+        /*! #end !*/
+
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
         {
-            return this.defaultValue;
-        }
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
+            {
+                final VType value = values[slot];
 
-        final VType value = values[slot];
+                this.assigned--;
+                shiftConflictingKeys(slot);
 
-        this.assigned--;
-        shiftConflictingKeys(slot);
-        return value;
+                return value;
+            }
+            slot = (slot + 1) & mask;
+
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
+        } //end while true
+
+        return this.defaultValue;
     }
 
     /**
@@ -874,15 +908,46 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
     @Override
     public VType get(final KType key)
     {
-        final int slot = lookupSlot(key);
+        final int mask = allocated.length - 1;
 
-        if (slot == -1)
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
+        int slot = KTypeVTypeRobinHoodHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
+
+        /*! #if ($RH) !*/
+        int dist = 0;
+        /*! #end !*/
+
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
         {
-            return this.defaultValue;
-        }
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
+            {
+                return values[slot];
+            }
+            slot = (slot + 1) & mask;
 
-        return values[slot];
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
+        } //end while true
 
+        return this.defaultValue;
     }
 
     /**
@@ -989,8 +1054,47 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
     @Override
     public boolean containsKey(final KType key)
     {
-        lastSlot = lookupSlot(key);
-        return lastSlot != -1;
+        final int mask = allocated.length - 1;
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
+        int slot = KTypeVTypeRobinHoodHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
+
+        /*! #if ($RH) !*/
+        int dist = 0;
+        /*! #end !*/
+
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
+        {
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
+            {
+                this.lastSlot = slot;
+                return true;
+            }
+            slot = (slot + 1) & mask;
+
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
+        } //end while true
+
+        return false;
     }
 
     /**
@@ -1902,50 +2006,6 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
     public void setDefaultValue(final VType defaultValue)
     {
         this.defaultValue = defaultValue;
-    }
-
-    private int lookupSlot(final KType key) {
-
-        final int mask = allocated.length - 1;
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = KTypeVTypeRobinHoodHashMap.rehashSpecificHash(key, perturbation, strategy) & mask;
-        /*! #else
-        int slot = rehash(key, perturbation) & mask;
-        #end !*/
-
-        /*! #if ($RH) !*/
-        int dist = 0;
-        /*! #end !*/
-
-        final KType[] keys = this.keys;
-
-        /*! #if ($RH) !*/
-        final int[] states = this.allocated;
-        /*! #else
-        final boolean[] states = this.allocated;
-        #end !*/
-
-        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
-                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
-        {
-            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
-            Intrinsics.equalsKType(key, keys[slot])
-            #end !*/)
-            {
-                return slot;
-            }
-            slot = (slot + 1) & mask;
-
-            /*! #if ($RH) !*/
-            dist++;
-            /*! #end !*/
-        } //end while true
-
-        return -1;
     }
 
     /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy",

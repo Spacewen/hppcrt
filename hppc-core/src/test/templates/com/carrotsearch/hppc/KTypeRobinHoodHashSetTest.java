@@ -20,9 +20,10 @@ import com.carrotsearch.hppc.procedures.KTypeProcedure;
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
+/*! #set( $ROBIN_HOOD_FOR_GENERICS = true) !*/
 /*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
-/*! #set( $RH = $TemplateOptions.KTypeGeneric || $ROBIN_HOOD_FOR_PRIMITIVES ) !*/
+/*! #set( $RH = (($TemplateOptions.KTypeGeneric && $ROBIN_HOOD_FOR_GENERICS) || ($TemplateOptions.KTypeNumeric && $ROBIN_HOOD_FOR_PRIMITIVES)) ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeRobinHoodHashSetTest<KType> extends AbstractKTypeTest<KType>
 {

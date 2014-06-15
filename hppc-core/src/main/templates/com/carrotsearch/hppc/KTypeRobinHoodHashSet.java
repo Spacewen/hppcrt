@@ -58,9 +58,10 @@ import static com.carrotsearch.hppc.HashContainerUtils.*;
  */
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
+/*! #set( $ROBIN_HOOD_FOR_GENERICS = true) !*/
 /*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
-/*! #set( $RH = $TemplateOptions.KTypeGeneric || $ROBIN_HOOD_FOR_PRIMITIVES ) !*/
+/*! #set( $RH = (($TemplateOptions.KTypeGeneric && $ROBIN_HOOD_FOR_GENERICS) || ($TemplateOptions.KTypeNumeric && $ROBIN_HOOD_FOR_PRIMITIVES)) ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
 public class KTypeRobinHoodHashSet<KType>
         extends AbstractKTypeCollection<KType>
@@ -501,16 +502,48 @@ public class KTypeRobinHoodHashSet<KType>
      */
     public boolean remove(final KType key)
     {
-        final int slot = lookupSlot(key);
+        final int mask = allocated.length - 1;
 
-        if (slot == -1)
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
+        int slot = KTypeRobinHoodHashSet.rehashSpecificHash(key, perturbation, strategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
+
+        /*! #if ($RH) !*/
+        int dist = 0;
+        /*! #end !*/
+
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
         {
-            return false;
-        }
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            KTypeRobinHoodHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
+            {
+                this.assigned--;
+                shiftConflictingKeys(slot);
+                return true;
+            }
+            slot = (slot + 1) & mask;
 
-        this.assigned--;
-        shiftConflictingKeys(slot);
-        return true;
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
+        } //end while true
+
+        return false;
     }
 
     /**
@@ -647,8 +680,47 @@ public class KTypeRobinHoodHashSet<KType>
     @Override
     public boolean contains(final KType key)
     {
-        this.lastSlot = lookupSlot(key);
-        return this.lastSlot != -1;
+        final int mask = allocated.length - 1;
+
+        /*! #if ($TemplateOptions.KTypeGeneric) !*/
+        final HashingStrategy<? super KType> strategy = this.hashStrategy;
+        int slot = KTypeRobinHoodHashSet.rehashSpecificHash(key, perturbation, strategy) & mask;
+        /*! #else
+        int slot = rehash(key, perturbation) & mask;
+        #end !*/
+
+        /*! #if ($RH) !*/
+        int dist = 0;
+        /*! #end !*/
+
+        final KType[] keys = this.keys;
+
+        /*! #if ($RH) !*/
+        final int[] states = this.allocated;
+        /*! #else
+        final boolean[] states = this.allocated;
+        #end !*/
+
+        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
+                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
+        {
+            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
+            KTypeRobinHoodHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
+            /*! #else
+            Intrinsics.equalsKType(key, keys[slot])
+            #end !*/)
+            {
+                this.lastSlot = slot;
+                return true;
+            }
+            slot = (slot + 1) & mask;
+
+            /*! #if ($RH) !*/
+            dist++;
+            /*! #end !*/
+        } //end while true
+
+        return false;
     }
 
     /**
@@ -1092,50 +1164,6 @@ public class KTypeRobinHoodHashSet<KType>
     }
 
     /* #end */
-
-    private int lookupSlot(final KType key) {
-
-        final int mask = allocated.length - 1;
-
-        /*! #if ($TemplateOptions.KTypeGeneric) !*/
-        final HashingStrategy<? super KType> strategy = this.hashStrategy;
-        int slot = KTypeRobinHoodHashSet.rehashSpecificHash(key, perturbation, strategy) & mask;
-        /*! #else
-        int slot = rehash(key, perturbation) & mask;
-        #end !*/
-
-        /*! #if ($RH) !*/
-        int dist = 0;
-        /*! #end !*/
-
-        final KType[] keys = this.keys;
-
-        /*! #if ($RH) !*/
-        final int[] states = this.allocated;
-        /*! #else
-        final boolean[] states = this.allocated;
-        #end !*/
-
-        while (states[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/
-                /*! #if ($RH) !*/&& dist <= probe_distance(slot, states) /*! #end !*/)
-        {
-            if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
-            KTypeRobinHoodHashSet.equalsKTypeHashStrategy(key, keys[slot], strategy)
-            /*! #else
-            Intrinsics.equalsKType(key, keys[slot])
-            #end !*/)
-            {
-                return slot;
-            }
-            slot = (slot + 1) & mask;
-
-            /*! #if ($RH) !*/
-            dist++;
-            /*! #end !*/
-        } //end while true
-
-        return -1;
-    }
 
     /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeRobinHoodHashSet.equalsKTypeHashStrategy",
       "(e1,  e2, customEquals)",
