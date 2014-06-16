@@ -1290,6 +1290,7 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         {
             int i = cursor.index + 1;
             final int max = keys.length;
+
             while (i < max && !allocated[i])
             {
                 i++;

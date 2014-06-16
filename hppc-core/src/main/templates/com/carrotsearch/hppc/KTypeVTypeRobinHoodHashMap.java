@@ -309,10 +309,6 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
 
         while (allocated[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/)
         {
-            /*! #if ($RH) !*/
-            existing_distance = probe_distance(slot, allocated);
-            /*! #end !*/
-
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
             KTypeVTypeRobinHoodHashMap.equalsKTypeHashStrategy(key, keys[slot], strategy)
             /*! #else
@@ -324,8 +320,12 @@ public class KTypeVTypeRobinHoodHashMap<KType, VType>
 
                 return oldValue;
             }
+
             /*! #if ($RH) !*/
-            else if (dist > existing_distance)
+            //re-shuffle keys to minimize variance
+            existing_distance = probe_distance(slot, allocated);
+
+            if (dist > existing_distance)
             {
                 //swap current (key, value, initial_slot) with slot places
                 tmpKey = keys[slot];

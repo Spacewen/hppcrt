@@ -261,10 +261,6 @@ public class KTypeRobinHoodHashSet<KType>
 
         while (allocated[slot] /*! #if ($RH) !*/!= -1 /*! #end !*/)
         {
-            /*! #if ($RH) !*/
-            existing_distance = probe_distance(slot, allocated);
-            /*! #end !*/
-
             if (/*! #if ($TemplateOptions.KTypeGeneric) !*/
             KTypeRobinHoodHashSet.equalsKTypeHashStrategy(e, keys[slot], strategy)
             /*! #else
@@ -273,8 +269,12 @@ public class KTypeRobinHoodHashSet<KType>
             {
                 return false;
             }
+
             /*! #if ($RH) !*/
-            else if (dist > existing_distance)
+            //re-shuffle keys to minimize variance
+            existing_distance = probe_distance(slot, allocated);
+
+            if (dist > existing_distance)
             {
                 //swap current (key, value, initial_slot) with slot places
                 tmpKey = keys[slot];

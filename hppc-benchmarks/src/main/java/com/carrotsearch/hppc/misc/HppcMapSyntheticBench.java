@@ -36,7 +36,7 @@ public final class HppcMapSyntheticBench
     private static final long RAND_SEED3 = 412316451315451545L;
     private static final long RAND_SEED4 = 2345613216796312185L;
 
-    public static final int NB_WARMUPS = 15;
+    public static final int NB_WARMUPS = 10;
 
     public static final int NB_WARMUPS_ITERATION_BENCH = 50;
 
@@ -82,7 +82,7 @@ public final class HppcMapSyntheticBench
         }
     }
 
-    public final class NaturalComparator implements Comparator<ComparableLong> {
+    public static final class NaturalComparator implements Comparator<ComparableLong> {
 
         @Override
         public int compare(final ComparableLong o1, final ComparableLong o2) {
@@ -104,7 +104,7 @@ public final class HppcMapSyntheticBench
     }
 
     // create comparable type
-    public final static class ComparableLong implements Comparable<ComparableLong> {
+    public static final class ComparableLong implements Comparable<ComparableLong> {
 
         public long value;
 
@@ -148,7 +148,7 @@ public final class HppcMapSyntheticBench
     }
 
     // create comparable type
-    public final static class ComparableAsciiString implements Comparable<ComparableAsciiString> {
+    public static final class ComparableAsciiString implements Comparable<ComparableAsciiString> {
 
         public final byte[] value;
 
@@ -157,7 +157,7 @@ public final class HppcMapSyntheticBench
          */
         public ComparableAsciiString(final int size, final Random prng) {
 
-            value = new byte[size];
+            this.value = new byte[size];
             //fill with random data
             prng.nextBytes(this.value);
         }
@@ -196,7 +196,7 @@ public final class HppcMapSyntheticBench
 
                         return 1;
                     }
-                } //end for 
+                } //end for
 
                 return 0;
             }
@@ -231,7 +231,6 @@ public final class HppcMapSyntheticBench
     /**
      * Constructor
      */
-    @SuppressWarnings("boxing")
     public HppcMapSyntheticBench() {
 
         this.prng.setSeed(HppcMapSyntheticBench.RANDOM_SEED);
@@ -286,12 +285,6 @@ public final class HppcMapSyntheticBench
             testMap.clear();
 
             nbWarmups++;
-
-            //if this is the last run, code may be correctly JIT compiled.
-            //then, kill the too-easy cache favoring effect by running a GC  juste before the measured run.
-            if (nbWarmups > nbWarmupRuns) {
-                System.gc();
-            }
 
             tBeforePut = System.nanoTime();
 
@@ -368,9 +361,15 @@ public final class HppcMapSyntheticBench
                 sum); //outputs the results to defeat optimizations
     }
 
-    private void runMapIterationBench(final IntLongMap testMap, final String additionalInfo, final int nbWarmupRuns)
+    /**
+     * Map HPPC (int ==> long) iteration bench
+     * @param testMap
+     * @param additionalInfo
+     * @param nbWarmupRuns
+     */
+    private void runMapIterationBench(final String additionalInfo, final IntLongMap testMap,
+            final int minPushedElements, final float loadFactor, final int nbWarmupRuns)
     {
-        final long sum = 0;
         long tBefore = 0;
         long tAfter = 0;
 
@@ -391,10 +390,9 @@ public final class HppcMapSyntheticBench
         final IntArrayList Klist = new IntArrayList();
         final LongArrayList Vlist = new LongArrayList();
 
-        this.prng.setSeed(HppcMapSyntheticBench.RAND_SEED2);
+        this.prng.setSeed(HppcMapSyntheticBench.RAND_SEED);
 
-        //fill with random values
-        while (testMap.size() < initialCapacity) {
+        while (testMap.capacity() < minPushedElements || testMap.size() < testMap.capacity()) {
 
             final int K = this.prng.nextInt();
             final long V = this.prng.nextLong();
@@ -404,17 +402,14 @@ public final class HppcMapSyntheticBench
             testMap.put(K, V);
         }
 
+        //we need the testMap to be not-empty !!
+        System.gc();
+
         //Iteration Procedure to sum the elements
 
         while (nbWarmups <= nbWarmupRuns) {
 
             nbWarmups++;
-
-            //if this is the last run, code may be correctly JIT compiled.
-            //then, kill the too-easy cache favoring effect by running a GC  juste before the measured run.
-            if (nbWarmups > nbWarmupRuns) {
-                System.gc();
-            }
 
             //A) sum with iterator
             tBefore = System.nanoTime();
@@ -483,10 +478,14 @@ public final class HppcMapSyntheticBench
             throw new AssertionError(String.format("ERROR, (Iterator sum = %d) != (forEachSum = %d) != (directSum = %d)", sumIt, sumForeach, sumDirect));
         }
 
-        System.out.format(">>>> BENCH: HPPC Map (int, long, %s) Iterator vs. forEach vs. Direct, %d elements summed, Iterator= %f ms, foreach= %f ms, Direct= %f ms (result = %d)\n\n",
+        System.out.format(">>>> BENCH: HPPC Map (int, long), (%s) Iteration test,  initial capacity = %d, load factor = %f, %d elements summed,\n"
+                + " Iterator= %f ms, foreach= %f ms, Direct= %f ms (result = %d)\n\n",
                 additionalInfo,
+                initialCapacity,
+                loadFactor,
                 testMap.size(),
-                tExecIteratorMs, tExecForEachMs, tExecDirectMs, sumForeach);
+                tExecIteratorMs, tExecForEachMs, tExecDirectMs,
+                sumForeach); //outputs the results to defeat optimizations
     }
 
     /**
@@ -541,12 +540,6 @@ public final class HppcMapSyntheticBench
             testMap.clear();
 
             nbWarmups++;
-
-            //if this is the last run, code may be correctly JIT compiled.
-            //then, kill the too-easy cache favoring effect by running a GC  juste before the measured run.
-            if (nbWarmups > nbWarmupRuns) {
-                System.gc();
-            }
 
             tBeforePut = System.nanoTime();
 
@@ -686,12 +679,6 @@ public final class HppcMapSyntheticBench
             testMap.clear();
 
             nbWarmups++;
-
-            //if this is the last run, code may be correctly JIT compiled.
-            //then, kill the too-easy cache favoring effect by running a GC  juste before the measured run.
-            if (nbWarmups > nbWarmupRuns) {
-                System.gc();
-            }
 
             tBeforePut = System.nanoTime();
 
@@ -850,12 +837,6 @@ public final class HppcMapSyntheticBench
 
             nbWarmups++;
 
-            //if this is the last run, code may be correctly JIT compiled.
-            //then, kill the too-easy cache favoring effect by running a GC  juste before the measured run.
-            if (nbWarmups > nbWarmupRuns) {
-                System.gc();
-            }
-
             tBeforePut = System.nanoTime();
 
             //A) fill until the capacity, and at least minPushedElements
@@ -921,7 +902,7 @@ public final class HppcMapSyntheticBench
         } //end while
 
         System.out.format(">>>> BENCH: HPPC Map (ComparableAsciiString %d bytes long, long), (%s),  initial capacity = %d, load factor = %f, %d elements pushed, actual final size = %d\n"
-                + " Put = %f ms, Get (%s) = %f ms, Remove (result kind = %s) = %f ms, Clear =  %f ms (dummy = %d)\n\n",
+                + " Put = %f ms, Get (%s) = %f ms, Remove (%s) = %f ms, Clear =  %f ms (dummy = %d)\n\n",
                 stringSize,
                 additionalInfo,
                 initialCapacity,
@@ -937,15 +918,7 @@ public final class HppcMapSyntheticBench
                 sum); //outputs the results to defeat optimizations
     }
 
-    public void runMapSyntheticBench(final MAP_LOOKUP_TEST getKind, final int nbWarmups) {
-
-        //Javolution comparison
-        runMapJavaUtilInteger(new FastMap<IntHolder, Long>(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, nbWarmups, getKind);
-        System.gc();
-
-        //Default java.util.HashMap
-        runMapJavaUtilInteger(new HashMap<IntHolder, Long>(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, nbWarmups, getKind);
-        System.gc();
+    public void runMapSyntheticBenchPrimitives(final MAP_LOOKUP_TEST getKind, final int nbWarmups) {
 
         // Preallocate at maximum size
         runMapPrimitiveInt("IntLongOpenHashMap",
@@ -958,6 +931,17 @@ public final class HppcMapSyntheticBench
                 IntLongRobinHoodHashMap.newInstance(HppcMapSyntheticBench.COUNT, IntLongRobinHoodHashMap.DEFAULT_LOAD_FACTOR),
                 HppcMapSyntheticBench.COUNT, IntLongRobinHoodHashMap.DEFAULT_LOAD_FACTOR,
                 nbWarmups, getKind);
+        System.gc();
+    }
+
+    public void runMapSyntheticBenchObjects(final MAP_LOOKUP_TEST getKind, final int nbWarmups) {
+
+        //Javolution comparison
+        runMapJavaUtilInteger(new FastMap<IntHolder, Long>(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, nbWarmups, getKind);
+        System.gc();
+
+        //Default java.util.HashMap
+        runMapJavaUtilInteger(new HashMap<IntHolder, Long>(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, nbWarmups, getKind);
         System.gc();
 
         runMapIntegerObjectLong("ObjectLongOpenHashMap",
@@ -1081,12 +1065,14 @@ public final class HppcMapSyntheticBench
     public void runMapIterationBench() {
 
         System.gc();
-        runMapIterationBench(new IntLongOpenHashMap(HppcMapSyntheticBench.COUNT), "OpenHashMap", HppcMapSyntheticBench.NB_WARMUPS_ITERATION_BENCH);
+        runMapIterationBench("IntLongOpenHashMap", new IntLongOpenHashMap(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, IntLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                HppcMapSyntheticBench.NB_WARMUPS_ITERATION_BENCH);
         System.gc();
-        runMapIterationBench(new IntLongRobinHoodHashMap(HppcMapSyntheticBench.COUNT), "RobinHoodHashMap", HppcMapSyntheticBench.NB_WARMUPS_ITERATION_BENCH);
+        runMapIterationBench("IntLongRobinHoodHashMap", new IntLongRobinHoodHashMap(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, IntLongRobinHoodHashMap.DEFAULT_LOAD_FACTOR,
+                HppcMapSyntheticBench.NB_WARMUPS_ITERATION_BENCH);
     }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /**
      * main
      */
@@ -1101,13 +1087,25 @@ public final class HppcMapSyntheticBench
         testClass.runMapIterationBench();
         System.gc();
 
-        testClass.runMapSyntheticBench(MAP_LOOKUP_TEST.MOSTLY_TRUE, HppcMapSyntheticBench.NB_WARMUPS);
+        testClass.runMapSyntheticBenchPrimitives(MAP_LOOKUP_TEST.MOSTLY_TRUE, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
+
+        testClass.runMapSyntheticBenchPrimitives(MAP_LOOKUP_TEST.MIXED, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
+
+        testClass.runMapSyntheticBenchPrimitives(MAP_LOOKUP_TEST.MOSTLY_FALSE, HppcMapSyntheticBench.NB_WARMUPS);
         System.gc();
 
         System.out.println("\n");
-        testClass.runMapSyntheticBench(MAP_LOOKUP_TEST.MIXED, HppcMapSyntheticBench.NB_WARMUPS);
+        System.out.println("\n");
+
+        testClass.runMapSyntheticBenchObjects(MAP_LOOKUP_TEST.MOSTLY_TRUE, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
 
         System.out.println("\n");
-        testClass.runMapSyntheticBench(MAP_LOOKUP_TEST.MOSTLY_FALSE, HppcMapSyntheticBench.NB_WARMUPS);
+        testClass.runMapSyntheticBenchObjects(MAP_LOOKUP_TEST.MIXED, HppcMapSyntheticBench.NB_WARMUPS);
+
+        System.out.println("\n");
+        testClass.runMapSyntheticBenchObjects(MAP_LOOKUP_TEST.MOSTLY_FALSE, HppcMapSyntheticBench.NB_WARMUPS);
     }
 }
