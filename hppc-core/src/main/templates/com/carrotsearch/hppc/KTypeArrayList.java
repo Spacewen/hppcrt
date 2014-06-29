@@ -8,6 +8,7 @@ import com.carrotsearch.hppc.procedures.*;
 import com.carrotsearch.hppc.sorting.*;
 
 import static com.carrotsearch.hppc.Internals.*;
+import com.carrotsearch.hppc.hash.*;
 
 /**
  * An array-backed list of KTypes. A single array is used to store and manipulate
@@ -498,6 +499,15 @@ public class KTypeArrayList<KType>
     public int size()
     {
         return elementsCount;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return buffer.length;
     }
 
     /**

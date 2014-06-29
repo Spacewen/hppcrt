@@ -226,8 +226,6 @@
 					<exclude>**/KType*</exclude>
 					<exclude>**/*KType*</exclude>
 					<exclude>**/Intrinsics*</exclude>
-					<exclude>**/Internals*</exclude>
-					<exclude>**/HashContainerUtils*</exclude>
 				</excludes>
 		  </configuration>
         </plugin>

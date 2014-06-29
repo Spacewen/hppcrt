@@ -386,6 +386,15 @@ public class KTypeIndexedHeapPriorityQueue<KType> extends AbstractKTypeCollectio
      * {@inheritDoc}
      */
     @Override
+    public int capacity() {
+
+        return buffer.length - 1;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public <T extends KTypeProcedure<? super KType>> T forEach(final T procedure)
     {
         final KType[] buffer = this.buffer;

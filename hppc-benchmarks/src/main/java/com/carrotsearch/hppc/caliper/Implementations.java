@@ -9,6 +9,7 @@ public enum Implementations
 {
     HPPC
     {
+        @Override
         public MapImplementation<?> getInstance()
         {
             return new HppcMap(IntIntOpenHashMap.newInstance());
@@ -17,6 +18,7 @@ public enum Implementations
 
     HPPC_NOPERTURBS
     {
+        @Override
         public MapImplementation<?> getInstance()
         {
             return new HppcMap(IntIntOpenHashMap.newInstanceWithoutPerturbations());

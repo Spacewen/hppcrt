@@ -3,7 +3,7 @@ package com.carrotsearch.hppc.mutables;
 /**
  * <code>int</code> holder.
  */
-public final class IntHolder
+public class IntHolder
 {
     public int value;
 
@@ -11,17 +11,19 @@ public final class IntHolder
     {
     }
 
-    public IntHolder(int value)
+    public IntHolder(final int value)
     {
         this.value = value;
     }
 
+    @Override
     public int hashCode()
     {
         return value;
     }
 
-    public boolean equals(Object other)
+    @Override
+    public boolean equals(final Object other)
     {
         return (other instanceof IntHolder) && value == ((IntHolder) other).value;
     }

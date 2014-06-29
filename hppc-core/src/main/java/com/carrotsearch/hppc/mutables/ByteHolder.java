@@ -3,25 +3,27 @@ package com.carrotsearch.hppc.mutables;
 /**
  * <code>byte</code> holder.
  */
-public final class ByteHolder
+public class ByteHolder
 {
     public byte value;
 
     public ByteHolder()
     {
     }
-    
-    public ByteHolder(byte value)
+
+    public ByteHolder(final byte value)
     {
         this.value = value;
     }
-    
+
+    @Override
     public int hashCode()
     {
         return value;
     }
-    
-    public boolean equals(Object other)
+
+    @Override
+    public boolean equals(final Object other)
     {
         return (other instanceof ByteHolder) && value == ((ByteHolder) other).value;
     }

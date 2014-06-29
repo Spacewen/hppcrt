@@ -53,6 +53,12 @@ extends Iterable<KTypeVTypeCursor<KType, VType>>
     int size();
 
     /**
+     * Return the maximum number of keys this container is guaranteed to hold without reallocating. 
+     * The time for calculating the container's capacity may take <code>O(n)</code> time.
+     */
+    int capacity();
+
+    /**
      * @return Return <code>true</code> if this hash map contains no assigned keys.
      */
     boolean isEmpty();

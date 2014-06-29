@@ -3,7 +3,7 @@ package com.carrotsearch.hppc.mutables;
 /**
  * <code>long</code> holder.
  */
-public final class LongHolder
+public class LongHolder
 {
     public long value;
 
@@ -11,17 +11,19 @@ public final class LongHolder
     {
     }
 
-    public LongHolder(long value)
+    public LongHolder(final long value)
     {
         this.value = value;
     }
 
+    @Override
     public int hashCode()
     {
-        return (int)(value ^ (value >>> 32));
+        return (int) (value ^ (value >>> 32));
     }
 
-    public boolean equals(Object other)
+    @Override
+    public boolean equals(final Object other)
     {
         return (other instanceof LongHolder) && value == ((LongHolder) other).value;
     }

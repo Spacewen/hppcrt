@@ -6,6 +6,8 @@ import com.carrotsearch.hppc.cursors.*;
 import com.carrotsearch.hppc.predicates.*;
 import com.carrotsearch.hppc.procedures.*;
 import com.carrotsearch.hppc.sorting.*;
+import static com.carrotsearch.hppc.Internals.*;
+import com.carrotsearch.hppc.hash.*;
 
 /**
  * An array-backed deque (double-ended queue)  of KTypes. A single array is used to store and
@@ -601,6 +603,15 @@ public class KTypeArrayDeque<KType>
         }
 
         return (tail - head + buffer.length);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return buffer.length;
     }
 
     /**

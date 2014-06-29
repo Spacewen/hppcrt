@@ -11,16 +11,16 @@ import com.google.caliper.SimpleBenchmark;
 public class BenchmarkPerturbedVsHashedOnly extends SimpleBenchmark
 {
     @Param(
-    {
-        "1000000"
-    })
+            {
+            "10000000"
+            })
     public int size;
 
     public int timePerturbed(int reps)
     {
         int count = 0;
         while (reps-- > 0) {
-            IntOpenHashSet set = new IntOpenHashSet();
+            final IntOpenHashSet set = IntOpenHashSet.newInstance();
             for (int i = size; --i >= 0;)
             {
                 set.add(i);
@@ -34,12 +34,7 @@ public class BenchmarkPerturbedVsHashedOnly extends SimpleBenchmark
     {
         int count = 0;
         while (reps-- > 0) {
-            IntOpenHashSet set = new IntOpenHashSet() {
-                protected int computePerturbationValue(int capacity)
-                {
-                    return 0;
-                }
-            };
+            final IntOpenHashSet set = IntOpenHashSet.newInstanceWithoutPerturbations();
             for (int i = size; --i >= 0;)
             {
                 set.add(i);
@@ -49,7 +44,7 @@ public class BenchmarkPerturbedVsHashedOnly extends SimpleBenchmark
         return count;
     }
 
-    public static void main(String [] args)
+    public static void main(final String[] args)
     {
         Runner.main(BenchmarkPerturbedVsHashedOnly.class, args);
     }

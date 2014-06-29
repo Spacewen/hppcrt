@@ -1,32 +1,43 @@
 package com.carrotsearch.hppc.caliper;
 
-import com.carrotsearch.hppc.IntIntOpenHashMap;
+import com.carrotsearch.hppc.IntIntMap;
 
-public class HppcMap extends MapImplementation<IntIntOpenHashMap>
+public class HppcMap extends MapImplementation<IntIntMap>
 {
-    protected HppcMap(IntIntOpenHashMap instance)
+    protected HppcMap(final IntIntMap instance)
     {
         super(instance);
     }
 
-    public void remove(int k) { instance.remove(k); }
-    public void put(int k, int v) { instance.put(k, v); }
-    public int get(int k) { return instance.get(k); }
+    @Override
+    public void remove(final int k) {
+        instance.remove(k);
+    }
 
     @Override
-    public int containKeys(int [] keys)
+    public void put(final int k, final int v) {
+        instance.put(k, v);
+    }
+
+    @Override
+    public int get(final int k) {
+        return instance.get(k);
+    }
+
+    @Override
+    public int containKeys(final int[] keys)
     {
-        final IntIntOpenHashMap prepared = this.instance;
+        final IntIntMap prepared = this.instance;
         int count = 0;
         for (int i = 0; i < keys.length; i++)
             count += prepared.containsKey(keys[i]) ? 1 : 0;
         return count;
     }
-    
+
     @Override
-    public int putAll(int [] keys, int [] values)
+    public int putAll(final int[] keys, final int[] values)
     {
-        final IntIntOpenHashMap instance = this.instance;
+        final IntIntMap instance = this.instance;
         int count = 0;
         for (int i = 0; i < keys.length; i++)
         {

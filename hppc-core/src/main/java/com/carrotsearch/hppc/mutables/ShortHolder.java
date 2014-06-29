@@ -3,7 +3,7 @@ package com.carrotsearch.hppc.mutables;
 /**
  * <code>short</code> holder.
  */
-public final class ShortHolder
+public class ShortHolder
 {
     public short value;
 
@@ -11,17 +11,19 @@ public final class ShortHolder
     {
     }
 
-    public ShortHolder(short value)
+    public ShortHolder(final short value)
     {
         this.value = value;
     }
 
+    @Override
     public int hashCode()
     {
         return value;
     }
 
-    public boolean equals(Object other)
+    @Override
+    public boolean equals(final Object other)
     {
         return (other instanceof ShortHolder) && value == ((ShortHolder) other).value;
     }

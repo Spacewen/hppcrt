@@ -63,7 +63,7 @@ public class BitSet implements Cloneable
     /**
      * Internal representation of bits in this bit set.
      */
-    public long [] bits;
+    public long[] bits;
 
     /**
      * The number of words (longs) used in the {@link #bits} array.
@@ -75,15 +75,15 @@ public class BitSet implements Cloneable
      */
     public BitSet()
     {
-        this(DEFAULT_NUM_BITS);
+        this(BitSet.DEFAULT_NUM_BITS);
     }
 
     /**
      * Constructs an BitSet large enough to hold numBits.
      */
-    public BitSet(long numBits)
+    public BitSet(final long numBits)
     {
-        bits = new long [bits2words(numBits)];
+        bits = new long[BitSet.bits2words(numBits)];
         wlen = bits.length;
     }
 
@@ -97,7 +97,7 @@ public class BitSet implements Cloneable
      * longs). numWords should be &lt;= bits.length, and any existing words in the array at
      * position &gt;= numWords should be zero.
      */
-    public BitSet(long [] bits, int numWords)
+    public BitSet(final long[] bits, final int numWords)
     {
         this.bits = bits;
         this.wlen = numWords;
@@ -146,7 +146,8 @@ public class BitSet implements Cloneable
     public long length()
     {
         trimTrailingZeros();
-        if (wlen == 0) return 0;
+        if (wlen == 0)
+            return 0;
         return (((long) wlen - 1) << 6)
                 + (64 - Long.numberOfLeadingZeros(bits[wlen - 1]));
     }
@@ -162,38 +163,40 @@ public class BitSet implements Cloneable
     /**
      * Returns true or false for the specified bit index.
      */
-    public boolean get(int index)
+    public boolean get(final int index)
     {
-        int i = index >> 6; // div 64
+        final int i = index >> 6; // div 64
         // signed shift will keep a negative index and force an
         // array-index-out-of-bounds-exception, removing the need for an explicit check.
-        if (i >= bits.length) return false;
+        if (i >= bits.length)
+            return false;
 
-        int bit = index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int bit = index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         return (bits[i] & bitmask) != 0;
     }
 
     /**
      * Returns true or false for the specified bit index.
      */
-    public boolean get(long index)
+    public boolean get(final long index)
     {
-        int i = (int) (index >> 6); // div 64
-        if (i >= bits.length) return false;
-        int bit = (int) index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int i = (int) (index >> 6); // div 64
+        if (i >= bits.length)
+            return false;
+        final int bit = (int) index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         return (bits[i] & bitmask) != 0;
     }
 
     /**
      * Sets a bit, expanding the set size if necessary.
      */
-    public void set(long index)
+    public void set(final long index)
     {
-        int wordNum = expandingWordNum(index);
-        int bit = (int) index & 0x3f;
-        long bitmask = 1L << bit;
+        final int wordNum = expandingWordNum(index);
+        final int bit = (int) index & 0x3f;
+        final long bitmask = 1L << bit;
         bits[wordNum] |= bitmask;
     }
 
@@ -203,18 +206,19 @@ public class BitSet implements Cloneable
      * @param startIndex lower index
      * @param endIndex one-past the last bit to set
      */
-    public void set(long startIndex, long endIndex)
+    public void set(final long startIndex, final long endIndex)
     {
-        if (endIndex <= startIndex) return;
+        if (endIndex <= startIndex)
+            return;
 
-        int startWord = (int) (startIndex >> 6);
+        final int startWord = (int) (startIndex >> 6);
 
         // since endIndex is one past the end, this is index of the last
         // word to be changed.
-        int endWord = expandingWordNum(endIndex - 1);
+        final int endWord = expandingWordNum(endIndex - 1);
 
-        long startmask = -1L << startIndex;
-        long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
+        final long startmask = -1L << startIndex;
+        final long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
         // due to wrap
 
         if (startWord == endWord)
@@ -228,9 +232,9 @@ public class BitSet implements Cloneable
         bits[endWord] |= endmask;
     }
 
-    protected int expandingWordNum(long index)
+    protected int expandingWordNum(final long index)
     {
-        int wordNum = (int) (index >> 6);
+        final int wordNum = (int) (index >> 6);
         if (wordNum >= wlen)
         {
             ensureCapacity(index + 1);
@@ -250,12 +254,13 @@ public class BitSet implements Cloneable
      * clears a bit, allowing access beyond the current set size without changing the
      * size.
      */
-    public void clear(long index)
+    public void clear(final long index)
     {
-        int wordNum = (int) (index >> 6); // div 64
-        if (wordNum >= wlen) return;
-        int bit = (int) index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int wordNum = (int) (index >> 6); // div 64
+        if (wordNum >= wlen)
+            return;
+        final int bit = (int) index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         bits[wordNum] &= ~bitmask;
     }
 
@@ -265,16 +270,18 @@ public class BitSet implements Cloneable
      * @param startIndex lower index
      * @param endIndex one-past the last bit to clear
      */
-    public void clear(int startIndex, int endIndex)
+    public void clear(final int startIndex, final int endIndex)
     {
-        if (endIndex <= startIndex) return;
+        if (endIndex <= startIndex)
+            return;
 
-        int startWord = (startIndex >> 6);
-        if (startWord >= wlen) return;
+        final int startWord = (startIndex >> 6);
+        if (startWord >= wlen)
+            return;
 
         // since endIndex is one past the end, this is index of the last
         // word to be changed.
-        int endWord = ((endIndex - 1) >> 6);
+        final int endWord = ((endIndex - 1) >> 6);
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
@@ -292,7 +299,7 @@ public class BitSet implements Cloneable
 
         bits[startWord] &= startmask;
 
-        int middle = Math.min(wlen, endWord);
+        final int middle = Math.min(wlen, endWord);
         Arrays.fill(bits, startWord + 1, middle, 0L);
         if (endWord < wlen)
         {
@@ -306,16 +313,18 @@ public class BitSet implements Cloneable
      * @param startIndex lower index
      * @param endIndex one-past the last bit to clear
      */
-    public void clear(long startIndex, long endIndex)
+    public void clear(final long startIndex, final long endIndex)
     {
-        if (endIndex <= startIndex) return;
+        if (endIndex <= startIndex)
+            return;
 
-        int startWord = (int) (startIndex >> 6);
-        if (startWord >= wlen) return;
+        final int startWord = (int) (startIndex >> 6);
+        if (startWord >= wlen)
+            return;
 
         // since endIndex is one past the end, this is index of the last
         // word to be changed.
-        int endWord = (int) ((endIndex - 1) >> 6);
+        final int endWord = (int) ((endIndex - 1) >> 6);
 
         long startmask = -1L << startIndex;
         long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
@@ -333,7 +342,7 @@ public class BitSet implements Cloneable
 
         bits[startWord] &= startmask;
 
-        int middle = Math.min(wlen, endWord);
+        final int middle = Math.min(wlen, endWord);
         Arrays.fill(bits, startWord + 1, middle, 0L);
         if (endWord < wlen)
         {
@@ -345,12 +354,12 @@ public class BitSet implements Cloneable
      * Sets a bit and returns the previous value. The index should be less than the BitSet
      * size.
      */
-    public boolean getAndSet(int index)
+    public boolean getAndSet(final int index)
     {
-        int wordNum = index >> 6; // div 64
-        int bit = index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
-        boolean val = (bits[wordNum] & bitmask) != 0;
+        final int wordNum = index >> 6; // div 64
+        final int bit = index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
+        final boolean val = (bits[wordNum] & bitmask) != 0;
         bits[wordNum] |= bitmask;
         return val;
     }
@@ -359,12 +368,12 @@ public class BitSet implements Cloneable
      * Sets a bit and returns the previous value. The index should be less than the BitSet
      * size.
      */
-    public boolean getAndSet(long index)
+    public boolean getAndSet(final long index)
     {
-        int wordNum = (int) (index >> 6); // div 64
-        int bit = (int) index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
-        boolean val = (bits[wordNum] & bitmask) != 0;
+        final int wordNum = (int) (index >> 6); // div 64
+        final int bit = (int) index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
+        final boolean val = (bits[wordNum] & bitmask) != 0;
         bits[wordNum] |= bitmask;
         return val;
     }
@@ -372,11 +381,11 @@ public class BitSet implements Cloneable
     /**
      * Flips a bit, expanding the set size if necessary.
      */
-    public void flip(long index)
+    public void flip(final long index)
     {
-        int wordNum = expandingWordNum(index);
-        int bit = (int) index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int wordNum = expandingWordNum(index);
+        final int bit = (int) index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         bits[wordNum] ^= bitmask;
     }
 
@@ -384,11 +393,11 @@ public class BitSet implements Cloneable
      * flips a bit and returns the resulting bit value. The index should be less than the
      * BitSet size.
      */
-    public boolean flipAndGet(int index)
+    public boolean flipAndGet(final int index)
     {
-        int wordNum = index >> 6; // div 64
-        int bit = index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int wordNum = index >> 6; // div 64
+        final int bit = index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         bits[wordNum] ^= bitmask;
         return (bits[wordNum] & bitmask) != 0;
     }
@@ -397,11 +406,11 @@ public class BitSet implements Cloneable
      * flips a bit and returns the resulting bit value. The index should be less than the
      * BitSet size.
      */
-    public boolean flipAndGet(long index)
+    public boolean flipAndGet(final long index)
     {
-        int wordNum = (int) (index >> 6); // div 64
-        int bit = (int) index & 0x3f; // mod 64
-        long bitmask = 1L << bit;
+        final int wordNum = (int) (index >> 6); // div 64
+        final int bit = (int) index & 0x3f; // mod 64
+        final long bitmask = 1L << bit;
         bits[wordNum] ^= bitmask;
         return (bits[wordNum] & bitmask) != 0;
     }
@@ -412,17 +421,18 @@ public class BitSet implements Cloneable
      * @param startIndex lower index
      * @param endIndex one-past the last bit to flip
      */
-    public void flip(long startIndex, long endIndex)
+    public void flip(final long startIndex, final long endIndex)
     {
-        if (endIndex <= startIndex) return;
-        int startWord = (int) (startIndex >> 6);
+        if (endIndex <= startIndex)
+            return;
+        final int startWord = (int) (startIndex >> 6);
 
         // since endIndex is one past the end, this is index of the last
         // word to be changed.
-        int endWord = expandingWordNum(endIndex - 1);
+        final int endWord = expandingWordNum(endIndex - 1);
 
-        long startmask = -1L << startIndex;
-        long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
+        final long startmask = -1L << startIndex;
+        final long endmask = -1L >>> -endIndex; // 64-(endIndex&0x3f) is the same as -endIndex
         // due to wrap
 
         if (startWord == endWord)
@@ -451,7 +461,7 @@ public class BitSet implements Cloneable
      * Returns the popcount or cardinality of the intersection of the two sets. Neither
      * set is modified.
      */
-    public static long intersectionCount(BitSet a, BitSet b)
+    public static long intersectionCount(final BitSet a, final BitSet b)
     {
         return BitUtil.pop_intersect(a.bits, b.bits, 0, Math.min(a.wlen, b.wlen));
     }
@@ -460,7 +470,7 @@ public class BitSet implements Cloneable
      * Returns the popcount or cardinality of the union of the two sets. Neither set is
      * modified.
      */
-    public static long unionCount(BitSet a, BitSet b)
+    public static long unionCount(final BitSet a, final BitSet b)
     {
         long tot = BitUtil.pop_union(a.bits, b.bits, 0, Math.min(a.wlen, b.wlen));
         if (a.wlen < b.wlen)
@@ -478,7 +488,7 @@ public class BitSet implements Cloneable
      * Returns the popcount or cardinality of "a and not b" or "intersection(a, not(b))".
      * Neither set is modified.
      */
-    public static long andNotCount(BitSet a, BitSet b)
+    public static long andNotCount(final BitSet a, final BitSet b)
     {
         long tot = BitUtil.pop_andnot(a.bits, b.bits, 0, Math.min(a.wlen, b.wlen));
         if (a.wlen > b.wlen)
@@ -492,7 +502,7 @@ public class BitSet implements Cloneable
      * Returns the popcount or cardinality of the exclusive-or of the two sets. Neither
      * set is modified.
      */
-    public static long xorCount(BitSet a, BitSet b)
+    public static long xorCount(final BitSet a, final BitSet b)
     {
         long tot = BitUtil.pop_xor(a.bits, b.bits, 0, Math.min(a.wlen, b.wlen));
         if (a.wlen < b.wlen)
@@ -510,11 +520,12 @@ public class BitSet implements Cloneable
      * Returns the index of the first set bit starting at the index specified. -1 is
      * returned if there are no more set bits.
      */
-    public int nextSetBit(int index)
+    public int nextSetBit(final int index)
     {
         int i = index >> 6;
-        if (i >= wlen) return -1;
-        int subIndex = index & 0x3f; // index within the word
+        if (i >= wlen)
+            return -1;
+        final int subIndex = index & 0x3f; // index within the word
         long word = bits[i] >> subIndex; // skip all the bits to the right of index
 
         if (word != 0)
@@ -525,7 +536,8 @@ public class BitSet implements Cloneable
         while (++i < wlen)
         {
             word = bits[i];
-            if (word != 0) return (i << 6) + Long.numberOfTrailingZeros(word);
+            if (word != 0)
+                return (i << 6) + Long.numberOfTrailingZeros(word);
         }
 
         return -1;
@@ -535,11 +547,12 @@ public class BitSet implements Cloneable
      * Returns the index of the first set bit starting at the index specified. -1 is
      * returned if there are no more set bits.
      */
-    public long nextSetBit(long index)
+    public long nextSetBit(final long index)
     {
         int i = (int) (index >>> 6);
-        if (i >= wlen) return -1;
-        int subIndex = (int) index & 0x3f; // index within the word
+        if (i >= wlen)
+            return -1;
+        final int subIndex = (int) index & 0x3f; // index within the word
         long word = bits[i] >>> subIndex; // skip all the bits to the right of index
 
         if (word != 0)
@@ -550,7 +563,8 @@ public class BitSet implements Cloneable
         while (++i < wlen)
         {
             word = bits[i];
-            if (word != 0) return (((long) i) << 6) + Long.numberOfTrailingZeros(word);
+            if (word != 0)
+                return (((long) i) << 6) + Long.numberOfTrailingZeros(word);
         }
 
         return -1;
@@ -561,23 +575,23 @@ public class BitSet implements Cloneable
     {
         try
         {
-            BitSet obs = (BitSet) super.clone();
+            final BitSet obs = (BitSet) super.clone();
             obs.bits = obs.bits.clone(); // hopefully an array clone is as
             // fast(er) than arraycopy
             return obs;
         }
-        catch (CloneNotSupportedException e)
+        catch (final CloneNotSupportedException e)
         {
             throw new RuntimeException(e);
         }
     }
 
     /** this = this AND other */
-    public void intersect(BitSet other)
+    public void intersect(final BitSet other)
     {
-        int newLen = Math.min(this.wlen, other.wlen);
-        long [] thisArr = this.bits;
-        long [] otherArr = other.bits;
+        final int newLen = Math.min(this.wlen, other.wlen);
+        final long[] thisArr = this.bits;
+        final long[] otherArr = other.bits;
         // testing against zero can be more efficient
         int pos = newLen;
         while (--pos >= 0)
@@ -593,13 +607,13 @@ public class BitSet implements Cloneable
     }
 
     /** this = this OR other */
-    public void union(BitSet other)
+    public void union(final BitSet other)
     {
-        int newLen = Math.max(wlen, other.wlen);
+        final int newLen = Math.max(wlen, other.wlen);
         ensureCapacityWords(newLen);
 
-        long [] thisArr = this.bits;
-        long [] otherArr = other.bits;
+        final long[] thisArr = this.bits;
+        final long[] otherArr = other.bits;
         int pos = Math.min(wlen, other.wlen);
         while (--pos >= 0)
         {
@@ -613,11 +627,11 @@ public class BitSet implements Cloneable
     }
 
     /** Remove all elements set in other. this = this AND_NOT other */
-    public void remove(BitSet other)
+    public void remove(final BitSet other)
     {
         int idx = Math.min(wlen, other.wlen);
-        long [] thisArr = this.bits;
-        long [] otherArr = other.bits;
+        final long[] thisArr = this.bits;
+        final long[] otherArr = other.bits;
         while (--idx >= 0)
         {
             thisArr[idx] &= ~otherArr[idx];
@@ -625,13 +639,13 @@ public class BitSet implements Cloneable
     }
 
     /** this = this XOR other */
-    public void xor(BitSet other)
+    public void xor(final BitSet other)
     {
-        int newLen = Math.max(wlen, other.wlen);
+        final int newLen = Math.max(wlen, other.wlen);
         ensureCapacityWords(newLen);
 
-        long [] thisArr = this.bits;
-        long [] otherArr = other.bits;
+        final long[] thisArr = this.bits;
+        final long[] otherArr = other.bits;
         int pos = Math.min(wlen, other.wlen);
         while (--pos >= 0)
         {
@@ -647,32 +661,33 @@ public class BitSet implements Cloneable
     // some BitSet compatibility methods
 
     // ** see {@link intersect} */
-    public void and(BitSet other)
+    public void and(final BitSet other)
     {
         intersect(other);
     }
 
     // ** see {@link union} */
-    public void or(BitSet other)
+    public void or(final BitSet other)
     {
         union(other);
     }
 
     // ** see {@link andNot} */
-    public void andNot(BitSet other)
+    public void andNot(final BitSet other)
     {
         remove(other);
     }
 
     /** returns true if the sets have any elements in common */
-    public boolean intersects(BitSet other)
+    public boolean intersects(final BitSet other)
     {
         int pos = Math.min(this.wlen, other.wlen);
-        long [] thisArr = this.bits;
-        long [] otherArr = other.bits;
+        final long[] thisArr = this.bits;
+        final long[] otherArr = other.bits;
         while (--pos >= 0)
         {
-            if ((thisArr[pos] & otherArr[pos]) != 0) return true;
+            if ((thisArr[pos] & otherArr[pos]) != 0)
+                return true;
         }
         return false;
     }
@@ -681,19 +696,19 @@ public class BitSet implements Cloneable
      * Expand the long[] with the size given as a number of words (64 bit longs).
      * getNumWords() is unchanged by this call.
      */
-    public void ensureCapacityWords(int numWords)
+    public void ensureCapacityWords(final int numWords)
     {
         if (bits.length < numWords)
         {
-            bits = grow(bits, numWords);
+            bits = BitSet.grow(bits, numWords);
         }
     }
 
-    public static long [] grow(long [] array, int minSize)
+    public static long[] grow(final long[] array, final int minSize)
     {
         if (array.length < minSize)
         {
-            long [] newArray = new long [getNextSize(minSize)];
+            final long[] newArray = new long[BitSet.getNextSize(minSize)];
             System.arraycopy(array, 0, newArray, 0, array.length);
             return newArray;
         }
@@ -701,7 +716,7 @@ public class BitSet implements Cloneable
         return array;
     }
 
-    public static int getNextSize(int targetSize)
+    public static int getNextSize(final int targetSize)
     {
         /*
          * This over-allocates proportional to the list size, making room for additional
@@ -717,9 +732,9 @@ public class BitSet implements Cloneable
      * Ensure that the long[] is big enough to hold numBits, expanding it if necessary.
      * getNumWords() is unchanged by this call.
      */
-    public void ensureCapacity(long numBits)
+    public void ensureCapacity(final long numBits)
     {
-        ensureCapacityWords(bits2words(numBits));
+        ensureCapacityWords(BitSet.bits2words(numBits));
     }
 
     /**
@@ -735,17 +750,19 @@ public class BitSet implements Cloneable
     }
 
     /** returns the number of 64 bit words it would take to hold numBits */
-    public static int bits2words(long numBits)
+    public static int bits2words(final long numBits)
     {
         return (int) (((numBits - 1) >>> 6) + 1);
     }
 
     /** returns true if both sets have the same bits set */
     @Override
-    public boolean equals(Object o)
+    public boolean equals(final Object o)
     {
-        if (this == o) return true;
-        if (!(o instanceof BitSet)) return false;
+        if (this == o)
+            return true;
+        if (!(o instanceof BitSet))
+            return false;
 
         BitSet a;
         BitSet b = (BitSet) o;
@@ -764,12 +781,14 @@ public class BitSet implements Cloneable
         // check for any set bits out of the range of b
         for (int i = a.wlen - 1; i >= b.wlen; i--)
         {
-            if (a.bits[i] != 0) return false;
+            if (a.bits[i] != 0)
+                return false;
         }
 
         for (int i = b.wlen - 1; i >= 0; i--)
         {
-            if (a.bits[i] != b.bits[i]) return false;
+            if (a.bits[i] != b.bits[i])
+                return false;
         }
 
         return true;
@@ -856,7 +875,8 @@ public class BitSet implements Cloneable
                     public IntCursor next()
                     {
                         final long value = nextBitSet;
-                        if (value < 0) throw new NoSuchElementException();
+                        if (value < 0)
+                            throw new NoSuchElementException();
                         if (value > Integer.MAX_VALUE)
                             throw new RuntimeException("BitSet range larger than maximum positive integer.");
 
@@ -874,13 +894,13 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public int [] toArray()
+            public int[] toArray()
             {
                 return toArray(new int[getCurrentCardinality()]);
             }
 
             @Override
-            public int[] toArray(int[] target)
+            public int[] toArray(final int[] target)
             {
                 final BitSetIterator i = BitSet.this.iterator();
                 for (int j = 0, bit = i.nextSetBit(); bit >= 0; bit = i.nextSetBit())
@@ -891,7 +911,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public <T extends IntPredicate> T forEach(T predicate)
+            public <T extends IntPredicate> T forEach(final T predicate)
             {
                 final BitSetIterator i = BitSet.this.iterator();
                 for (int bit = i.nextSetBit(); bit >= 0; bit = i.nextSetBit())
@@ -904,7 +924,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public <T extends IntProcedure> T forEach(T procedure)
+            public <T extends IntProcedure> T forEach(final T procedure)
             {
                 final BitSetIterator i = BitSet.this.iterator();
                 for (int bit = i.nextSetBit(); bit >= 0; bit = i.nextSetBit())
@@ -916,7 +936,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public boolean contains(int index)
+            public boolean contains(final int index)
             {
                 return index < 0 || BitSet.this.get(index);
             }
@@ -927,11 +947,21 @@ public class BitSet implements Cloneable
              */
             private int getCurrentCardinality()
             {
-                long cardinality = BitSet.this.cardinality();
+                final long cardinality = BitSet.this.cardinality();
                 if (cardinality > Integer.MAX_VALUE)
                     throw new RuntimeException("Bitset is larger than maximum positive integer: "
                             + cardinality);
                 return (int) cardinality;
+            }
+
+            /**
+             * {@inheritDoc}
+             * @return the current capacity in bits / 64.
+             */
+            @Override
+            public int capacity() {
+
+                return BitSet.this.bits.length;
             }
         };
     }
@@ -974,7 +1004,8 @@ public class BitSet implements Cloneable
                     public LongCursor next()
                     {
                         final long value = nextBitSet;
-                        if (value < 0) throw new NoSuchElementException();
+                        if (value < 0)
+                            throw new NoSuchElementException();
 
                         nextBitSet = BitSet.this.nextSetBit(value + 1);
                         cursor.index = (int) value;
@@ -991,13 +1022,13 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public long [] toArray()
+            public long[] toArray()
             {
                 return toArray(new long[getCurrentCardinality()]);
             }
 
             @Override
-            public long[] toArray(long[] target)
+            public long[] toArray(final long[] target)
             {
                 final BitSet bset = BitSet.this;
                 int j = 0;
@@ -1009,7 +1040,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public <T extends LongPredicate> T forEach(T predicate)
+            public <T extends LongPredicate> T forEach(final T predicate)
             {
                 final BitSet bset = BitSet.this;
                 for (long bit = bset.nextSetBit((long) 0); bit >= 0; bit = bset.nextSetBit(bit + 1))
@@ -1022,7 +1053,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public <T extends LongProcedure> T forEach(T procedure)
+            public <T extends LongProcedure> T forEach(final T procedure)
             {
                 final BitSet bset = BitSet.this;
                 for (long bit = bset.nextSetBit((long) 0); bit >= 0; bit = bset.nextSetBit(bit + 1))
@@ -1034,7 +1065,7 @@ public class BitSet implements Cloneable
             }
 
             @Override
-            public boolean contains(long index)
+            public boolean contains(final long index)
             {
                 return index < 0 || BitSet.this.get(index);
             }
@@ -1045,11 +1076,21 @@ public class BitSet implements Cloneable
              */
             private int getCurrentCardinality()
             {
-                long cardinality = BitSet.this.cardinality();
+                final long cardinality = BitSet.this.cardinality();
                 if (cardinality > Integer.MAX_VALUE)
                     throw new RuntimeException("Bitset is larger than maximum positive integer: "
                             + cardinality);
                 return (int) cardinality;
+            }
+
+            /**
+             * {@inheritDoc}
+             * @return the current capacity in bits / 64.
+             */
+            @Override
+            public int capacity() {
+
+                return BitSet.this.bits.length;
             }
         };
     }

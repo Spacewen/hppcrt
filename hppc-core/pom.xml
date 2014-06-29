@@ -21,20 +21,8 @@
  (fork of HPPC of Carrotsearch)
   Fundamental data structures (maps, sets, lists, stacks, queues, heaps, sorts) generated for
   combinations of object and primitive types to conserve JVM memory and speed
-  up execution. The Realtime fork intend of extending collections while tweaking optimization to remove any dynamic allocations at runtime.</description>
-
-  <!-- We'll use a snapshot version of junit4 plugin. -->
-  <pluginRepositories>
-    <pluginRepository>
-      <id>sonatype-snapshots</id>
-      <name>SonaType Snapshots Plugin Repository</name>
-      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-      <layout>default</layout>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
+  up execution. The Realtime fork intend of extending collections while tweaking optimization to remove any dynamic allocations at runtime.
+</description>
   
   <!-- Dependencies. -->
   <dependencies>
@@ -112,8 +100,8 @@
             <phase>generate-sources</phase>
             <configuration>
                 <fork>true</fork>
-                <meminitial>256m</meminitial>
-                <maxmem>1024m</maxmem>
+                <meminitial>50m</meminitial>
+                <maxmem>512m</maxmem>
               <target> 
                 <property name="classpath" refid="maven.plugin.classpath" />
                 <echo file="${project.basedir}/.builder.classpath">${classpath}</echo>
@@ -245,7 +233,7 @@
               </excludes>
 
               <parallelism>auto</parallelism>
-              <maxMemory>750m</maxMemory>
+              <maxMemory>500m</maxMemory>
 
               <!-- Attach a simple listener. -->
               <listeners>

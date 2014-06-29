@@ -896,6 +896,15 @@ public class KTypeVTypeOpenHashMap<KType, VType>
 
     /**
      * {@inheritDoc}
+     */
+    @Override
+    public int capacity() {
+
+        return resizeAt - 1;
+    }
+
+    /**
+     * {@inheritDoc}
      * 
      * <p>Note that an empty container may still contain many deleted keys (that occupy buffer
      * space). Adding even a single element to such a container may cause rehashing.</p>
@@ -1170,6 +1179,9 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             return predicate;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public KeysIterator iterator()
         {
@@ -1177,10 +1189,22 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             return this.keyIteratorPool.borrow();
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int size()
         {
             return owner.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
         }
 
         @Override
@@ -1304,10 +1328,22 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         private final KTypeVTypeOpenHashMap<KType, VType> owner =
                 KTypeVTypeOpenHashMap.this;
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int size()
         {
             return owner.size();
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        @Override
+        public int capacity() {
+
+            return owner.capacity();
         }
 
         @Override
@@ -1624,6 +1660,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         return this.hashStrategy;
     }
 
+    /* #end */
+
     /**
      * Returns the "default value" value used
      * in containers methods returning "default value"
@@ -1643,8 +1681,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     {
         this.defaultValue = defaultValue;
     }
-
-    /* #end */
 
     /*! #if ($TemplateOptions.inlineGenericAndPrimitive("KTypeVTypeOpenHashMap.equalsKTypeHashStrategy",
     "(e1,  e2, customEquals)", 

@@ -13,7 +13,7 @@ import com.google.caliper.SimpleBenchmark;
 public class BenchmarkPut extends SimpleBenchmark
 {
     /* Prepare some test data */
-    public int [] keys;
+    public int[] keys;
 
     public enum Distribution
     {
@@ -28,7 +28,7 @@ public class BenchmarkPut extends SimpleBenchmark
 
     @Param(
     {
-        "1000000"
+                "5000000"
     })
     public int size;
 
@@ -41,7 +41,7 @@ public class BenchmarkPut extends SimpleBenchmark
         switch (distribution)
         {
             case RANDOM:
-                keys = prepareData(size, new XorShiftRandom(0x11223344));
+                keys = Util.prepareData(size, new XorShiftRandom(0x11223344));
                 break;
             case LINEAR:
                 keys = prepareLinear(size);
@@ -55,14 +55,14 @@ public class BenchmarkPut extends SimpleBenchmark
     }
 
     /**
-     * Time the 'put' operation. 
+     * Time the 'put' operation.
      */
-    public int timePut(int reps)
+    public int timePut(final int reps)
     {
         int count = 0;
         for (int i = 0; i < reps; i++)
         {
-            MapImplementation<?> impl = implementation.getInstance();
+            final MapImplementation<?> impl = implementation.getInstance();
             count += impl.putAll(keys, keys);
         }
         return count;
@@ -71,26 +71,26 @@ public class BenchmarkPut extends SimpleBenchmark
     /**
      * Linear increment by 1.
      */
-    private int [] prepareLinear(int size)
+    private int[] prepareLinear(final int size)
     {
-        int [] t = new int [size];
+        final int[] t = new int[size];
         for (int i = 0; i < size; i++)
             t[i] = i * 2;
         return t;
     }
 
     /**
-     * Linear increments on 12 high bits first, then on lower bits. 
+     * Linear increments on 12 high bits first, then on lower bits.
      */
-    private int [] prepareHighbits(int size)
+    private int[] prepareHighbits(final int size)
     {
-        int [] t = new int [size];
+        final int[] t = new int[size];
         for (int i = 0; i < size; i++)
             t[i] = (i << (32 - 12)) | (i >>> 12);
         return t;
     }
 
-    public static void main(String [] args)
+    public static void main(final String[] args)
     {
         Runner.main(BenchmarkPut.class, args);
     }
