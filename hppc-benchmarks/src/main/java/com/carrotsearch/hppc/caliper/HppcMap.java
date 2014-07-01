@@ -15,6 +15,11 @@ public class HppcMap extends MapImplementation<IntIntMap>
     }
 
     @Override
+    public void clear() {
+        instance.clear();
+    }
+
+    @Override
     public void put(final int k, final int v) {
         instance.put(k, v);
     }

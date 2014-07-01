@@ -24,9 +24,9 @@ import com.carrotsearch.hppc.procedures.LongProcedure;
 
 public final class HppcMapSyntheticBench
 {
-    public static final int COUNT = (int) 5e6;
+    public static final int COUNT = (int) 1e6;
 
-    public static final int COUNT_BIG_OBJECTS = (int) 100e3;
+    public static final int COUNT_BIG_OBJECTS = (int) 300e3;
 
     public static final long RANDOM_SEED = 5487911234761188L;
     private static final long RAND_SEED = 15487012316864131L;
@@ -34,9 +34,11 @@ public final class HppcMapSyntheticBench
     private static final long RAND_SEED3 = 412316451315451545L;
     private static final long RAND_SEED4 = 2345613216796312185L;
 
-    public static final int NB_WARMUPS = 3;
+    public static final int NB_WARMUPS = 2;
 
     public static final int NB_WARMUPS_ITERATION_BENCH = 20;
+
+    private static final int COUNT_ITERATION = (int) 5e6;
 
     public Random prng = new XorShiftRandom();
 
@@ -258,16 +260,17 @@ public final class HppcMapSyntheticBench
             return Arrays.equals(this.value, ((ComparableAsciiString) obj).value);
         }
 
+        // djb2 hash function
         public int goodHashCode() {
 
-            int h = 31;
+            int hash = 5381;
 
             for (final byte b : this.value) {
 
-                h += b;
+                hash = ((hash << 5) + hash) + b; /* hash * 33 + b */
             }
 
-            return h;
+            return hash;
         }
 
         @Override
@@ -1136,11 +1139,37 @@ public final class HppcMapSyntheticBench
                         nbWarmups, getKind, 192, HASH_QUALITY.AWFUL);
         System.gc();
 
+        //256 byte objects
+        runMapAsciiStringObjectLong("ObjectLongOpenHashMap",
+                ObjectLongOpenHashMap.<ComparableAsciiString> newInstance(HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR),
+                HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                nbWarmups, getKind, 256, HASH_QUALITY.NORMAL);
+        System.gc();
+
+        runMapAsciiStringObjectLong("ObjectLongOpenHashMap",
+                ObjectLongOpenHashMap.<ComparableAsciiString> newInstance(HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR),
+                HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                nbWarmups, getKind, 256, HASH_QUALITY.BAD);
+        System.gc();
+
+        runMapAsciiStringObjectLong("ObjectLongOpenHashMap",
+                ObjectLongOpenHashMap.<ComparableAsciiString> newInstance(HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR),
+                HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                nbWarmups, getKind, 256, HASH_QUALITY.AWFUL);
+        System.gc();
+
+        runMapAsciiStringObjectLong("ObjectLongOpenHashMap with strategy",
+                ObjectLongOpenHashMap.<ComparableAsciiString> newInstance(HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                        ASCIISTRING_TRIVIAL_STRATEGY),
+                        HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                        nbWarmups, getKind, 256, HASH_QUALITY.AWFUL);
+        System.gc();
+
     }
 
     public void runMapIterationBench() {
 
-        runMapIterationBench("IntLongOpenHashMap", new IntLongOpenHashMap(HppcMapSyntheticBench.COUNT), HppcMapSyntheticBench.COUNT, IntLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+        runMapIterationBench("IntLongOpenHashMap", new IntLongOpenHashMap(HppcMapSyntheticBench.COUNT_ITERATION), HppcMapSyntheticBench.COUNT_ITERATION, IntLongOpenHashMap.DEFAULT_LOAD_FACTOR,
                 HppcMapSyntheticBench.NB_WARMUPS_ITERATION_BENCH);
         System.gc();
 
@@ -1178,9 +1207,11 @@ public final class HppcMapSyntheticBench
 
         System.out.println("\n");
         testClass.runMapSyntheticBenchIntegers(MAP_LOOKUP_TEST.MIXED, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
 
         System.out.println("\n");
         testClass.runMapSyntheticBenchIntegers(MAP_LOOKUP_TEST.MOSTLY_FALSE, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
 
         System.out.println("\n");
         System.out.println("\n");
@@ -1190,6 +1221,7 @@ public final class HppcMapSyntheticBench
 
         System.out.println("\n");
         testClass.runMapSyntheticBenchObjects(MAP_LOOKUP_TEST.MIXED, HppcMapSyntheticBench.NB_WARMUPS);
+        System.gc();
 
         System.out.println("\n");
         testClass.runMapSyntheticBenchObjects(MAP_LOOKUP_TEST.MOSTLY_FALSE, HppcMapSyntheticBench.NB_WARMUPS);

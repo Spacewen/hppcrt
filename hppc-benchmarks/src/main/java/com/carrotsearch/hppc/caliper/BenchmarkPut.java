@@ -17,7 +17,7 @@ public class BenchmarkPut extends SimpleBenchmark
 
     public enum Distribution
     {
-        RANDOM, LINEAR, HIGHBITS;
+        RANDOM, LINEAR, DECREMENT_LINEAR, HIGHBITS;
     }
 
     @Param
@@ -26,9 +26,11 @@ public class BenchmarkPut extends SimpleBenchmark
     @Param
     public Implementations implementation;
 
+    public MapImplementation<?> impl;
+
     @Param(
     {
-                "5000000"
+                "2000000"
     })
     public int size;
 
@@ -38,16 +40,22 @@ public class BenchmarkPut extends SimpleBenchmark
     @Override
     protected void setUp() throws Exception
     {
+        // Our tested implementation, uses preallocation
+        impl = implementation.getInstance(size);
+
         switch (distribution)
         {
             case RANDOM:
                 keys = Util.prepareData(size, new XorShiftRandom(0x11223344));
                 break;
             case LINEAR:
-                keys = prepareLinear(size);
+                keys = Util.prepareLinear(size);
                 break;
             case HIGHBITS:
-                keys = prepareHighbits(size);
+                keys = Util.prepareHighbits(size);
+                break;
+            case DECREMENT_LINEAR:
+                keys = Util.prepareLinearDecrement(size);
                 break;
             default:
                 throw new RuntimeException();
@@ -62,32 +70,10 @@ public class BenchmarkPut extends SimpleBenchmark
         int count = 0;
         for (int i = 0; i < reps; i++)
         {
-            final MapImplementation<?> impl = implementation.getInstance();
+            impl.clear();
             count += impl.putAll(keys, keys);
         }
         return count;
-    }
-
-    /**
-     * Linear increment by 1.
-     */
-    private int[] prepareLinear(final int size)
-    {
-        final int[] t = new int[size];
-        for (int i = 0; i < size; i++)
-            t[i] = i * 2;
-        return t;
-    }
-
-    /**
-     * Linear increments on 12 high bits first, then on lower bits.
-     */
-    private int[] prepareHighbits(final int size)
-    {
-        final int[] t = new int[size];
-        for (int i = 0; i < size; i++)
-            t[i] = (i << (32 - 12)) | (i >>> 12);
-        return t;
     }
 
     public static void main(final String[] args)

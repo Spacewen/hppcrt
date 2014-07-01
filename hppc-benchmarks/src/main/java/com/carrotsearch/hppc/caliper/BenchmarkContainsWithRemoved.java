@@ -19,19 +19,20 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
     public int[] queryKeys;
 
     @Param(
-            {
-            "0", "0.25", "0.5", "0.75", "1"
-            })
+    {
+                "0", "0.25", "0.5", "0.75", "1"
+    })
     public double removedKeys;
 
     @Param
     public Implementations implementation;
+
     public MapImplementation<?> impl;
 
     @Param(
-            {
-            "5000000"
-            })
+    {
+                "2000000"
+    })
     public int size;
 
     @Override
@@ -40,7 +41,7 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
         final Random rnd = new Random(0x11223344);
 
         // Our tested implementation.
-        impl = implementation.getInstance();
+        impl = implementation.getInstance(size);
 
         // Random keys
         keys = Util.prepareData(size, rnd);

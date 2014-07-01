@@ -22,26 +22,26 @@ import com.google.common.collect.ObjectArrays;
 public class BenchmarkSuite
 {
     @SuppressWarnings("unchecked")
-    private final static Class<? extends Benchmark> [] ALL_BENCHMARKS = new Class []
-    {
-        BenchmarkBigramCounting.class, BenchmarkContainsWithRemoved.class, BenchmarkPut.class
-    };
+    private final static Class<? extends Benchmark>[] ALL_BENCHMARKS = new Class[]
+            {
+            BenchmarkBigramCounting.class, BenchmarkContainsWithRemoved.class, BenchmarkPut.class
+            };
 
-    public static void main(String [] args) throws Exception
+    public static void main(final String[] args) throws Exception
     {
         if (args.length == 0)
         {
             System.out.println("Args: [all | class-name, class-name, ...] [-- <benchmark args>]");
             System.out.println("Known benchmark classes: ");
-            for (Class<?> clz : ALL_BENCHMARKS)
+            for (final Class<?> clz : BenchmarkSuite.ALL_BENCHMARKS)
             {
                 System.out.println("\t" + clz.getName());
             }
             return;
         }
 
-        Deque<String> argsList = new ArrayDeque<String>(Arrays.asList(args));
-        List<Class<? extends Benchmark>> classes = Lists.newArrayList();
+        final Deque<String> argsList = new ArrayDeque<String>(Arrays.asList(args));
+        final List<Class<? extends Benchmark>> classes = Lists.newArrayList();
         while (!argsList.isEmpty())
         {
             if ("--".equals(argsList.peekFirst()))
@@ -52,19 +52,19 @@ public class BenchmarkSuite
             else if ("all".equals(argsList.peekFirst()))
             {
                 argsList.removeFirst();
-                classes.addAll(Arrays.asList(ALL_BENCHMARKS));
+                classes.addAll(Arrays.asList(BenchmarkSuite.ALL_BENCHMARKS));
             }
             else
             {
                 final ClassLoader clLoader = Thread.currentThread()
-                    .getContextClassLoader();
+                        .getContextClassLoader();
 
-                String clz = argsList.removeFirst();
+                final String clz = argsList.removeFirst();
                 try
                 {
                     @SuppressWarnings("unchecked")
-                    Class<? extends Benchmark> clzInstance = 
-                        (Class<? extends Benchmark>) Class.forName(clz, true, clLoader);
+                    final Class<? extends Benchmark> clzInstance =
+                            (Class<? extends Benchmark>) Class.forName(clz, true, clLoader);
 
                     if (!Benchmark.class.isAssignableFrom(clzInstance))
                     {
@@ -74,7 +74,7 @@ public class BenchmarkSuite
 
                     classes.add(clzInstance);
                 }
-                catch (ClassNotFoundException e)
+                catch (final ClassNotFoundException e)
                 {
                     System.out.println("Class not found: " + clz);
                     System.exit(-1);
@@ -82,20 +82,20 @@ public class BenchmarkSuite
             }
         }
 
-        printSystemInfo();
-        runBenchmarks(classes, argsList.toArray(new String [argsList.size()]));
+        BenchmarkSuite.printSystemInfo();
+        BenchmarkSuite.runBenchmarks(classes, argsList.toArray(new String[argsList.size()]));
     }
 
     /**
      * 
      */
-    private static void runBenchmarks(List<Class<? extends Benchmark>> classes,
-        String [] args) throws Exception
+    private static void runBenchmarks(final List<Class<? extends Benchmark>> classes,
+            final String[] args) throws Exception
     {
         int i = 0;
-        for (Class<? extends Benchmark> clz : classes)
+        for (final Class<? extends Benchmark> clz : classes)
         {
-            header(clz.getSimpleName() + " (" + (++i) + "/" + classes.size() + ")");
+            BenchmarkSuite.header(clz.getSimpleName() + " (" + (++i) + "/" + classes.size() + ")");
             new Runner().run(ObjectArrays.concat(args, clz.getName()));
         }
     }
@@ -103,23 +103,23 @@ public class BenchmarkSuite
     /**
      * 
      */
-    private static void printSystemInfo() throws IOException
+    private static void printSystemInfo()
     {
         System.out.println("Benchmarks suite starting.");
         System.out.println("Date now: " + new Date() + "\n");
 
-        header("System properties");
-        Properties p = System.getProperties();
-        for (Object key : new TreeSet<Object>(p.keySet()))
+        BenchmarkSuite.header("System properties");
+        final Properties p = System.getProperties();
+        for (final Object key : new TreeSet<Object>(p.keySet()))
         {
             System.out.println(key + ": "
-                + StringEscapeUtils.escapeJava((String) p.getProperty((String) key)));
+                    + StringEscapeUtils.escapeJava((String) p.getProperty((String) key)));
         }
 
-        header("CPU");
+        BenchmarkSuite.header("CPU");
 
         // Try to determine CPU.
-        ExecTask task = new ExecTask();
+        final ExecTask task = new ExecTask();
         task.setVMLauncher(true);
         task.setOutputproperty("stdout");
         task.setErrorProperty("stderr");
@@ -127,7 +127,7 @@ public class BenchmarkSuite
         task.setFailIfExecutionFails(true);
         task.setFailonerror(true);
 
-        Project project = new Project();
+        final Project project = new Project();
         task.setProject(project);
 
         String pattern = ".*";
@@ -156,10 +156,10 @@ public class BenchmarkSuite
         {
             task.execute();
 
-            String property = project.getProperty("stdout");
+            final String property = project.getProperty("stdout");
             // Restrict to processor related data only.
-            Pattern patt = Pattern.compile(pattern);
-            for (String line : IOUtils.readLines(new StringReader(property)))
+            final Pattern patt = Pattern.compile(pattern);
+            for (final String line : IOUtils.readLines(new StringReader(property)))
             {
                 if (patt.matcher(line).find())
                 {
@@ -167,14 +167,14 @@ public class BenchmarkSuite
                 }
             }
         }
-        catch (Throwable e)
+        catch (final Throwable e)
         {
             System.out.println("WARN: CPU information could not be extracted: "
-                + e.getMessage());
+                    + e.getMessage());
         }
     }
 
-    private static void header(String msg)
+    private static void header(final String msg)
     {
         System.out.println();
         System.out.println(StringUtils.repeat("=", 80));

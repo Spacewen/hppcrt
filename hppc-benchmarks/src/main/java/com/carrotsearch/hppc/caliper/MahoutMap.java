@@ -2,6 +2,7 @@ package com.carrotsearch.hppc.caliper;
 
 import org.apache.mahout.math.map.AbstractIntIntMap;
 import org.apache.mahout.math.map.OpenIntIntHashMap;
+import org.apache.mahout.math.set.AbstractSet;
 
 import com.carrotsearch.hppc.IntIntOpenHashMap;
 
@@ -10,17 +11,41 @@ public class MahoutMap extends MapImplementation<OpenIntIntHashMap>
     public MahoutMap()
     {
         super(new OpenIntIntHashMap(
-            IntIntOpenHashMap.DEFAULT_CAPACITY,
-            AbstractIntIntMap.DEFAULT_MIN_LOAD_FACTOR,
-            IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
+                IntIntOpenHashMap.DEFAULT_CAPACITY,
+                AbstractSet.DEFAULT_MIN_LOAD_FACTOR,
+                IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
     }
 
-    public void remove(int k) { instance.removeKey(k); }
-    public void put(int k, int v) { instance.put(k, v); }
-    public int get(int k) { return instance.get(k); }
+    public MahoutMap(final int size)
+    {
+        super(new OpenIntIntHashMap(
+                size,
+                AbstractSet.DEFAULT_MIN_LOAD_FACTOR,
+                IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
+    }
 
     @Override
-    public int containKeys(int [] keys)
+    public void remove(final int k) {
+        instance.removeKey(k);
+    }
+
+    @Override
+    public void clear() {
+        instance.clear();
+    }
+
+    @Override
+    public void put(final int k, final int v) {
+        instance.put(k, v);
+    }
+
+    @Override
+    public int get(final int k) {
+        return instance.get(k);
+    }
+
+    @Override
+    public int containKeys(final int[] keys)
     {
         final OpenIntIntHashMap prepared = this.instance;
         int count = 0;
@@ -30,7 +55,7 @@ public class MahoutMap extends MapImplementation<OpenIntIntHashMap>
     }
 
     @Override
-    public int putAll(int [] keys, int [] values)
+    public int putAll(final int[] keys, final int[] values)
     {
         final OpenIntIntHashMap instance = this.instance;
         int count = 0;

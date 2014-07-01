@@ -9,16 +9,39 @@ public class TroveMap extends MapImplementation<TIntIntHashMap>
     public TroveMap()
     {
         super(new TIntIntHashMap(
-            IntIntOpenHashMap.DEFAULT_CAPACITY,
-            IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
+                IntIntOpenHashMap.DEFAULT_CAPACITY,
+                IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
     }
 
-    public void remove(int k) { instance.remove(k); }
-    public void put(int k, int v) { instance.put(k, v); }
-    public int get(int k) { return instance.get(k); }
+    public TroveMap(final int size)
+    {
+        super(new TIntIntHashMap(
+                size,
+                IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
+    }
 
     @Override
-    public int containKeys(int [] keys)
+    public void remove(final int k) {
+        instance.remove(k);
+    }
+
+    @Override
+    public void clear() {
+        instance.clear();
+    }
+
+    @Override
+    public void put(final int k, final int v) {
+        instance.put(k, v);
+    }
+
+    @Override
+    public int get(final int k) {
+        return instance.get(k);
+    }
+
+    @Override
+    public int containKeys(final int[] keys)
     {
         final TIntIntHashMap prepared = this.instance;
         int count = 0;
@@ -26,9 +49,9 @@ public class TroveMap extends MapImplementation<TIntIntHashMap>
             count += prepared.containsKey(keys[i]) ? 1 : 0;
         return count;
     }
-    
+
     @Override
-    public int putAll(int [] keys, int [] values)
+    public int putAll(final int[] keys, final int[] values)
     {
         final TIntIntHashMap instance = this.instance;
         int count = 0;
@@ -37,5 +60,5 @@ public class TroveMap extends MapImplementation<TIntIntHashMap>
             count += instance.put(keys[i], values[i]);
         }
         return count;
-    }    
+    }
 }

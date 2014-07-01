@@ -14,6 +14,12 @@ public enum Implementations
         {
             return new HppcMap(IntIntOpenHashMap.newInstance());
         }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new HppcMap(IntIntOpenHashMap.newInstance(size, IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
+        }
     },
 
     HPPC_NOPERTURBS
@@ -22,6 +28,12 @@ public enum Implementations
         public MapImplementation<?> getInstance()
         {
             return new HppcMap(IntIntOpenHashMap.newInstanceWithoutPerturbations());
+        }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new HppcMap(IntIntOpenHashMap.newInstanceWithoutPerturbations(size, IntIntOpenHashMap.DEFAULT_LOAD_FACTOR));
         }
     },
 
@@ -32,6 +44,12 @@ public enum Implementations
         {
             return new FastUtilMap();
         }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new FastUtilMap(size);
+        }
     },
 
     JAVA
@@ -40,6 +58,12 @@ public enum Implementations
         public MapImplementation<?> getInstance()
         {
             return new JavaMap();
+        }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new JavaMap(size);
         }
     },
 
@@ -50,6 +74,12 @@ public enum Implementations
         {
             return new TroveMap();
         }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new TroveMap(size);
+        }
     },
 
     MAHOUT
@@ -59,7 +89,15 @@ public enum Implementations
         {
             return new MahoutMap();
         }
+
+        @Override
+        public MapImplementation<?> getInstance(final int size)
+        {
+            return new MahoutMap(size);
+        }
     };
 
     public abstract MapImplementation<?> getInstance();
+
+    public abstract MapImplementation<?> getInstance(int size);
 }

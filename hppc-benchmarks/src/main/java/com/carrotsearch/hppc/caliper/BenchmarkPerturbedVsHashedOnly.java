@@ -1,6 +1,8 @@
 package com.carrotsearch.hppc.caliper;
 
 import com.carrotsearch.hppc.IntOpenHashSet;
+import com.carrotsearch.hppc.XorShiftRandom;
+import com.carrotsearch.hppc.caliper.BenchmarkPut.Distribution;
 import com.google.caliper.Param;
 import com.google.caliper.Runner;
 import com.google.caliper.SimpleBenchmark;
@@ -10,36 +12,85 @@ import com.google.caliper.SimpleBenchmark;
  */
 public class BenchmarkPerturbedVsHashedOnly extends SimpleBenchmark
 {
-    @Param(
-            {
-            "10000000"
-            })
-    public int size;
 
-    public int timePerturbed(int reps)
+    public enum Perturbation
     {
-        int count = 0;
-        while (reps-- > 0) {
-            final IntOpenHashSet set = IntOpenHashSet.newInstance();
-            for (int i = size; --i >= 0;)
-            {
-                set.add(i);
-            }
-            count += set.size();
-        }
-        return count;
+        NOT_PERTURBED, PERTURBED;
     }
 
-    public int timeUnperturbed(int reps)
+    @Param(
+    {
+                "2000000"
+    })
+    public int size;
+
+    @Param
+    public Perturbation perturbation;
+
+    public enum Distribution
+    {
+        RANDOM, LINEAR, DECREMENT_LINEAR, HIGHBITS;
+    }
+
+    @Param
+    public Distribution distribution;
+
+    public IntOpenHashSet impl;
+
+    /* Prepare some test data */
+    public int[] keys;
+
+    @Override
+    protected void setUp() throws Exception
+    {
+        switch (perturbation)
+        {
+            case NOT_PERTURBED:
+                // Our tested implementation, uses preallocation
+                impl = IntOpenHashSet.newInstanceWithoutPerturbations(size, IntOpenHashSet.DEFAULT_LOAD_FACTOR);
+                break;
+            case PERTURBED:
+                // Our tested implementation, uses preallocation
+                impl = IntOpenHashSet.newInstanceWithCapacity(size, IntOpenHashSet.DEFAULT_LOAD_FACTOR);
+                break;
+            default:
+                throw new RuntimeException();
+        }
+
+        switch (distribution)
+        {
+            case RANDOM:
+                keys = Util.prepareData(size, new XorShiftRandom(0x11223344));
+                break;
+            case LINEAR:
+                keys = Util.prepareLinear(size);
+                break;
+            case HIGHBITS:
+                keys = Util.prepareHighbits(size);
+                break;
+            case DECREMENT_LINEAR:
+                keys = Util.prepareLinearDecrement(size);
+                break;
+
+            default:
+                throw new RuntimeException();
+        }
+    }
+
+    /**
+     * Time the 'add' operation.
+     */
+    public int timePerturbation(int reps)
     {
         int count = 0;
         while (reps-- > 0) {
-            final IntOpenHashSet set = IntOpenHashSet.newInstanceWithoutPerturbations();
-            for (int i = size; --i >= 0;)
+            for (int i = 0; i < size; i++)
             {
-                set.add(i);
+                impl.add(keys[i]);
+                count += keys[i];
             }
-            count += set.size();
+            count += impl.size();
+            impl.clear();
         }
         return count;
     }
