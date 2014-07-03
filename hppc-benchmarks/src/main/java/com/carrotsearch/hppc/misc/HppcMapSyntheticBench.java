@@ -894,21 +894,21 @@ public final class HppcMapSyntheticBench
         System.out.format(
                 ">>>> BENCH: HPPC Map (ComparableAsciiString %d ints long of dis %s, hash %s, long), (%s), initial capacity = %d, load factor = %f, %d elements pushed\n"
                         + " Put = %f ms, Get (%s) = %f ms, Remove (%s) = %f ms, Clear =  %f ms (dummy = %d)\n\n",
-                stringSize,
-                dis,
-                quality,
-                additionalInfo,
-                testMap.capacity(),
-                loadFactor,
-                putSize,
+                        stringSize,
+                        dis,
+                        quality,
+                        additionalInfo,
+                        testMap.capacity(),
+                        loadFactor,
+                        putSize,
 
-                (tAfterPut - tBeforePut) / 1e6,
-                getKind,
-                (tAfterGet - tBeforeGet) / 1e6,
-                getKind,
-                (tAfterRemove - tBeforeRemove) / 1e6,
-                (tAfterClear - tBeforeClear) / 1e6,
-                sum); //outputs the results to defeat optimizations
+                        (tAfterPut - tBeforePut) / 1e6,
+                        getKind,
+                        (tAfterGet - tBeforeGet) / 1e6,
+                        getKind,
+                        (tAfterRemove - tBeforeRemove) / 1e6,
+                        (tAfterClear - tBeforeClear) / 1e6,
+                        sum); //outputs the results to defeat optimizations
     }
 
     //public methods
@@ -944,14 +944,14 @@ public final class HppcMapSyntheticBench
                     ObjectLongOpenHashMap.<ComparableInt> newInstance(
                             HppcMapSyntheticBench.COUNT, IntLongOpenHashMap.DEFAULT_LOAD_FACTOR,
                             this.INTHOLDER_TRIVIAL_STRATEGY),
-                    HppcMapSyntheticBench.COUNT, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR, getKind, HASH_QUALITY.BAD, dis);
+                            HppcMapSyntheticBench.COUNT, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR, getKind, HASH_QUALITY.BAD, dis);
             System.gc();
         }
     }
 
     public void runMapSyntheticBenchObjects(final MAP_LOOKUP_TEST getKind)
     {
-        final int[] stringSizes = new int[] { 16, 32, 72, 128, 256 };
+        final int[] stringSizes = new int[] { 16, 32, 64 };
 
         for (final int stringSize : stringSizes)
         {
@@ -969,8 +969,8 @@ public final class HppcMapSyntheticBench
                 runMapAsciiStringObjectLong("ObjectLongOpenHashMap with strategy",
                         ObjectLongOpenHashMap.<ComparableAsciiString> newInstance(HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
                                 this.ASCIISTRING_TRIVIAL_STRATEGY),
-                        HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
-                        getKind, stringSize, HASH_QUALITY.BAD, dis);
+                                HppcMapSyntheticBench.COUNT_BIG_OBJECTS, ObjectLongOpenHashMap.DEFAULT_LOAD_FACTOR,
+                                getKind, stringSize, HASH_QUALITY.BAD, dis);
             }
         }
     }
