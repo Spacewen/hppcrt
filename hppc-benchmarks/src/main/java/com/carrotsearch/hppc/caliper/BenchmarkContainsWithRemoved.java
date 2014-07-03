@@ -1,11 +1,12 @@
 package com.carrotsearch.hppc.caliper;
 
-import static com.carrotsearch.hppc.caliper.Util.shuffle;
+import static com.carrotsearch.hppc.Util.shuffle;
 
 import java.util.Random;
 
 import org.apache.mahout.math.Arrays;
 
+import com.carrotsearch.hppc.Util;
 import com.google.caliper.*;
 
 /**
@@ -19,9 +20,9 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
     public int[] queryKeys;
 
     @Param(
-    {
-                "0", "0.25", "0.5", "0.75", "1"
-    })
+            {
+            "0", "0.25", "0.5", "0.75", "1"
+            })
     public double removedKeys;
 
     @Param
@@ -30,9 +31,9 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
     public MapImplementation<?> impl;
 
     @Param(
-    {
-                "2000000"
-    })
+            {
+            "1000000"
+            })
     public int size;
 
     @Override
@@ -41,28 +42,32 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
         final Random rnd = new Random(0x11223344);
 
         // Our tested implementation.
-        impl = implementation.getInstance(size);
+        this.impl = this.implementation.getInstance(this.size);
 
         // Random keys
-        keys = Util.prepareData(size, rnd);
+        this.keys = Util.prepareData(this.size, rnd);
 
         // Half keys, half random. Shuffle order.
-        queryKeys = Arrays.copyOf(keys, keys.length);
-        for (int i = 0; i < queryKeys.length / 2; i++)
-            queryKeys[i] = rnd.nextInt();
+        this.queryKeys = Arrays.copyOf(this.keys, this.keys.length);
+        for (int i = 0; i < this.queryKeys.length / 2; i++)
+        {
+            this.queryKeys[i] = rnd.nextInt();
+        }
 
-        Util.shuffle(queryKeys, rnd);
+        Util.shuffle(this.queryKeys, rnd);
 
         // Fill with random keys.
-        for (int i = 0; i < keys.length; i++)
-            impl.put(keys[i], 0);
+        for (int i = 0; i < this.keys.length; i++)
+        {
+            this.impl.put(this.keys[i], 0);
+        }
 
         // Shuffle keys and remove a fraction of them.
-        final int[] randomized = Util.shuffle(Arrays.copyOf(keys, keys.length), rnd);
-        int removeKeys = (int) (removedKeys * keys.length);
+        final int[] randomized = Util.shuffle(Arrays.copyOf(this.keys, this.keys.length), rnd);
+        int removeKeys = (int) (this.removedKeys * this.keys.length);
         for (int i = 0; removeKeys > 0; removeKeys--, i++)
         {
-            impl.remove(randomized[i]);
+            this.impl.remove(randomized[i]);
         }
     }
 
@@ -71,7 +76,7 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
         int count = 0;
         for (int i = 0; i < reps; i++)
         {
-            count += impl.containKeys(keys);
+            count += this.impl.containKeys(this.keys);
         }
         return count;
     }
@@ -79,7 +84,7 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
     @Override
     protected void tearDown() throws Exception
     {
-        impl = null;
+        this.impl = null;
     }
 
     public static void main(final String[] args)

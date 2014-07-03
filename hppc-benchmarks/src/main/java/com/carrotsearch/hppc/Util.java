@@ -1,4 +1,4 @@
-package com.carrotsearch.hppc.caliper;
+package com.carrotsearch.hppc;
 
 import java.util.Random;
 

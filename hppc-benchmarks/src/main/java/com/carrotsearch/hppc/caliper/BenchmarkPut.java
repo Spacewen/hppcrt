@@ -1,7 +1,8 @@
 package com.carrotsearch.hppc.caliper;
 
-import static com.carrotsearch.hppc.caliper.Util.prepareData;
+import static com.carrotsearch.hppc.Util.prepareData;
 
+import com.carrotsearch.hppc.Util;
 import com.carrotsearch.hppc.XorShiftRandom;
 import com.google.caliper.Param;
 import com.google.caliper.Runner;
@@ -17,7 +18,7 @@ public class BenchmarkPut extends SimpleBenchmark
 
     public enum Distribution
     {
-        RANDOM, LINEAR, DECREMENT_LINEAR, HIGHBITS;
+        RANDOM, LINEAR, LINEAR_DECREMENT, HIGHBITS;
     }
 
     @Param
@@ -30,7 +31,7 @@ public class BenchmarkPut extends SimpleBenchmark
 
     @Param(
     {
-                "2000000"
+                "1000000"
     })
     public int size;
 
@@ -41,21 +42,21 @@ public class BenchmarkPut extends SimpleBenchmark
     protected void setUp() throws Exception
     {
         // Our tested implementation, uses preallocation
-        impl = implementation.getInstance(size);
+        this.impl = this.implementation.getInstance(this.size);
 
-        switch (distribution)
+        switch (this.distribution)
         {
             case RANDOM:
-                keys = Util.prepareData(size, new XorShiftRandom(0x11223344));
+                this.keys = Util.prepareData(this.size, new XorShiftRandom(0x11223344));
                 break;
             case LINEAR:
-                keys = Util.prepareLinear(size);
+                this.keys = Util.prepareLinear(this.size);
                 break;
             case HIGHBITS:
-                keys = Util.prepareHighbits(size);
+                this.keys = Util.prepareHighbits(this.size);
                 break;
-            case DECREMENT_LINEAR:
-                keys = Util.prepareLinearDecrement(size);
+            case LINEAR_DECREMENT:
+                this.keys = Util.prepareLinearDecrement(this.size);
                 break;
             default:
                 throw new RuntimeException();
@@ -70,8 +71,8 @@ public class BenchmarkPut extends SimpleBenchmark
         int count = 0;
         for (int i = 0; i < reps; i++)
         {
-            impl.clear();
-            count += impl.putAll(keys, keys);
+            this.impl.clear();
+            count += this.impl.putAll(this.keys, this.keys);
         }
         return count;
     }

@@ -21,7 +21,7 @@ public class HashCollisionsCornerCaseTest extends AbstractBenchmark
 
     static volatile private long dummySum = 0;
 
-    private static int NB_ELEMENTS = (int) 10e6;
+    private static int NB_ELEMENTS = (int) 2e6;
     private static float LOAD_FACTOR = 0.75f;
 
     private static final IntOpenHashSet testSet = new IntOpenHashSet(HashCollisionsCornerCaseTest.NB_ELEMENTS, HashCollisionsCornerCaseTest.LOAD_FACTOR);
@@ -46,7 +46,8 @@ public class HashCollisionsCornerCaseTest extends AbstractBenchmark
         //max allowable load factor to really test the worst case here.
         final int realNbElements = HashCollisionsCornerCaseTest.testSet.capacity() - 1;
 
-        for (int i = realNbElements; i-- != 0;) {
+        for (int i = realNbElements; i-- != 0;)
+        {
 
             HashCollisionsCornerCaseTest.testSet.add(i);
             HashCollisionsCornerCaseTest.testMap.put(i, 0);
