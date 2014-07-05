@@ -669,8 +669,8 @@ public class KTypeArrayList<KType>
     {
         public final KTypeCursor<KType> cursor;
 
-        KType[] buffer;
-        int size;
+        private KType[] buffer;
+        private int size;
 
         public ValueIterator()
         {
@@ -678,6 +678,20 @@ public class KTypeArrayList<KType>
             this.cursor.index = -1;
             this.size = KTypeArrayList.this.size();
             this.buffer = KTypeArrayList.this.buffer;
+        }
+
+        public void init(final KType[] buffer, final int size)
+        {
+            this.cursor.index = -1;
+            this.size = size;
+            this.buffer = buffer;
+        }
+
+        public void reset()
+        {
+            this.cursor.index = -1;
+            this.size = 0;
+            this.buffer = null;
         }
 
         @Override

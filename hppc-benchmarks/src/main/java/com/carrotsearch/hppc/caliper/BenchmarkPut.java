@@ -1,8 +1,6 @@
 package com.carrotsearch.hppc.caliper;
 
-import static com.carrotsearch.hppc.Util.prepareData;
-
-import com.carrotsearch.hppc.Util;
+import com.carrotsearch.hppc.DistributionGenerator;
 import com.carrotsearch.hppc.XorShiftRandom;
 import com.google.caliper.Param;
 import com.google.caliper.Runner;
@@ -31,7 +29,7 @@ public class BenchmarkPut extends SimpleBenchmark
 
     @Param(
     {
-                "1000000"
+                "3000000"
     })
     public int size;
 
@@ -44,20 +42,23 @@ public class BenchmarkPut extends SimpleBenchmark
         // Our tested implementation, uses preallocation
         this.impl = this.implementation.getInstance(this.size);
 
+        final DistributionGenerator gene = new DistributionGenerator(this.size, new XorShiftRandom(0x11223344));
+
         switch (this.distribution)
         {
             case RANDOM:
-                this.keys = Util.prepareData(this.size, new XorShiftRandom(0x11223344));
+                this.keys = gene.RANDOM.prepare(this.size);
                 break;
             case LINEAR:
-                this.keys = Util.prepareLinear(this.size);
+                this.keys = gene.LINEAR.prepare(this.size);
                 break;
             case HIGHBITS:
-                this.keys = Util.prepareHighbits(this.size);
+                this.keys = gene.HIGHBITS.prepare(this.size);
                 break;
             case LINEAR_DECREMENT:
-                this.keys = Util.prepareLinearDecrement(this.size);
+                this.keys = gene.LINEAR_DECREMENT.prepare(this.size);
                 break;
+
             default:
                 throw new RuntimeException();
         }

@@ -2,26 +2,29 @@ package com.carrotsearch.hppc.jub;
 
 import java.util.Random;
 
-import org.junit.*;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.carrotsearch.hppc.BitSet;
 import com.carrotsearch.hppc.IntDoubleLinkedSet;
 import com.carrotsearch.hppc.IntOpenHashSet;
 import com.carrotsearch.junitbenchmarks.AbstractBenchmark;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
-import com.carrotsearch.junitbenchmarks.annotation.*;
-
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkHistoryChart;
+import com.carrotsearch.junitbenchmarks.annotation.BenchmarkMethodChart;
 
 /**
  * Repeated cardinality calculation, very sparse data sets.
  */
-@BenchmarkHistoryChart(filePrefix="CLASSNAME.history", maxRuns=50)
-@BenchmarkMethodChart(filePrefix="CLASSNAME.methods")
+@BenchmarkHistoryChart(filePrefix = "CLASSNAME.history", maxRuns = 50)
+@BenchmarkMethodChart(filePrefix = "CLASSNAME.methods")
 @BenchmarkOptions(callgc = false, warmupRounds = 2, benchmarkRounds = 10)
 public class CardinalityBenchmark extends AbstractBenchmark
 {
     private static final int WND = 100;
-    private static int [] numbers = new int [50000];
+    private static int[] numbers = new int[50000];
 
     private static BitSet bitset = new BitSet();
     private static IntDoubleLinkedSet dlinked = new IntDoubleLinkedSet();
@@ -36,82 +39,82 @@ public class CardinalityBenchmark extends AbstractBenchmark
     {
         final int MAX_RANGE = 0xfffff;
         final Random rnd = new Random(0x11223344);
-        for (int i = 0; i < numbers.length; i++)
-            numbers[i] = Math.abs(rnd.nextInt()) & MAX_RANGE;
+        for (int i = 0; i < CardinalityBenchmark.numbers.length; i++)
+            CardinalityBenchmark.numbers[i] = Math.abs(rnd.nextInt()) & MAX_RANGE;
     }
-    
+
     @AfterClass
     public static void cleanup()
     {
-        numbers = null;
-        dlinked = null;
-        bitset = null;
-        hset = null;
+        CardinalityBenchmark.numbers = null;
+        CardinalityBenchmark.dlinked = null;
+        CardinalityBenchmark.bitset = null;
+        CardinalityBenchmark.hset = null;
     }
 
     @Before
     public void roundCleanup()
     {
-        dlinked.clear();
-        bitset.clear();
-        hset.clear();
+        CardinalityBenchmark.dlinked.clear();
+        CardinalityBenchmark.bitset.clear();
+        CardinalityBenchmark.hset.clear();
     }
 
     /**
      * Simple cardinality calculations, double-linked set (very sparse data).
      */
     @Test
-    public void testCardinality_dlinked() 
+    public void testCardinality_dlinked()
     {
         int card = 0;
-        for (int i = 0; i < numbers.length - WND; i++)
+        for (int i = 0; i < CardinalityBenchmark.numbers.length - CardinalityBenchmark.WND; i++)
         {
-            dlinked.clear();
-            for (int j = 0; j < WND; j++)
+            CardinalityBenchmark.dlinked.clear();
+            for (int j = 0; j < CardinalityBenchmark.WND; j++)
             {
-                dlinked.add(numbers[i + j]);
+                CardinalityBenchmark.dlinked.add(CardinalityBenchmark.numbers[i + j]);
             }
-            card += dlinked.size();
+            card += CardinalityBenchmark.dlinked.size();
         }
-        guard = card;
+        CardinalityBenchmark.guard = card;
     }
 
     /**
      * Simple cardinality calculations, hash set (very sparse data).
      */
     @Test
-    public void testCardinality_hset() 
+    public void testCardinality_hset()
     {
         int card = 0;
-        for (int i = 0; i < numbers.length - WND; i++)
+        for (int i = 0; i < CardinalityBenchmark.numbers.length - CardinalityBenchmark.WND; i++)
         {
-            hset.clear();
-            for (int j = 0; j < WND; j++)
+            CardinalityBenchmark.hset.clear();
+            for (int j = 0; j < CardinalityBenchmark.WND; j++)
             {
-                hset.add(numbers[i + j]);
+                CardinalityBenchmark.hset.add(CardinalityBenchmark.numbers[i + j]);
             }
-            card += hset.size();
+            card += CardinalityBenchmark.hset.size();
         }
-        guard = card;
-    }    
-    
+        CardinalityBenchmark.guard = card;
+    }
+
     /**
      * Simple cardinality calculations, bitset (very sparse data).
      */
     @Test
     @BenchmarkOptions(callgc = false, warmupRounds = 1, benchmarkRounds = 2)
-    public void testCardinality_bset() 
+    public void testCardinality_bset()
     {
         int card = 0;
-        for (int i = 0; i < numbers.length - WND; i++)
+        for (int i = 0; i < CardinalityBenchmark.numbers.length - CardinalityBenchmark.WND; i++)
         {
-            bitset.clear();
-            for (int j = 0; j < WND; j++)
+            CardinalityBenchmark.bitset.clear();
+            for (int j = 0; j < CardinalityBenchmark.WND; j++)
             {
-                bitset.set(numbers[i + j]);
+                CardinalityBenchmark.bitset.set(CardinalityBenchmark.numbers[i + j]);
             }
-            card += bitset.cardinality();
+            card += CardinalityBenchmark.bitset.cardinality();
         }
-        guard = card;
-    }    
+        CardinalityBenchmark.guard = card;
+    }
 }

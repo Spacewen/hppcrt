@@ -4,7 +4,6 @@ import com.carrotsearch.hppc.DistributionGenerator;
 import com.carrotsearch.hppc.IntIntOpenHashMap;
 import com.carrotsearch.hppc.IntOpenHashSet;
 import com.carrotsearch.hppc.XorShiftRandom;
-import com.carrotsearch.hppc.cursors.IntCursor;
 import com.google.caliper.Param;
 import com.google.caliper.Runner;
 import com.google.caliper.SimpleBenchmark;
@@ -31,16 +30,10 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
         RANDOM, LINEAR, LINEAR_DECREMENT, HIGHBITS;
     }
 
-    @Param
-    public Distribution distribution;
-
     public enum Perturbation
     {
         NOT_PERTURBED, PERTURBED;
     }
-
-    @Param
-    public Perturbation perturbation;
 
     public enum Allocation
     {
@@ -50,9 +43,15 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
     @Param
     public Allocation allocation;
 
+    @Param
+    public Perturbation perturbation;
+
+    @Param
+    public Distribution distribution;
+
     @Param(
             {
-            "1000000"
+            "3000000"
             })
     public int size;
 
@@ -62,7 +61,7 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
     @Override
     protected void setUp() throws Exception
     {
-        //Instead of this.size, fil up
+        //Instead of this.size, fill up
         //prepare testSet to be filled up to their specified load factor.
 
         testSet = new IntOpenHashSet(this.size);
@@ -135,6 +134,7 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
     protected void tearDown() throws Exception
     {
         this.testSet = null;
+        this.testMap = null;
     }
 
     /**

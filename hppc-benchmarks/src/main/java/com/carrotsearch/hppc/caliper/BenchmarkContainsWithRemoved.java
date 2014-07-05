@@ -1,13 +1,14 @@
 package com.carrotsearch.hppc.caliper;
 
-import static com.carrotsearch.hppc.Util.shuffle;
-
 import java.util.Random;
 
 import org.apache.mahout.math.Arrays;
 
+import com.carrotsearch.hppc.DistributionGenerator;
 import com.carrotsearch.hppc.Util;
-import com.google.caliper.*;
+import com.google.caliper.Param;
+import com.google.caliper.Runner;
+import com.google.caliper.SimpleBenchmark;
 
 /**
  * Create a large map of int keys, remove a fraction of the keys and query with half/half keys
@@ -32,7 +33,7 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
 
     @Param(
             {
-            "1000000"
+            "3000000"
             })
     public int size;
 
@@ -41,11 +42,13 @@ public class BenchmarkContainsWithRemoved extends SimpleBenchmark
     {
         final Random rnd = new Random(0x11223344);
 
+        final DistributionGenerator gene = new DistributionGenerator(this.size, rnd);
+
         // Our tested implementation.
         this.impl = this.implementation.getInstance(this.size);
 
         // Random keys
-        this.keys = Util.prepareData(this.size, rnd);
+        this.keys = gene.RANDOM.prepare(this.size);
 
         // Half keys, half random. Shuffle order.
         this.queryKeys = Arrays.copyOf(this.keys, this.keys.length);

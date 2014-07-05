@@ -3,9 +3,7 @@ package com.carrotsearch.hppc;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import com.carrotsearch.hppc.KTypeArrayList.ValueIterator;
 import com.carrotsearch.hppc.cursors.IntCursor;
-import com.carrotsearch.hppc.cursors.KTypeCursor;
 import com.carrotsearch.hppc.predicates.IntPredicate;
 import com.carrotsearch.hppc.procedures.IntProcedure;
 
@@ -106,14 +104,12 @@ public class IntDoubleLinkedSet extends AbstractIntCollection implements IntLook
                     public void initialize(final IntArrayList.ValueIterator obj) {
 
                         //Make the buffer points on the one of the IntDoubleLinkedSet
-                        obj.cursor.index = -1;
-                        obj.size = IntDoubleLinkedSet.this.size();
-                        obj.buffer = IntDoubleLinkedSet.this.dense;
+                        obj.init(IntDoubleLinkedSet.this.dense, IntDoubleLinkedSet.this.size());
                     }
 
                     @Override
                     public void reset(final IntArrayList.ValueIterator obj) {
-                        obj.buffer = null;
+                        obj.reset();
 
                     }
                 });
