@@ -19,7 +19,6 @@ import com.carrotsearch.hppc.strategies.KTypeHashingStrategy;
 //${TemplateOptions.doNotGenerateVType("BOOLEAN")}
 /*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
 /*! #set( $ROBIN_HOOD_FOR_GENERICS = true) !*/
-/*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
 /*! #set( $RH = (($TemplateOptions.KTypeGeneric && $ROBIN_HOOD_FOR_GENERICS) || ($TemplateOptions.KTypeNumeric && $ROBIN_HOOD_FOR_PRIMITIVES)) ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -72,11 +71,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeVTypeT
                 {
                     /*! #if ($RH) !*/
                     //check hash cache consistency
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
                     Assert.assertEquals(Internals.rehash(map.keys[i]) & mask, map.allocated[i]);
-                    /*! #else
-                    Assert.assertEquals(Internals.rehash(map.keys[i], map.perturbation) & mask, map.allocated[i]);
-                    #end !*/
                     /*! #end !*/
 
                     //try to reach the key by contains()
@@ -331,7 +326,7 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeVTypeT
 
     /* */
     @Test
-    public void testRemoveViaKeySetView()
+    public void testRemoveAllViaKeySetView()
     {
         map.put(key1, value1);
         map.put(key2, value1);
@@ -347,6 +342,63 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeVTypeT
                 });
         Assert.assertEquals(1, map.size());
         Assert.assertTrue(map.containsKey(key1));
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllViaValueSetView()
+    {
+        map.put(key1, value1); //del
+        map.put(key2, value2); //del
+        map.put(key3, value1); //del
+        map.put(key4, value3);
+        map.put(key5, value5);
+        map.put(key6, value5);
+        map.put(key7, value1); //del
+        map.put(key8, value8);
+        map.put(key9, value2); //del
+
+        final int nbRemoved = map.values().removeAll(new KTypePredicate<VType>()
+                {
+            @Override
+            public boolean apply(final VType value)
+            {
+                return value == value1 || value == value2;
+            }
+                });
+
+        Assert.assertEquals(5, nbRemoved);
+        Assert.assertEquals(4, map.size());
+        Assert.assertTrue(map.containsKey(key4));
+        Assert.assertTrue(map.containsKey(key5));
+        Assert.assertTrue(map.containsKey(key6));
+        Assert.assertTrue(map.containsKey(key8));
+    }
+
+    /* */
+    @Test
+    public void testRemoveAllOccurencesViaValueSetView()
+    {
+        map.put(key1, value1); //del
+        map.put(key2, value2);
+        map.put(key3, value1); //del
+        map.put(key4, value3);
+        map.put(key5, value7);
+        map.put(key6, value5);
+        map.put(key7, value1); //del
+        map.put(key8, value8);
+        map.put(key9, value2);
+
+        final int nbRemoved = map.values().removeAllOccurrences(value1);
+
+        Assert.assertEquals(3, nbRemoved);
+        Assert.assertEquals(6, map.size());
+        Assert.assertTrue(map.containsKey(key2));
+        Assert.assertTrue(map.containsKey(key4));
+        Assert.assertTrue(map.containsKey(key5));
+        Assert.assertTrue(map.containsKey(key6));
+        Assert.assertTrue(map.containsKey(key8));
+        Assert.assertTrue(map.containsKey(key9));
     }
 
     /* */
@@ -405,6 +457,38 @@ public class KTypeVTypeOpenHashMapTest<KType, VType> extends AbstractKTypeVTypeT
         map.put(key2, value1);
         map.clear();
         Assert.assertEquals(0, map.size());
+
+        // These are internals, but perhaps worth asserting too.
+        Assert.assertEquals(0, map.assigned);
+
+        // Check if the map behaves properly upon subsequent use.
+        testPutWithExpansions();
+    }
+
+    /* */
+    @Test
+    public void testClearViaKeySetView()
+    {
+        map.put(key3, value2);
+        map.put(key4, value4);
+        map.keys().clear();
+        Assert.assertEquals(0, map.keys().size());
+
+        // These are internals, but perhaps worth asserting too.
+        Assert.assertEquals(0, map.assigned);
+
+        // Check if the map behaves properly upon subsequent use.
+        testPutWithExpansions();
+    }
+
+    /* */
+    @Test
+    public void testClearViaValueSetView()
+    {
+        map.put(key5, value4);
+        map.put(key6, value1);
+        map.values().clear();
+        Assert.assertEquals(0, map.values().size());
 
         // These are internals, but perhaps worth asserting too.
         Assert.assertEquals(0, map.assigned);

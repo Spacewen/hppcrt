@@ -22,7 +22,6 @@ import com.carrotsearch.hppc.strategies.KTypeHashingStrategy;
 /*! ${TemplateOptions.doNotGenerateKType("BOOLEAN")} !*/
 /*! #set( $ROBIN_HOOD_FOR_PRIMITIVES = false) !*/
 /*! #set( $ROBIN_HOOD_FOR_GENERICS = true) !*/
-/*! #set( $DEBUG = false) !*/
 // If RH is defined, RobinHood Hashing is in effect :
 /*! #set( $RH = (($TemplateOptions.KTypeGeneric && $ROBIN_HOOD_FOR_GENERICS) || ($TemplateOptions.KTypeNumeric && $ROBIN_HOOD_FOR_PRIMITIVES)) ) !*/
 /*! ${TemplateOptions.generatedAnnotation} !*/
@@ -65,8 +64,8 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             for (int i = 0; i < set.keys.length; i++)
             {
                 if (/*! #if ($RH) !*/
-                        set.allocated[i] == -1
-                        /*!#else
+                set.allocated[i] == -1
+                /*!#else
                 !set.allocated[i]
                 #end !*/)
                 {
@@ -79,11 +78,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
                 {
                     /*! #if ($RH) !*/
                     //check hash cache consistency
-                    /*! #if ($TemplateOptions.KTypeGeneric) !*/
                     Assert.assertEquals(Internals.rehash(set.keys[i]) & mask, set.allocated[i]);
-                    /*! #else
-                    Assert.assertEquals(Internals.rehash(set.keys[i], set.perturbation) & mask, set.allocated[i]);
-                    #end !*/
                     /*! #end !*/
 
                     //try to reach the key by contains()
@@ -111,8 +106,8 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         // This test is only applicable to selected key types.
         Assume.assumeTrue(
                 int[].class.isInstance(set.keys) ||
-                long[].class.isInstance(set.keys) ||
-                Object[].class.isInstance(set.keys));
+                        long[].class.isInstance(set.keys) ||
+                        Object[].class.isInstance(set.keys));
 
         final IntArrayList hashChain = TestUtils.generateMurmurHash3CollisionChain(0x1fff, 0x7e, 0x1fff / 3);
 
@@ -324,13 +319,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         set.add(newArray(k0, k1, k2));
 
         Assert.assertEquals(1, set.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1;
             };
-                }));
+        }));
 
         TestUtils.assertSortedListEquals(set.toArray(), 0, key2);
     }
@@ -347,7 +342,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size + 1
             Assert.assertEquals(10, set.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
@@ -355,7 +350,7 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
                         throw t;
                     return v == key2 || v == key9 || v == key5;
                 };
-                    }));
+            }));
 
             Assert.fail();
         }
@@ -380,13 +375,13 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
         set.add(newArray(k0, k1, k2, k3, k4, k5));
 
         Assert.assertEquals(4, set.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         TestUtils.assertSortedListEquals(set.toArray(), key1, key2);
     }
@@ -566,10 +561,10 @@ public class KTypeOpenHashSetTest<KType> extends AbstractKTypeTest<KType>
     {
         Assume.assumeTrue(
                 int[].class.isInstance(set.keys) ||
-                short[].class.isInstance(set.keys) ||
-                byte[].class.isInstance(set.keys) ||
-                long[].class.isInstance(set.keys) ||
-                Object[].class.isInstance(set.keys));
+                        short[].class.isInstance(set.keys) ||
+                        byte[].class.isInstance(set.keys) ||
+                        long[].class.isInstance(set.keys) ||
+                        Object[].class.isInstance(set.keys));
 
         this.set.add(key1, key2);
         String asString = set.toString();

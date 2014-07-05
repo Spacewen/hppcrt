@@ -156,7 +156,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         }
         else {
 
-            throw new RuntimeException("KTypeOpenCustomHashSet() cannot have a null hashStrategy !");
+            throw new IllegalArgumentException("KTypeOpenCustomHashSet() cannot have a null hashStrategy !");
         }
 
         assert loadFactor > 0 && loadFactor <= 1 : "Load factor must be between (0, 1].";
@@ -183,7 +183,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
         //allocate so that there is at least one slot that remains allocated = false
         //this is compulsory to guarantee proper stop in searching loops
         this.resizeAt = Math.max(3, (int) (internalCapacity * loadFactor)) - 2;
-
     }
 
     /**
@@ -893,7 +892,6 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
                 @Override
                 public void reset(final EntryIterator obj) {
                     // nothing
-
                 }
             });
 
@@ -966,11 +964,7 @@ implements KTypeLookupContainer<KType>, KTypeSet<KType>, Cloneable
     @Override
     public KTypeOpenCustomHashSet<KType> clone()
     {
-        /* #if ($TemplateOptions.KTypeGeneric) */
-        @SuppressWarnings("unchecked")
-        /* #end */
-        final KTypeOpenCustomHashSet<KType> cloned = new KTypeOpenCustomHashSet<KType>(
-                this.size(), this.loadFactor, this.hashStrategy);
+        final KTypeOpenCustomHashSet<KType> cloned = new KTypeOpenCustomHashSet<KType>(this.size(), this.loadFactor, this.hashStrategy);
 
         cloned.addAll(this);
 

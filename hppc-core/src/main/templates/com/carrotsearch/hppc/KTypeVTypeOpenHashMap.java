@@ -1240,7 +1240,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 @Override
                 public EntryIterator create()
                 {
-
                     return new EntryIterator();
                 }
 
@@ -1253,7 +1252,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                 @Override
                 public void reset(final EntryIterator obj) {
                     // nothing
-
                 }
             });
 
@@ -1322,8 +1320,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }
 
     /**
-     * Returns a specialized view of the keys of this associated container.
-     * The view additionally implements {@link ObjectLookupContainer}.
+     *  @return a new KeysContainer view of the keys of this associated container.
+     * This view then reflects all changes from the map.
      */
     @Override
     public KeysContainer keys()
@@ -1451,7 +1449,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                     @Override
                     public KeysIterator create()
                     {
-
                         return new KeysIterator();
                     }
 
@@ -1536,7 +1533,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     }
 
     /**
-     * @return Returns a container with all values stored in this map.
+     *  @return a new ValuesContainer, view of the values of this map.
+     * This view then reflects all changes from the map.
      */
     @Override
     public ValuesContainer values()
@@ -1656,22 +1654,84 @@ public class KTypeVTypeOpenHashMap<KType, VType>
             return valuesIteratorPool.borrow();
         }
 
+        /**
+         * {@inheritDoc}
+         * Indeed removes all the (key,value) pairs matching
+         * (key ? ,  e) with the  same  e,  from  the map.
+         */
         @Override
         public int removeAllOccurrences(final VType e)
         {
-            throw new UnsupportedOperationException();
+            final int before = owner.assigned;
+
+            final VType[] values = owner.values;
+
+            /*! #if ($RH) !*/
+            final int[] states = owner.allocated;
+            /*! #else
+            final boolean[] states = owner.allocated;
+            #end !*/
+
+            for (int i = 0; i < states.length;)
+            {
+                if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
+                {
+                    if (Intrinsics.equalsVType(e, values[i]))
+                    {
+                        owner.assigned--;
+                        shiftConflictingKeys(i);
+                        // Repeat the check for the same i.
+                        continue;
+                    }
+                }
+                i++;
+            }
+            return before - owner.assigned;
         }
 
+        /**
+         * {@inheritDoc}
+         * Indeed removes all the (key,value) pairs matching
+         * the predicate for the values, from  the map.
+         */
         @Override
         public int removeAll(final KTypePredicate<? super VType> predicate)
         {
-            throw new UnsupportedOperationException();
+            final int before = owner.assigned;
+
+            final VType[] values = owner.values;
+
+            /*! #if ($RH) !*/
+            final int[] states = owner.allocated;
+            /*! #else
+            final boolean[] states = owner.allocated;
+            #end !*/
+
+            for (int i = 0; i < states.length;)
+            {
+                if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
+                {
+                    if (predicate.apply(values[i]))
+                    {
+                        owner.assigned--;
+                        shiftConflictingKeys(i);
+                        // Repeat the check for the same i.
+                        continue;
+                    }
+                }
+                i++;
+            }
+            return before - owner.assigned;
         }
 
+        /**
+         * {@inheritDoc}
+         *  Alias for clear() the whole map.
+         */
         @Override
         public void clear()
         {
-            throw new UnsupportedOperationException();
+            owner.clear();
         }
 
         /**
@@ -1683,7 +1743,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                     @Override
                     public ValuesIterator create()
                     {
-
                         return new ValuesIterator();
                     }
 
@@ -1696,7 +1755,6 @@ public class KTypeVTypeOpenHashMap<KType, VType>
                     @Override
                     public void reset(final ValuesIterator obj) {
                         // nothing
-
                     }
                 });
 
@@ -1777,18 +1835,13 @@ public class KTypeVTypeOpenHashMap<KType, VType>
     @Override
     public KTypeVTypeOpenHashMap<KType, VType> clone()
     {
-        /* #if ($TemplateOptions.AnyGeneric) */
-        @SuppressWarnings("unchecked")
-        final/* #end */
-        KTypeVTypeOpenHashMap<KType, VType> cloned =
-                new KTypeVTypeOpenHashMap<KType, VType>(this.size(), this.loadFactor);
+        final KTypeVTypeOpenHashMap<KType, VType> cloned = new KTypeVTypeOpenHashMap<KType, VType>(this.size(), this.loadFactor);
 
         cloned.putAll(this);
 
         cloned.defaultValue = this.defaultValue;
 
         return cloned;
-
     }
 
     /**
@@ -1822,7 +1875,8 @@ public class KTypeVTypeOpenHashMap<KType, VType>
         if (keys.length != values.length)
             throw new IllegalArgumentException("Arrays of keys and values must have an identical length.");
 
-        final KTypeVTypeOpenHashMap<KType, VType> map = new KTypeVTypeOpenHashMap<KType, VType>();
+        final KTypeVTypeOpenHashMap<KType, VType> map = new KTypeVTypeOpenHashMap<KType, VType>(keys.length);
+
         for (int i = 0; i < keys.length; i++)
         {
             map.put(keys[i], values[i]);

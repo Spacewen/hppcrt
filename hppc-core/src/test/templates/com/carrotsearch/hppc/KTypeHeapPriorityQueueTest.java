@@ -211,13 +211,13 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         insertElements(prioq, 0, 1, 2, 1, 4);
 
         Assert.assertEquals(3, prioq.removeAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         assertPrioQueueEquals(prioq, 0, 4);
     }
@@ -229,13 +229,13 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
         insertElements(prioq, 0, 1, 2, 1, 0);
 
         Assert.assertEquals(2, prioq.retainAll(new KTypePredicate<KType>()
-                {
+        {
             @Override
             public boolean apply(final KType v)
             {
                 return v == key1 || v == key2;
             };
-                }));
+        }));
 
         assertPrioQueueEquals(prioq, 1, 1, 2);
     }
@@ -252,7 +252,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //the assert below should never be triggered because of the exception
             //so give it an invalid value in case the thing terminates  = initial size
             Assert.assertEquals(5, prioq.removeAll(new KTypePredicate<KType>()
-                    {
+            {
                 @Override
                 public boolean apply(final KType v)
                 {
@@ -260,7 +260,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
                         throw t;
                     return v == key1;
                 };
-                    }));
+            }));
 
             Assert.fail();
         }
@@ -297,7 +297,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testIterable()
     {
-        int count = (int) 1e6;
+        int count = (int) 1e5;
 
         //A) fill the prio queue
         prioq = new KTypeHeapPriorityQueue<KType>(10);
@@ -495,7 +495,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     {
         final Random prng = new Random(45872243156464L);
 
-        final int COUNT = (int) 100e3;
+        final int COUNT = (int) 50e3;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(74);
@@ -620,7 +620,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
         final Random prng = new Random(74172243156464L);
 
-        final int COUNT = (int) 100e3;
+        final int COUNT = (int) 50e3;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(compIndepinstance, 471);
@@ -660,7 +660,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     {
         final Random prng = new Random(45874131463156464L);
 
-        final int COUNT = (int) 1e6;
+        final int COUNT = (int) 1e5;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(10);
@@ -677,7 +677,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             Assert.assertEquals(size + 1, testPQ.size());
             referenceArray[i] = castType(cast(randomInt));
 
-            if (i % 33548 == 0)
+            if (i % 3348 == 0)
             {
                 Assert.assertTrue(isMinHeap(testPQ));
             }
@@ -707,7 +707,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //top() point now to the next smallest element
             Assert.assertEquals(expected_next, castType(testPQ.top()));
 
-            if (i % 11101 == 0)
+            if (i % 1111 == 0)
             {
                 Assert.assertTrue(isMinHeap(testPQ));
             }
@@ -746,7 +746,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
 
         final Random prng = new Random(98754131654131L);
 
-        final int COUNT = (int) 1e6;
+        final int COUNT = (int) 1e5;
 
         //A) fill COUNT random values in prio-queue
         final KTypeHeapPriorityQueue<KType> testPQ = new KTypeHeapPriorityQueue<KType>(comp, 10);
@@ -763,7 +763,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             Assert.assertEquals(size + 1, testPQ.size());
             referenceArray[i] = cast(randomInt);
 
-            if (i % 50548 == 0)
+            if (i % 5548 == 0)
             {
                 Assert.assertTrue(isMinHeap(testPQ));
             }
@@ -797,7 +797,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
             //top() point now to the next smallest element
             Assert.assertEquals(castType(expected_next), castType(testPQ.top()));
 
-            if (i % 28548 == 0)
+            if (i % 2548 == 0)
             {
                 Assert.assertTrue(isMinHeap(testPQ));
             }
@@ -1109,7 +1109,7 @@ public class KTypeHeapPriorityQueueTest<KType> extends AbstractKTypeTest<KType>
     @Test
     public void testPooledIteratorExceptionSafe()
     {
-        final int TEST_SIZE = 114171;
+        final int TEST_SIZE = 110171;
         final long TEST_ROUNDS = 15;
 
         final KTypeHeapPriorityQueue<KType> testContainer = new KTypeHeapPriorityQueue<KType>(10);

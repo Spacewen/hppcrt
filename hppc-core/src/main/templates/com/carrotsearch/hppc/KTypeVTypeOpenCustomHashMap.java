@@ -134,7 +134,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
      * comparisons and hash codes of keys will be computed
      * with the strategy methods instead of the native Object equals() and hashCode() methods.
      */
-    protected KTypeHashingStrategy<? super KType> hashStrategy = null;
+    protected final KTypeHashingStrategy<? super KType> hashStrategy;
 
     /**
      * Creates a hash map with the default capacity of {@value #DEFAULT_CAPACITY},
@@ -179,7 +179,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         }
         else {
 
-            throw new RuntimeException("KTypeVTypeOpenCustomHashMap() cannot have a null hashStrategy !");
+            throw new IllegalArgumentException("KTypeVTypeOpenCustomHashMap() cannot have a null hashStrategy !");
         }
 
         assert loadFactor > 0 && loadFactor <= 1 : "Load factor must be between (0, 1].";
@@ -334,6 +334,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     public int putAll(final KTypeVTypeAssociativeContainer<? extends KType, ? extends VType> container)
     {
         final int count = this.assigned;
+
         for (final KTypeVTypeCursor<? extends KType, ? extends VType> c : container)
         {
             put(c.key, c.value);
@@ -348,6 +349,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     public int putAll(final Iterable<? extends KTypeVTypeCursor<? extends KType, ? extends VType>> iterable)
     {
         final int count = this.assigned;
+
         for (final KTypeVTypeCursor<? extends KType, ? extends VType> c : iterable)
         {
             put(c.key, c.value);
@@ -1246,7 +1248,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 @Override
                 public EntryIterator create()
                 {
-
                     return new EntryIterator();
                 }
 
@@ -1259,7 +1260,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                 @Override
                 public void reset(final EntryIterator obj) {
                     // nothing
-
                 }
             });
 
@@ -1328,8 +1328,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
 
     /**
-     * Returns a specialized view of the keys of this associated container.
-     * The view additionally implements {@link ObjectLookupContainer}.
+     *  @return a new KeysContainer view of the keys of this associated container.
+     * This view then reflects all changes from the map.
      */
     @Override
     public KeysContainer keys()
@@ -1457,7 +1457,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                     @Override
                     public KeysIterator create()
                     {
-
                         return new KeysIterator();
                     }
 
@@ -1470,7 +1469,6 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
                     @Override
                     public void reset(final KeysIterator obj) {
                         // nothing
-
                     }
                 });
 
@@ -1542,7 +1540,8 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
     }
 
     /**
-     * @return Returns a container with all values stored in this map.
+     *  @return a new ValuesContainer, view of the values of this map.
+     * This view then reflects all changes from the map.
      */
     @Override
     public ValuesContainer values()
@@ -1662,22 +1661,84 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
             return valuesIteratorPool.borrow();
         }
 
+        /**
+         * {@inheritDoc}
+         * Indeed removes all the (key,value) pairs matching
+         * (key ? ,  e) with the  same  e,  from  the map.
+         */
         @Override
         public int removeAllOccurrences(final VType e)
         {
-            throw new UnsupportedOperationException();
+            final int before = owner.assigned;
+
+            final VType[] values = owner.values;
+
+            /*! #if ($RH) !*/
+            final int[] states = owner.allocated;
+            /*! #else
+            final boolean[] states = owner.allocated;
+            #end !*/
+
+            for (int i = 0; i < states.length;)
+            {
+                if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
+                {
+                    if (Intrinsics.equalsVType(e, values[i]))
+                    {
+                        owner.assigned--;
+                        shiftConflictingKeys(i);
+                        // Repeat the check for the same i.
+                        continue;
+                    }
+                }
+                i++;
+            }
+            return before - owner.assigned;
         }
 
+        /**
+         * {@inheritDoc}
+         * Indeed removes all the (key,value) pairs matching
+         * the predicate for the values, from  the map.
+         */
         @Override
         public int removeAll(final KTypePredicate<? super VType> predicate)
         {
-            throw new UnsupportedOperationException();
+            final int before = owner.assigned;
+
+            final VType[] values = owner.values;
+
+            /*! #if ($RH) !*/
+            final int[] states = owner.allocated;
+            /*! #else
+            final boolean[] states = owner.allocated;
+            #end !*/
+
+            for (int i = 0; i < states.length;)
+            {
+                if (states[i] /*! #if ($RH) !*/!= -1 /*! #end !*/)
+                {
+                    if (predicate.apply(values[i]))
+                    {
+                        owner.assigned--;
+                        shiftConflictingKeys(i);
+                        // Repeat the check for the same i.
+                        continue;
+                    }
+                }
+                i++;
+            }
+            return before - owner.assigned;
         }
 
+        /**
+         * {@inheritDoc}
+         *  Alias for clear() the whole map.
+         */
         @Override
         public void clear()
         {
-            throw new UnsupportedOperationException();
+            owner.clear();
         }
 
         /**
@@ -1828,7 +1889,7 @@ implements KTypeVTypeMap<KType, VType>, Cloneable
         if (keys.length != values.length)
             throw new IllegalArgumentException("Arrays of keys and values must have an identical length.");
 
-        final KTypeVTypeOpenCustomHashMap<KType, VType> map = new KTypeVTypeOpenCustomHashMap<KType, VType>(hashStrategy);
+        final KTypeVTypeOpenCustomHashMap<KType, VType> map = new KTypeVTypeOpenCustomHashMap<KType, VType>(keys.length, hashStrategy);
 
         for (int i = 0; i < keys.length; i++)
         {

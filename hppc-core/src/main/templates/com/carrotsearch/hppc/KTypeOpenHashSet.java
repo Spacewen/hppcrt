@@ -190,7 +190,6 @@ public class KTypeOpenHashSet<KType>
         //allocate so that there is at least one slot that remains allocated = false
         //this is compulsory to guarantee proper stop in searching loops
         this.resizeAt = Math.max(3, (int) (internalCapacity * loadFactor)) - 2;
-
     }
 
     /**
@@ -504,7 +503,6 @@ public class KTypeOpenHashSet<KType>
         //allocate so that there is at least one slot that remains allocated = false
         //this is compulsory to guarantee proper stop in searching loops
         this.resizeAt = Math.max(3, (int) (capacity * loadFactor)) - 2;
-
     }
 
     /**
