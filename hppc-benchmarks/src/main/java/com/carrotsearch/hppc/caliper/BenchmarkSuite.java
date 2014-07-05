@@ -24,7 +24,8 @@ public class BenchmarkSuite
     @SuppressWarnings("unchecked")
     private final static Class<? extends Benchmark>[] ALL_BENCHMARKS = new Class[]
             {
-            BenchmarkBigramCounting.class, BenchmarkContainsWithRemoved.class, BenchmarkPut.class
+        BenchmarkPopCnt.class, BenchmarkBigramCounting.class, BenchmarkPerturbedVsHashedOnly.class,
+            HashCollisionsCornerCaseTest.class, BenchmarkPut.class, BenchmarkContainsWithRemoved.class
             };
 
     public static void main(final String[] args) throws Exception
@@ -41,7 +42,9 @@ public class BenchmarkSuite
         }
 
         final Deque<String> argsList = new ArrayDeque<String>(Arrays.asList(args));
+
         final List<Class<? extends Benchmark>> classes = Lists.newArrayList();
+
         while (!argsList.isEmpty())
         {
             if ("--".equals(argsList.peekFirst()))

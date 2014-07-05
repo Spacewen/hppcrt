@@ -31,16 +31,10 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
         RANDOM, LINEAR, LINEAR_DECREMENT, HIGHBITS;
     }
 
-    @Param
-    public Distribution distribution;
-
     public enum Perturbation
     {
         NOT_PERTURBED, PERTURBED;
     }
-
-    @Param
-    public Perturbation perturbation;
 
     public enum Allocation
     {
@@ -48,12 +42,18 @@ public class HashCollisionsCornerCaseTest extends SimpleBenchmark
     }
 
     @Param
+    public Perturbation perturbation;
+
+    @Param
+    public Distribution distribution;
+
+    @Param
     public Allocation allocation;
 
     @Param(
-            {
-            "1000000"
-            })
+    {
+                "1000000"
+    })
     public int size;
 
     /*
